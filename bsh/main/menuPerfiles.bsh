@@ -1,0 +1,2 @@
+$call.include('vyl/bsh/main/menuClase.bsh')
+new MenuOdonto(request,connectionHelper).perfiles()

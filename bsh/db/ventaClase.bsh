@@ -1,0 +1,393 @@
+package vyl.db;
+
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+import prg.glz.FrameworkException;
+import prg.util.cnv.ConvertBoolean;
+import prg.util.cnv.ConvertDate;
+import prg.util.cnv.ConvertException;
+import prg.util.cnv.ConvertJSON;
+import prg.util.cnv.ConvertList;
+import prg.util.cnv.ConvertMap;
+import prg.util.cnv.ConvertNumber;
+import prg.util.cnv.ConvertString;
+import prg.util.cnv.ConvertTimestamp;
+import prg.util.db.AbstractDataDB;
+import prg.util.db.hlp.ConexionHelper;
+
+/*
+ * Denominar BSH:
+ * vyl/bsh/db/ventaClase.bsh
+ * 
+ * BSH de llamada para actualizar:
+ * 
+ * call.include('vyl/bsh/db/jsonDataUtilClase.bsh')
+ * call.include('vyl/bsh/db/ventaClase.bsh')
+ * new Venta(connectionHelper, connectionHelperAlt, wkfData).insUpd();
+ * 
+ * @author agalaz
+ *
+ */
+public class Venta {
+    private HttpServletRequest request;
+    private ConexionHelper     cnxHlp;
+    private Map                wkfData;
+    private Timestamp          tSistema;
+    // Solo como alias para acortar la sintaxis
+    private JsonDataUtil       u = new JsonDataUtil();
+    private AbstractDataDB     db;
+
+    public Venta(HttpServletRequest request, ConexionHelper connectionHelper, ConexionHelper connectionHelperAlt, Map wkfData) throws FrameworkException {
+        this.request = request;
+        this.cnxHlp = (connectionHelperAlt == null ? connectionHelper : connectionHelperAlt);
+        this.db = this.cnxHlp.getDataDb();
+        this.wkfData = wkfData;
+    }
+
+    public Venta(HttpServletRequest request, ConexionHelper connectionHelper) throws FrameworkException {
+        this.request = request;
+        this.cnxHlp = connectionHelper;
+        this.db = this.cnxHlp.getDataDb();
+    }
+
+    /**
+     * 
+     * Inserta o Actualiza los datos de la tabla tVenta y sus tablas asociadas tGastoVenta(se limpia y se vuelve a
+     * insertar todo) y tLeasing.
+     * 
+     * @return
+     * @throws FrameworkException
+     */
+    public String insUpd() throws FrameworkException {
+        Map frmData = u.getRuta( this.wkfData, "request.json_data.DATOS.formIngreso" );
+        Integer pVenta = u.getInt( frmData, "VYL_ID" );
+        Date dCierre = u.getDate( frmData, "VYL_FECHA_CIERRE" );
+        Integer fEmpresa = u.getInt( frmData, "VYL_ID_EMPRESA" );
+        Integer fComprador = u.getInt( frmData, "VYL_ID_COMPRADOR" );
+        Integer nParcela = u.getInt( frmData, "VYL_PARCELA" );
+        String cLoteo = u.getString( frmData, "VYL_LOTEO" );
+        String cRol = u.getString( frmData, "VYL_ROL" );
+        Boolean bLeasing = u.getBoolean( frmData, "VYL_IS_LEASING", false );
+        Double nValor = u.getDouble( frmData, "VYL_VALOR" );
+        Double nReserva = u.getDouble( frmData, "VYL_RESERVA" );
+        Double nPie = u.getDouble( frmData, "VYL_PIE" );
+        Integer nCuotas = u.getInt( frmData, "VYL_CUOTAS" );
+
+        // pEvento viene en la estructura del Workflow, si no se pasa por el WKF hay que pasarlo en la DATA del
+        // cdformulario
+        Integer fEvento = u.getInt( this.wkfData, "pEvento", 0 );
+
+        Map usuario = u.getRuta( this.wkfData, "usuario" );
+        Integer fUsuario = u.getInt( usuario, "pUsuario" );
+
+        this.tSistema = ConvertTimestamp.currentTimestamp();
+
+        // Bitácora
+        try {
+            String cMensaje = ConvertJSON.MapToString( this.wkfData );
+            u.grabaLog( this.cnxHlp.getConnection(), cMensaje, "venta" );
+        } catch (JsonProcessingException e1) {
+        }
+
+        PreparedStatement psUpd = null;
+        String cSql = null;
+
+        if (pVenta == 0)
+            pVenta = null;
+        if (nCuotas == 0)
+            nCuotas = null;
+
+        if (pVenta == null) {
+            cSql = "INSERT INTO tVenta (\n"
+                    + "     fEvento  , dCierre   , nParcela    , cLoteo    , \n"
+                    + "     cRol     , fEmpresa  , fComprador  , cJsonData , \n"
+                    + "     bLeasing , nValor    , nReserva    , nPie      , \n"
+                    + "     nCuotas  , tCreacion , fUsrCreacion "
+                    + " ) VALUES (\n"
+                    + "     ?, ?, ?, ?, \n"
+                    + "     ?, ?, ?, ?, \n"
+                    + "     ?, ?, ?, ?, \n"
+                    + "     ?, ?, ? \n"
+                    + ")\n";
+        } else {
+            cSql = "UPDATE tVenta \n"
+                    + " SET fEvento  = ?, dCierre       = ?, nParcela         = ?, cLoteo    = ?, \n"
+                    + "     cRol     = ?, fEmpresa      = ?, fComprador       = ?, cJsonData = ?, \n"
+                    + "     bLeasing = ?, nValor        = ?, nReserva         = ?, nPie      = ?, \n"
+                    + "     nCuotas  = ?, tModificacion = ?, fUsrModificacion = ? \n"
+                    + " WHERE pVenta = ? \n";
+        }
+        // Ejecuta
+        try {
+            psUpd = this.cnxHlp.getConnection().prepareStatement( cSql, Statement.RETURN_GENERATED_KEYS );
+            int nIdx = 1;
+            psUpd.setInt( nIdx++, fEvento );
+            psUpd.setDate( nIdx++, dCierre );
+            psUpd.setInt( nIdx++, nParcela );
+            psUpd.setString( nIdx++, cLoteo );
+
+            psUpd.setString( nIdx++, cRol );
+            psUpd.setInt( nIdx++, fEmpresa );
+            psUpd.setInt( nIdx++, fComprador );
+            psUpd.setString( nIdx++, ConvertJSON.ObjectToString( frmData ) );
+
+            psUpd.setBoolean( nIdx++, bLeasing );
+            psUpd.setDouble( nIdx++, nValor );
+            psUpd.setDouble( nIdx++, nReserva );
+            psUpd.setDouble( nIdx++, nPie );
+
+            psUpd.setInt( nIdx++, nCuotas );
+            psUpd.setTimestamp( nIdx++, this.tSistema );
+            psUpd.setInt( nIdx++, fUsuario );
+
+            if (pVenta != null)
+                psUpd.setInt( nIdx++, pVenta );
+            psUpd.execute();
+            if (pVenta == null) {
+                // Obtiene la llave generada en caso de ser un insert
+                ResultSet rs = psUpd.getGeneratedKeys();
+                if (rs.next())
+                    pVenta = rs.getInt( 1 );
+                rs.close();
+            }
+            psUpd.close();
+
+            String sqlDel = "DELETE FROM tGastoVenta WHERE pVenta = ?";
+            PreparedStatement psDel = this.cnxHlp.getConnection().prepareStatement( sqlDel );
+            psDel.setInt( 1, pVenta );
+            psDel.execute();
+            psDel.close();
+
+            int pGasto = 1;
+            gastoIns( pVenta, pGasto++, frmData, "VYL_CONTRATO_LEASING" );
+            gastoIns( pVenta, pGasto++, frmData, "VYL_CONTRATO_LEASING_NOTARIO" );
+            gastoIns( pVenta, pGasto++, frmData, "VYL_INSTRUCCIONES_NOTARIO" );
+            gastoIns( pVenta, pGasto++, frmData, "VYL_ESCRITURA" );
+            gastoIns( pVenta, pGasto++, frmData, "VYL_ESCRITURA_NOTARIO" );
+            gastoIns( pVenta, pGasto++, frmData, "VYL_CBR" );
+
+            if (bLeasing && nCuotas != null) {
+                // Ingresa las cuotas
+
+            }
+
+        } catch (JsonProcessingException e) {
+            throw new FrameworkException( "Al convertir MAP request.json_data.DATOS.formIngreso a String\n" + ConvertException.stackTrace2string( e ) );
+        } catch (SQLException e) {
+            throw new FrameworkException( "Al insertar en la tabla tVenta\n" + ConvertException.stackTrace2string( e ) );
+        }
+        return pVenta.toString();
+    }
+
+    /**
+     * Inserta cada gasto en tGasto
+     * 
+     * @param pVenta
+     * @param regGasto
+     * @throws SQLException
+     */
+    private void gastoIns(Integer pVenta, Integer pGasto, Map frmData, String cKeyGasto) throws SQLException {
+        Double nMonto = u.getDouble( frmData, cKeyGasto );
+        if (nMonto == null)
+            return;
+
+        String sqlIns = "INSERT INTO tGastoVenta ( pVenta, pGasto, cTipo, nMonto ) VALUES ( ?, ?, ?, ? )";
+        PreparedStatement psIns = this.cnxHlp.getConnection().prepareStatement( sqlIns );
+        int idx = 1;
+        psIns.setInt( idx++, pVenta );
+        psIns.setInt( idx++, pGasto );
+        psIns.setString( idx++, cKeyGasto );
+        psIns.setDouble( idx++, nMonto );
+        psIns.execute();
+        psIns.close();
+    }
+
+    /**
+     * Extrae los datos de tVenta.cJsonData y es completada con mas información de la tabla misma y otras tablas o
+     * métodos Java
+     * 
+     * @param pVenta
+     * @return
+     * @throws FrameworkException
+     */
+    public Map getVenta(Integer pVenta) throws FrameworkException {
+        if (ConvertNumber.isCero( pVenta )) {
+            Map frmData = u.getRuta( this.wkfData, "request.json_data.DATOS.formIngreso" );
+            pVenta = u.getInt( frmData, "VYL_ID" );
+        }
+        Integer fEvento = null;
+        if (ConvertNumber.isCero( pVenta )) {
+            // Si aún es cero puede ser que recién se haya creado el registro en tVenta
+            fEvento = u.getInt( this.wkfData, "pEvento" );
+            if (ConvertNumber.isCero( fEvento )) {
+
+            }
+        }
+        Map mData = null;
+        String cSql = "SELECT \n"
+                + db.convertColumn( "ve.fEvento" ) + ", \n"
+                + db.convertColumn( "ve.dCierre" ) + ", \n"
+                + db.convertColumn( "ve.nParcela" ) + ", \n"
+                + db.convertColumn( "ve.cLoteo" ) + ", \n"
+                + db.convertColumn( "ve.cRol" ) + ", \n"
+                + db.convertColumn( "ve.fEmpresa" ) + ", \n"
+                + db.convertColumn( "ve.fComprador" ) + ", \n"
+                + db.convertColumn( "CONVERT(ve.cJsonData USING utf8)", "cJsonData" ) + ", \n"
+                + db.convertColumn( "ve.bLeasing" ) + ", \n"
+                + db.convertColumn( "ve.nValor" ) + ", \n"
+                + db.convertColumn( "ve.nReserva" ) + ", \n"
+                + db.convertColumn( "ve.nPie" ) + ", \n"
+                + db.convertColumn( "ve.nCuotas" ) + ", \n"
+                + db.convertColumn( "ve.fUsrCreacion" ) + ", \n"
+                + db.convertColumn( "ve.tCreacion" ) + ", \n"
+                + db.convertColumn( "ve.fUsrCreacion" ) + ", \n"
+                + db.convertColumn( "ve.tModificacion" ) + ", \n"
+                + db.convertColumn( "ve.fUsrModificacion" ) + ", \n"
+                + " FROM  tVenta ve \n "
+                + (ConvertNumber.isCero( pVenta ) ? "" : " WHERE ve.pVenta = ? ")
+                + (ConvertNumber.isCero( fEvento ) ? "" : " WHERE ve.fEvento = ? ");
+        try {
+            PreparedStatement ps = this.cnxHlp.getConnection().prepareStatement( cSql );
+            int nIdx = 1;
+            if (!ConvertNumber.isCero( pVenta ))
+                ps.setInt( nIdx++, pVenta );
+            if (!ConvertNumber.isCero( fEvento ))
+                ps.setInt( nIdx++, fEvento );
+            ResultSet rs = ps.executeQuery();
+            if (!rs.next()) {
+                rs.close();
+                ps.close();
+                throw new FrameworkException( "No existe control de cambio ID:" + pVenta + "\no Evento:" + fEvento );
+            }
+            // Crea mData con la info JSON almacenada
+            mData = ConvertMap.fromJsonString( rs.getString( "cJsonData" ) );
+
+            mData.put( "VYL_ID", pVenta );
+            mData.put( "VYL_EVENTO", rs.getInt( "fEvento" ) );
+            mData.put( "VYL_FECHA_CIERRE", ConvertDate.toString( rs.getDate( "dCierre" ) ) );
+            mData.put( "VYL_ID_EMPRESA", rs.getInt( "fEmpresa" ) );
+            mData.put( "VYL_ID_COMPRADOR", rs.getInt( "fComprador" ) );
+            mData.put( "VYL_PARCELA", rs.getInt( "nParcela" ) );
+            mData.put( "VYL_LOTEO", rs.getString( "cLoteo" ) );
+            mData.put( "VYL_ROL", rs.getString( "cRol" ) );
+            mData.put( "VYL_IS_LEASING", ConvertBoolean.toString4Sql( rs.getBoolean( "bLeasing" ) ) );
+            mData.put( "VYL_VALOR", rs.getDouble( "nValor" ) );
+            mData.put( "VYL_RESERVA", rs.getDouble( "nReserva" ) );
+            mData.put( "VYL_PIE", rs.getDouble( "nPie" ) );
+            mData.put( "VYL_CUOTAS", rs.getInt( "nCuotas" ) );
+            mData.put( "VYL_FECHA_CREACION", ConvertDate.toString( rs.getDate( "tCreacion" ) ) );
+            mData.put( "VYL_FECHA_MODIFICACION", ConvertDate.toString( rs.getDate( "tModificacion" ) ) );
+
+            rs.close();
+            ps.close();
+
+        } catch (SQLException e) {
+            throw new FrameworkException( "Al leer tVenta:" + pVenta, e );
+        }
+        // LINK de URL para el retorno desde afuera (p.ej: cuando es un mail)
+        mData.put( "HOST_LINK", u.getUrlLink( request ) + "/vyl" );
+
+        // Fecha de emisión del PDF
+        mData.put( "PDF_FECHA", ConvertDate.toString( new java.util.Date() ) );
+
+        // Sigue con la información del JSON
+        mData.put( "VYL_SOLICITANTE", getNombreUsuario( u.getInt( mData, "VYL_SOLICITANTE" ) ) );
+        // mData.put( "VYL_CAUSA", getCausa( u.getInt( mData, "VYL_CAUSA" ) ) );
+        // mData.put( "VYL_AREA_NEGOCIO", getAreaNegocio( u.getInt( mData, "VYL_AREA_NEGOCIO" ) ) );
+        // mData.put( "VYL_PRIORIDAD", getPrioridad( u.getInt( mData, "VYL_PRIORIDAD" ) ) );
+        String cDescCambioWeb = u.getString( mData, "VYL_DESC_CAMBIO" );
+        if (ConvertString.isEmpty( cDescCambioWeb )) {
+            mData.put( "VYL_DESC_CAMBIO_WEB", "" );
+        } else {
+            cDescCambioWeb = cDescCambioWeb.replaceAll( "\n", "<br/>" );
+            mData.put( "VYL_DESC_CAMBIO_WEB", cDescCambioWeb );
+        }
+
+        mData.put( "VYL_PROYECTO_CLIENTE", getCliente( u.getInt( mData, "VYL_PROYECTO_CLIENTE" ) ) );
+        // Arma la lista de jefes separada por comas
+        String cLisJefe = "";
+        List lisJefe = u.getList( mData, "VYL_PROYECTO_JEFE_USR_ID" );
+        if (!ConvertList.isEmpty( lisJefe )) {
+            for (int i = 0; i < lisJefe.size(); i++) {
+                Integer idJefe = (Integer) lisJefe.get( i );
+                cLisJefe += (cLisJefe.length() > 0 ? ", " : "") + getNombreUsuario( idJefe );
+            }
+        }
+        mData.put( "VYL_PROYECTO_JEFE", cLisJefe );
+
+        // Arma la lista de gerentes separada por comas
+        String cLisGerente = "";
+        List lisGerente = u.getList( mData, "VYL_PROYECTO_GERENTE_USR_ID" );
+        if (!ConvertList.isEmpty( lisGerente )) {
+            for (int i = 0; i < lisGerente.size(); i++) {
+                Integer idGerente = (Integer) lisGerente.get( i );
+                cLisGerente += (cLisGerente.length() > 0 ? ", " : "") + getNombreUsuario( idGerente );
+            }
+        }
+        mData.put( "VYL_PROYECTO_GERENTE", cLisGerente );
+
+        return mData;
+    }
+
+    private String getNombreUsuario(Integer pUsuario) throws FrameworkException {
+        if (ConvertNumber.isCero( pUsuario ))
+            return "";
+        String cSql = "SELECT "
+                + db.convertColumn( "cNombre" )
+                + " FROM xformgen4.tUsuario WHERE pUsuario = ? ";
+        try {
+            PreparedStatement ps = cnxHlp.getConnection().prepareStatement( cSql );
+            ps.setInt( 1, pUsuario );
+            ResultSet rs = ps.executeQuery();
+            if (!rs.next()) {
+                rs.close();
+                ps.close();
+                throw new FrameworkException( "No existe usuario ID:" + pUsuario );
+            }
+            String cNombre = rs.getString( "cNombre" );
+            rs.close();
+            ps.close();
+            return cNombre;
+        } catch (SQLException e) {
+            throw new FrameworkException( "Al buscar usuario ID:" + pUsuario, e );
+        }
+    }
+
+    private String getCliente(Integer pCliente) throws FrameworkException {
+        if (ConvertNumber.isCero( pCliente ))
+            return "";
+        String cSql = "SELECT "
+                + db.convertColumn( "cRazonSocial" ) + ", "
+                + db.convertColumn( "cArea" )
+                + " FROM tCliente WHERE pCliente = ? ";
+        try {
+            PreparedStatement ps = cnxHlp.getConnection().prepareStatement( cSql );
+            ps.setInt( 1, pCliente );
+            ResultSet rs = ps.executeQuery();
+            if (!rs.next()) {
+                rs.close();
+                ps.close();
+                throw new FrameworkException( "No existe cliente ID:" + pCliente );
+            }
+            String cNombre = rs.getString( "cRazonSocial" );
+            String cArea = rs.getString( "cArea" );
+            rs.close();
+            ps.close();
+            return cNombre + " / " + cArea;
+        } catch (SQLException e) {
+            throw new FrameworkException( "Al buscar Cliente ID:" + pCliente, e );
+        }
+    }
+
+}

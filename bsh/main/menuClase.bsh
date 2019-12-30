@@ -1,0 +1,175 @@
+package odonto.menu;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import prg.glz.FrameworkException;
+import prg.glz.data.entity.TUsuario;
+import prg.util.cnv.ConvertBoolean;
+import prg.util.cnv.ConvertException;
+import prg.util.cnv.ConvertMap;
+import prg.util.cnv.ConvertNumber;
+import prg.util.db.hlp.ConexionHelper;
+
+public class MenuOdonto {
+    private HttpServletRequest request = null;
+    private ConexionHelper     cnxHlp  = null;
+
+    public MenuOdonto(HttpServletRequest req, ConexionHelper cnxHlp) {
+        this.request = req;
+        this.cnxHlp = cnxHlp;
+    }
+
+    public Map get() throws SQLException, ConvertException, FrameworkException {
+    	Integer pUsuario;
+        try {
+        	pUsuario = ConvertNumber.toInteger( this.request.getParameter( "prm_usuario" ) );
+            if (pUsuario == null)
+                throw new FrameworkException( "Falta parámetro: prm_usuario" );
+
+        } catch (NumberFormatException e) {
+            throw new FrameworkException( "Parámetro prm_usuario no es un número válido" );
+        }
+        
+        Integer pSistema;
+        try {
+        	pSistema = ConvertNumber.toInteger( this.request.getParameter( "prm_sistema" ) );
+            if (pSistema == null)
+                throw new FrameworkException( "Falta parámetro: prm_sistema" );
+
+        } catch (NumberFormatException e) {
+            throw new FrameworkException( "Parámetro prm_sistema no es un número válido" );
+        }
+        
+        String cSql = "SELECT \n"
+                + this.cnxHlp.getDataDb().convertColumn( "v.cCodArbol" ) + ", \n"
+                + this.cnxHlp.getDataDb().convertColumn( "v.cTpAcceso" ) + ", \n"
+                + this.cnxHlp.getDataDb().convertColumn( "v.cAccion", "viewType" ) + ", \n"
+                + this.cnxHlp.getDataDb().convertColumn( "v.cIconCls", "iconCls" ) + ", \n"
+                + this.cnxHlp.getDataDb().convertColumn( "v.cNombreRecurso", "text" ) + ", \n"
+                + this.cnxHlp.getDataDb().convertColumn( "v.bEsHoja", "leaf" ) + ", \n"
+                + this.cnxHlp.getDataDb().convertColumn( "v.fRecursoPadre", "fRecursoPadre" ) + ", \n"
+                + this.cnxHlp.getDataDb().convertColumn( "v.pRecurso", "pRecurso" ) + " \n"
+                + "FROM  vRecursoPermiso_menu v \n"
+                + "WHERE pUsuario = ? \n"
+                + "AND	 fSistema = ? \n"
+                + "AND   fTpAcceso < 99 \n";
+
+        PreparedStatement ps = this.cnxHlp.getConnection().prepareStatement( cSql );
+        ps.setInt(1, pUsuario);
+        ps.setInt(2, pSistema);
+        ResultSet rs = ps.executeQuery();
+        {
+            // Verifica que el arbol existe y que sea arbol, se lee el primer elemento que es la raiz, el cual no se enviado en la respuesta
+            if (!rs.next())
+                throw new FrameworkException( "No existe raiz del recurco, fSistema = " + pSistema );
+            Map mArbol = leeRecurso( rs );
+            // El primer registro debe ser padre, sino el arbol está vacío
+            if ((Boolean) mArbol.get( "leaf" ))
+                throw new FrameworkException( "El arbol está vacío, fSistema = " + pSistema );
+
+        }
+        // Prepara para recibir los hijos de la raiz
+        List lResp = new ArrayList();
+
+        Map mPadreActual = null;
+        Integer pRecursoRoot = null;
+        String cCodArbolRoot = null;
+        // El cursor viene ordena en forma de árbol, asi es que se puede leer secuencialmente, además solo se espera dos niveles dentro del arbol
+        do {
+            Map m = leeRecurso( rs );
+            if (rs.isFirst()) {
+            	pRecursoRoot = ConvertNumber.toInteger( m.get("pRecurso") );
+            	cCodArbolRoot = (String) m.get("cCodArbol");
+            	
+        	} else {
+                boolean bEsHoja = (boolean) m.get( "leaf" );
+                if (!bEsHoja) {
+                    // Es una rama, prepara para recibir los hijos
+                    m.put( "children", new ArrayList() );
+                    // Verifica nivel del padre
+                    String cCodArbol = (String) m.get( "cCodArbol" );
+                    cCodArbol = cCodArbol.substring( 0, cCodArbol.length() - 2 );
+                    if (!cCodArbol.equals( cCodArbolRoot ))
+                        throw new FrameworkException( "No se esperaban mas de dos niveles en el árbol, cCodArbol = " + cCodArbolRoot );
+                    // Agrega el padre a la raiz
+                    lResp.add( m );
+                    mPadreActual = m;
+                    
+                } else {
+                	Integer fRecursoPadre = ConvertNumber.toInteger( m.get("fRecursoPadre") );
+                	Integer pRecursoPadre = ConvertNumber.toInteger( mPadreActual.get("pRecurso") );
+                	
+                	if (fRecursoPadre.equals(pRecursoPadre)) {
+                		// Es hoja se agrega al padre actual 
+                        ((List) mPadreActual.get( "children" )).add( m );
+                        
+                	} else if (fRecursoPadre.equals(pRecursoRoot)) {
+                		// Se agrega a la raiz
+                		lResp.add( m );
+                		
+                	} else {
+                		throw new FrameworkException( "No se puede derterminar padre del pRecursor: " + m.get("pRecurso") );
+                	}
+                    
+                }	
+        	}
+        } while (rs.next());
+
+        if (rs != null)
+            rs.close();
+        if (ps != null)
+            ps.close();
+
+        Map mResp = new HashMap();
+        mResp.put( "children", lResp );
+        return mResp;
+    }
+
+    private Map leeRecurso(ResultSet rs) throws SQLException {
+        Map m = ConvertMap.fromResultSet( rs );
+        // Convierte HOJA a Booleano
+        m.put( "leaf", ConvertBoolean.toBoolean( m.get( "leaf" ) ) );
+        return m;
+    }
+    
+    public String [] perfiles() throws FrameworkException {
+        HttpSession sesion = request.getSession( false );
+        TUsuario usr = (TUsuario) sesion.getAttribute( "usuario" );
+        if (usr == null || ConvertNumber.isCero( usr.getpUsuario() ))
+            throw new FrameworkException( "No hay un usuario conectado" );
+        
+        String cSql = "SELECT \n"
+                + this.cnxHlp.getDataDb().convertColumn( "p.cDescripcion", "cPerfil" ) + " \n"
+                + "FROM  tPerfil p \n"
+                + "      INNER JOIN tUsuarioPerfil up ON up.pPerfil = p.pPerfil \n"
+                + "WHERE up.pUsuario = ? \n";
+
+        List perfiles = new ArrayList();
+        try {
+            PreparedStatement ps = this.cnxHlp.getConnection().prepareStatement( cSql );
+            ps.setInt( 1, usr.getpUsuario() );
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) 
+                perfiles.add( rs.getString( 1 ) );
+            if (rs != null)
+                rs.close();
+            if (ps != null)
+                ps.close();
+        } catch (SQLException e) {
+            throw new FrameworkException( "Error inesperado en SQL de perfiles", e );            
+        }
+        // Convierte LIST to ARRAY
+        String [] arr = new String[perfiles.size()];
+        perfiles.toArray( arr );
+        return arr;
+    }
+}

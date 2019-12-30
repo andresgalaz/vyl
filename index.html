@@ -1,0 +1,84 @@
+<html>
+    <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=yes">
+    
+    <title>Compustrom - Demo Lakus</title>
+    <link href='resources/images/compustrom96.png' rel="shortcut icon" />
+    
+    <!-- fontawesome vFree-->
+    <!-- <script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script> -->
+    <!-- <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/all.js"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/v4-shims.js"></script> -->
+    <script src="https://use.fontawesome.com/3ea67f4614.js"></script>
+
+    <script>
+        // Indica si activa o no if (DEBUG) console.log
+        var DEBUG = false;
+    </script>
+
+    <!-- Carga hojas de estilo -->    
+    <link rel="stylesheet" type="text/css" href="build/resources/BASE-all.css" />
+
+    </head>
+    
+    <body>   
+    </body>
+
+    <!-- ExtJs 6.5.2 -->
+    <script type="text/javascript" src='../../cdn/ext-6.5.2/build/ext-all-debug.js'></script>
+    <script type="text/javascript" src='../../cdn/ext-6.5.2/build/classic/theme-crisp/theme-crisp.js'></script>
+    <script type="text/javascript" src='../../cdn/ext-6.5.2/build/packages/charts/classic/charts.js'></script>
+    <script type="text/javascript" src='../../cdn/ext-addons-6.5.2/packages/exporter/build/classic/exporter-debug.js'></script>
+    <script type="text/javascript" src='../../cdn/ext-addons-6.5.2/packages/calendar/build/classic/calendar-debug.js'></script>
+    <script type="text/javascript" src='../../cdn/ext-6.5.2/build/classic/locale/locale-es.js'></script>
+    
+    <link rel="stylesheet" type="text/css"  href="../../cdn/ext-6.5.2/build/packages/charts/classic/crisp/resources/charts-all-debug.css">
+    <link rel="stylesheet" type="text/css"  href="../../cdn/ext-addons-6.5.2/packages/exporter/build/classic/resources/exporter-all-debug.css">
+    <link rel="stylesheet" type="text/css"  href="../../cdn/ext-addons-6.5.2/packages/calendar/build/classic/crisp/resources/calendar-all-debug.css">
+
+    <!-- JQuery -->
+    <!-- <script src="//code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script> -->
+    
+    <!-- Google Maps - vFree: REVER Key -->
+    <!-- Tiene un limite de 1.000 solicitudes en 24hs gratuitas, cargando una TC 150.000 sin costo -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBxLE-b-4dGU8soTWsnybmfmgY-r_MTNCQ&libraries=places" 
+        async defer>
+    </script>    
+    <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" />  
+
+    <!-- Utils -->
+    <script type="text/javascript" src='app/util/xml2json.js'></script> 
+
+    <!-- Override -->
+    <script type="text/javascript" src='overrides/grid/plugin/RowEditorButtons.js'></script>
+
+    <!-- Objetos del UX -->
+    <script type="text/javascript" src='app/ux/button/Accion.js'></script>
+    <script type="text/javascript" src='app/ux/form/CheckboxGroup.js'></script>
+    <script type="text/javascript" src='app/ux/form/CheckboxGroupFunction.js'></script>
+    <script type="text/javascript" src='app/ux/form/Combobox.js'></script>
+    <script type="text/javascript" src='app/ux/form/DatePicker.js'></script>
+    <script type="text/javascript" src='app/ux/form/RadioGroupFunction.js'></script>
+    <script type="text/javascript" src='app/ux/form/DomicilioField.js'></script>
+    <script type="text/javascript" src='app/ux/form/FieldSet.js'></script>
+    <script type="text/javascript" src='app/ux/form/WkfPanel.js'></script>
+    <script type="text/javascript" src='app/ux/form/Panel.js'></script>
+    <script type="text/javascript" src='app/ux/form/Textfield.js'></script>
+    <script type="text/javascript" src='app/ux/form/Datefield.js'></script>
+    <script type="text/javascript" src='app/ux/form/Numberfield.js'></script>
+    <script type="text/javascript" src='app/ux/grid/SelectPanel.js'></script>
+    <script type="text/javascript" src='app/ux/grid/SubmitData.js'></script>    
+    <script type="text/javascript" src='app/ux/maps/Map.js'></script>      
+    <script type="text/javascript" src='app/ux/toolbar/Acciones.js'></script>
+    <script type="text/javascript" src='app/ux/container/Main.js'></script>
+    
+    <script type="text/javascript" src='app.js'></script>
+    <script type="text/javascript" src='app/proxy/JsonCall.js'></script>
+    <script type="text/javascript" src='app/proxy/WkfCall.js'></script>
+
+    <script type="text/javascript" src='app/view/main/Main.js'></script>
+
+    <!-- The line below must be kept intact for Sencha Cmd to build your application -->
+    <script id="microloader" data-app="1361743a-b29e-4f27-8800-da8609f094b4" type="text/javascript" src="bootstrap.js"></script>
+</html>

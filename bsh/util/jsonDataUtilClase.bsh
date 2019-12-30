@@ -1,0 +1,174 @@
+package vyl.db;
+
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.codec.binary.Base64;
+
+import prg.glz.FrameworkException;
+import prg.util.cnv.ConvertBoolean;
+import prg.util.cnv.ConvertDate;
+import prg.util.cnv.ConvertException;
+import prg.util.cnv.ConvertMap;
+import prg.util.cnv.ConvertNumber;
+import prg.util.cnv.ConvertString;
+import prg.util.cnv.ConvertTimestamp;
+
+/**
+ * Denominar BSH: vyl/bsh/wkf/jsonDataUtilClase.bsh
+ * 
+ * @author agalaz
+ *
+ */
+public class JsonDataUtil {
+
+    public static Map getRuta(Map mData, String cRuta) throws FrameworkException {
+        String[] arr = cRuta.split( "\\." );
+        Map mResp = mData;
+        for (int i = 0; i < arr.length; i++) {
+            mResp = (Map) mResp.get( arr[i] );
+            if (mResp == null)
+                return null;
+        }
+        return mResp;
+    }
+
+    public static String getString(Map mData, String cKey) throws FrameworkException {
+        return ConvertString.toString( mData.get( cKey ) );
+    }
+
+    public static String getString(HttpServletRequest request, String cKey) {
+        return request.getParameter( cKey );
+    }
+
+    public Integer getInt(Map mData, String cKey, Integer nDefecto) {
+        Integer n = getInt( mData, cKey );
+        if (n == null)
+            return nDefecto;
+        return null;
+    }
+
+    public static Integer getInt(Map mData, String cKey) {
+        return ConvertNumber.toInteger( mData.get( cKey ) );
+    }
+
+    public Integer getInt(HttpServletRequest request, String cKey, Integer nDefecto) {
+        Integer n = getInt( request, cKey );
+        if (n == null)
+            return nDefecto;
+        return null;
+    }
+
+    public static Integer getInt(HttpServletRequest request, String cKey) {
+        return ConvertNumber.toInteger( request.getParameter( cKey ) );
+    }
+
+    public static Double getDouble(Map mData, String cKey) {
+        return ConvertNumber.toDouble( mData.get( cKey ) );
+    }
+
+    public static Double getDouble(HttpServletRequest request, String cKey) {
+        return ConvertNumber.toDouble( request.getParameter( cKey ) );
+    }
+
+    public static Timestamp getTimestamp(Map mData, String cKey) {
+        try {
+            return ConvertTimestamp.toTimestamp( mData.get( cKey ) );
+        } catch (ConvertException e) {
+            return null;
+        }
+    }
+
+    public static Timestamp getTimestam(HttpServletRequest request, String cKey) {
+        try {
+            return ConvertTimestamp.toTimestamp( request.getParameter( cKey ) );
+        } catch (ConvertException e) {
+            return null;
+        }
+    }
+
+    public static Date getDate(Map mData, String cKey) {
+        try {
+            return ConvertDate.toSqlDate( mData.get( cKey ) );
+        } catch (ConvertException e) {
+            return null;
+        }
+    }
+
+    public static Date getDate(HttpServletRequest request, String cKey) {
+        try {
+            return ConvertDate.toSqlDate( request.getParameter( cKey ) );
+        } catch (ConvertException e) {
+            return null;
+        }
+    }
+
+    public static List getList(Map mData, String cKey) {
+        Object o = mData.get( cKey );
+        if (o instanceof Map) {
+            List lis = new ArrayList();
+            lis.add( o );
+            return lis;
+        }
+        return (List) o;
+    }
+
+    public static Boolean getBoolean(Map mData, String cKey) {
+        return ConvertBoolean.toBoolean( mData.get( cKey ) );
+    }
+
+    public static Boolean getBoolean(Map mData, String cKey, Boolean bDefault) {
+        Boolean b = ConvertBoolean.toBoolean( mData.get( cKey ) );
+        if (b == null)
+            return bDefault;
+        return b;
+    }
+
+    public static void grabaLog(Connection cnx, String mensaje, String procedimiento) {
+        String cSqlDep = "INSERT INTO xformgen4.tBitacora ( CMENSAJE, CPROCED ) VALUES ( ?, ? )";
+        if (mensaje.length() > 20000)
+            mensaje = mensaje.substring( 1, 20000 );
+        try {
+            PreparedStatement psDep = cnx.prepareStatement( cSqlDep );
+            psDep.setString( 1, mensaje );
+            psDep.setString( 2, procedimiento );
+            psDep.execute();
+        } catch (SQLException e) {
+            System.err.println( "Al grabar en xformgen4.tBitacora" );
+            e.printStackTrace();
+        }
+    }
+
+    public static Map string64ToMap(String cJsonData) throws FrameworkException {
+        if (cJsonData.charAt( 0 ) != '{') {
+            // Puede ser Base64
+            try {
+                cJsonData = new String( Base64.decodeBase64( cJsonData.getBytes( "UTF-8" ) ), "UTF-8" );
+            } catch (Exception e) {
+                throw new FrameworkException( "Data está mal codificado, se esparaba Base64" );
+            }
+        }
+        return ConvertMap.fromJsonString( cJsonData );
+
+    }
+
+    /**
+     * Recupera la URL de llamada del Request. Se fuerza a HTTPS y se recupera hasta el nombre del Sistema
+     * 
+     * @param request
+     * @return
+     */
+    public static String getUrlLink(HttpServletRequest request) {
+        StringBuffer url = request.getRequestURL();
+        String[] arrUrl = url.toString().split( "/", 5 );
+        return "https://" + arrUrl[2] + "/" + arrUrl[3];
+    }
+}
