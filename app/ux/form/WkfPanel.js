@@ -1,7 +1,7 @@
 Ext.define('vyl.ux.form.WkfPanel', {
     // Form que se vincula a un evento, por lo que lo primero que hace es tomar o crear el event y carga dinamicamente la botonera
     extend: 'Ext.form.Panel',
-    xtype: 'wkfpanel',
+    xtype: 'wkfform',
 
     config: {
         flujo: null, 
