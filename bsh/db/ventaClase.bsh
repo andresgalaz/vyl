@@ -25,6 +25,7 @@ import prg.util.cnv.ConvertString;
 import prg.util.cnv.ConvertTimestamp;
 import prg.util.db.AbstractDataDB;
 import prg.util.db.hlp.ConexionHelper;
+import util.JsonDataUtil;
 
 /*
  * Denominar BSH:
@@ -32,7 +33,7 @@ import prg.util.db.hlp.ConexionHelper;
  * 
  * BSH de llamada para actualizar:
  * 
- * call.include('vyl/bsh/db/jsonDataUtilClase.bsh')
+ * call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
  * call.include('vyl/bsh/db/ventaClase.bsh')
  * new Venta(connectionHelper, connectionHelperAlt, wkfData).insUpd();
  * 
@@ -71,7 +72,7 @@ public class Venta {
      */
     public String insUpd() throws FrameworkException {
         Map frmData = u.getRuta( this.wkfData, "request.json_data.DATOS.formIngreso" );
-        Integer pVenta = u.getInt( frmData, "VYL_ID" );
+        Integer pVenta = u.getInt( frmData, "VYL_ID", 0 );
         Date dCierre = u.getDate( frmData, "VYL_FECHA_CIERRE" );
         Integer fEmpresa = u.getInt( frmData, "VYL_ID_EMPRESA" );
         Integer fComprador = u.getInt( frmData, "VYL_ID_COMPRADOR" );
@@ -82,7 +83,7 @@ public class Venta {
         Double nValor = u.getDouble( frmData, "VYL_VALOR" );
         Double nReserva = u.getDouble( frmData, "VYL_RESERVA" );
         Double nPie = u.getDouble( frmData, "VYL_PIE" );
-        Integer nCuotas = u.getInt( frmData, "VYL_CUOTAS" );
+        Integer nCuotas = u.getInt( frmData, "VYL_CUOTAS", 0 );
 
         // pEvento viene en la estructura del Workflow, si no se pasa por el WKF hay que pasarlo en la DATA del
         // cdformulario
@@ -230,9 +231,6 @@ public class Venta {
         if (ConvertNumber.isCero( pVenta )) {
             // Si aún es cero puede ser que recién se haya creado el registro en tVenta
             fEvento = u.getInt( this.wkfData, "pEvento" );
-            if (ConvertNumber.isCero( fEvento )) {
-
-            }
         }
         Map mData = null;
         String cSql = "SELECT \n"
@@ -297,46 +295,6 @@ public class Venta {
         }
         // LINK de URL para el retorno desde afuera (p.ej: cuando es un mail)
         mData.put( "HOST_LINK", u.getUrlLink( request ) + "/vyl" );
-
-        // Fecha de emisión del PDF
-        mData.put( "PDF_FECHA", ConvertDate.toString( new java.util.Date() ) );
-
-        // Sigue con la información del JSON
-        mData.put( "VYL_SOLICITANTE", getNombreUsuario( u.getInt( mData, "VYL_SOLICITANTE" ) ) );
-        // mData.put( "VYL_CAUSA", getCausa( u.getInt( mData, "VYL_CAUSA" ) ) );
-        // mData.put( "VYL_AREA_NEGOCIO", getAreaNegocio( u.getInt( mData, "VYL_AREA_NEGOCIO" ) ) );
-        // mData.put( "VYL_PRIORIDAD", getPrioridad( u.getInt( mData, "VYL_PRIORIDAD" ) ) );
-        String cDescCambioWeb = u.getString( mData, "VYL_DESC_CAMBIO" );
-        if (ConvertString.isEmpty( cDescCambioWeb )) {
-            mData.put( "VYL_DESC_CAMBIO_WEB", "" );
-        } else {
-            cDescCambioWeb = cDescCambioWeb.replaceAll( "\n", "<br/>" );
-            mData.put( "VYL_DESC_CAMBIO_WEB", cDescCambioWeb );
-        }
-
-        mData.put( "VYL_PROYECTO_CLIENTE", getCliente( u.getInt( mData, "VYL_PROYECTO_CLIENTE" ) ) );
-        // Arma la lista de jefes separada por comas
-        String cLisJefe = "";
-        List lisJefe = u.getList( mData, "VYL_PROYECTO_JEFE_USR_ID" );
-        if (!ConvertList.isEmpty( lisJefe )) {
-            for (int i = 0; i < lisJefe.size(); i++) {
-                Integer idJefe = (Integer) lisJefe.get( i );
-                cLisJefe += (cLisJefe.length() > 0 ? ", " : "") + getNombreUsuario( idJefe );
-            }
-        }
-        mData.put( "VYL_PROYECTO_JEFE", cLisJefe );
-
-        // Arma la lista de gerentes separada por comas
-        String cLisGerente = "";
-        List lisGerente = u.getList( mData, "VYL_PROYECTO_GERENTE_USR_ID" );
-        if (!ConvertList.isEmpty( lisGerente )) {
-            for (int i = 0; i < lisGerente.size(); i++) {
-                Integer idGerente = (Integer) lisGerente.get( i );
-                cLisGerente += (cLisGerente.length() > 0 ? ", " : "") + getNombreUsuario( idGerente );
-            }
-        }
-        mData.put( "VYL_PROYECTO_GERENTE", cLisGerente );
-
         return mData;
     }
 
