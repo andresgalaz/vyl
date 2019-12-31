@@ -3,6 +3,5 @@ Ext.define('vyl.view.ventas.cierre.FormularioController', {
 	alias: 'controller.ventasciere',
 
 	init: function (view) {
-
-    }
+    },
 });

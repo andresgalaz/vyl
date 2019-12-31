@@ -6,7 +6,9 @@ Ext.define('vyl.ux.form.WkfPanel', {
     config: {
         flujo: null, 
         evento: 0,
-        etapaActual: null
+        etapaActual: null,
+        buttonSalir: true,
+        buttonNuevo: true
     },
 
     url: '../do/jsonCall',
@@ -39,6 +41,8 @@ Ext.define('vyl.ux.form.WkfPanel', {
         
         me.callParent(arguments);
         me.initConfig(config);
+
+        me.cargaBotoneraInicial();
     },
 
     cargaBotonera: function(obj) {
@@ -57,9 +61,55 @@ Ext.define('vyl.ux.form.WkfPanel', {
             itemId: 'tlbAcciones',
             dock: 'bottom',
             // fixed: true,
+            buttonSalir: me.getButtonSalir(),
+            buttonNuevo: me.getButtonNuevo(),
             acciones: obj.dataWkf.acciones, 
             margin: '10 0 10 0'
         });
+    },
+
+    cargaBotoneraInicial: function() {
+        var me = this,
+            flujo = me.getFlujo();
+
+        if (flujo) {
+            Ext.Ajax.request({
+                url : '../do/wkfAccionesInicio',
+                method : 'POST',
+                params : {
+                    prm_cFlujo : flujo
+                },
+
+                success : function(response, opts) {
+                    var obj = Ext.decode(response.responseText);
+                    if (obj.success) {
+                        me.cargaBotonera(obj);
+
+                    } else {
+                        console.error('[cargaBotoneraInicial]', response.responseText);
+                        Ext.Msg.show({
+                            title: 'Workflow Panel',
+                            message: 'Error inesperado',
+                            buttons: Ext.Msg.OK,
+                            icon: Ext.Msg.ERROR
+                        })
+                    } 
+                },
+    
+                failure : function(response, opts) {
+                    console.error('[cargaBotoneraInicial] Falla del lado del servidor', response);
+                    Ext.Msg.show({
+                        title: 'Error Inesperado',
+                        message: response.responseText,
+                        buttons: Ext.Msg.OK,
+                        icon: Ext.Msg.ERROR
+                    })
+                }
+            });
+
+        } else {
+            console.error('[cargaBotoneraInicial] Falta parametro flujo', this);
+        }
     },
 
     creaEvento: function(callback, pusuario, json_data) {
@@ -88,21 +138,22 @@ Ext.define('vyl.ux.form.WkfPanel', {
                         if (callback){
                             callback();
                         } 
+
                     } else {
-                        console.error(response.responseText);
+                        console.error('[creaEvento]', response);
                         Ext.Msg.show({
-                            title: 'Solicitud de Ingreso',
+                            title: 'Workflow Panel',
                             message: 'Error inesperado',
                             buttons: Ext.Msg.OK,
                             icon: Ext.Msg.ERROR
-                        })
+                        });
                     }            
                 },
 
                 failure : function(response, opts) {
-                    console.error('Falla del lado del servidor, código respuesta: ' + response.status, response.responseText);
+                    console.error('[creaEvento] Falla del lado del servidor', response);
                     Ext.Msg.show({
-                        title: 'Solicitud de Ingreso',
+                        title: 'Workflow Panel',
                         message: 'Error Inesperado del servidor',
                         buttons: Ext.Msg.OK,
                         icon: Ext.Msg.ERROR
@@ -141,9 +192,9 @@ Ext.define('vyl.ux.form.WkfPanel', {
                         } 
 
                     } else {
-                        console.error(response.responseText);
+                        console.error('[leeEvento]', response.responseText);
                         Ext.Msg.show({
-                            title: 'Solicitud de Ingreso',
+                            title: 'Workflow Panel',
                             message: 'Error inesperado',
                             buttons: Ext.Msg.OK,
                             icon: Ext.Msg.ERROR
@@ -152,7 +203,7 @@ Ext.define('vyl.ux.form.WkfPanel', {
                 },
     
                 failure : function(response, opts) {
-                    console.error('Falla del lado del servidor, código respuesta: ' + response.status);
+                    console.error('[leeEvento] Falla del lado del servidor', response);
                     Ext.Msg.show({
                         title: 'Error Inesperado',
                         message: response.responseText,
@@ -162,7 +213,7 @@ Ext.define('vyl.ux.form.WkfPanel', {
                 }
             });
         } else {
-            console.warn('[leeEvento] Error: pEvento invalido', this);
+            console.error('[leeEvento] Error: pEvento invalido', this);
         }
     },
 
@@ -170,8 +221,11 @@ Ext.define('vyl.ux.form.WkfPanel', {
         var me = this;
 
         me.reset();
-        me.setFlujo('');
+
+        me.setFlujo(null);
         me.setEvento(0);
         me.setEtapaActual(null);
+
+        me.cargaBotoneraInicial();
     }
 });

@@ -4,7 +4,9 @@ Ext.define('vyl.ux.toolbar.Acciones', {
     xtype: 'wkfaccionestoolbar',
 
     config: {
-        acciones: []
+        acciones: [],
+        buttonSalir: true,
+        buttonNuevo: true
     },
 
     defaultType: 'button',
@@ -19,15 +21,33 @@ Ext.define('vyl.ux.toolbar.Acciones', {
 
         if (me.getAcciones()) {
             me.cargaBotonera();
+
         } else {
-            me.add({
-                xtype: 'button',
-                text: 'Salir',
-                iconCls: 'x-fa fa-sign-out',
-                ui: 'wkf-tlb-acciones-toolbar',
-                name: 'salir',
-                handler: 'onWkfAccion'
-            });
+            if (me.getButtonSalir()) {
+                me.add({
+                    xtype: 'button',
+                    text: 'Salir',
+                    iconCls: 'x-fa fa-sign-out',
+                    ui: 'wkf-tlb-acciones-toolbar',
+                    name: 'salir',
+                    handler: 'onWkfAccion'
+                });
+            }
+
+            if (me.getButtonNuevo()) {
+                me.add({
+                    xtype: 'button',
+                    text: 'Nuevo',
+                    iconCls: 'x-fa fa-file-text-o',
+                    ui: 'wkf-tlb-acciones-toolbar',
+                    name: 'nuevo',
+                    handler: 'onWkfAccion'
+                });
+            }
+
+            if (me.buttonSalir || me.buttonNuevo) {
+                me.add('-');
+            }  
         }
     },
     
@@ -68,14 +88,31 @@ Ext.define('vyl.ux.toolbar.Acciones', {
             break;
         }
 
-        me.add({
-            xtype: 'button',
-            text: 'Salir',
-            iconCls: 'x-fa fa-sign-out',
-            ui: 'wkf-tlb-acciones-toolbar',
-            name: 'salir',
-            handler: 'onWkfAccion'
-        },'-');
+        if (me.getButtonSalir()) {
+            me.add({
+                xtype: 'button',
+                text: 'Salir',
+                iconCls: 'x-fa fa-sign-out',
+                ui: 'wkf-tlb-acciones-toolbar',
+                name: 'salir',
+                handler: 'onWkfAccion'
+            });
+        }
+
+        if (me.getButtonNuevo()) {
+            me.add({
+                xtype: 'button',
+                text: 'Nuevo',
+                iconCls: 'x-fa fa-file-text-o',
+                ui: 'wkf-tlb-acciones-toolbar',
+                name: 'nuevo',
+                handler: 'onWkfAccion'
+            });
+        }
+
+        if (me.buttonSalir || me.buttonNuevo) {
+            me.add('-');
+        }  
 
         // Para utilizar la botonera se requieren permisos mayores a READ
         if (botones && pTpAcceso > 10) {

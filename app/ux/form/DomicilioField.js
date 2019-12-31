@@ -37,7 +37,7 @@ Ext.define('vyl.ux.form.DomicilioField', {
                 
                 if (input) {
                     areaCobertura = new google.maps.Circle({
-                        center: new google.maps.LatLng(-34.591882, -58.4038007), //Coordenadas HA
+                        center: new google.maps.LatLng(-33.4378439, -70.6504796), //Coordenadas Santiago de Chile
                         radius: 50000 //50km
                     });
     

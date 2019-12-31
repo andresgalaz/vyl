@@ -2,7 +2,54 @@ Ext.define('vyl.view.ventas.cierre.FormularioViewModel', {
     extend: 'Ext.app.ViewModel',
     alias: 'viewmodel.ventasciere',
 
+    data: {
+    },
+
+    formulas: {
+        getSaldo: function(get) {
+            var me = this,
+                view = me.getView(),
+                refs = view.getReferences()
+                valorPredio = refs.nfValorPredio.getValue(),
+                valorReserva = refs.nfReserva.getValue();
+
+            if (valorPredio > 0 && valorReserva > 0 && valorPredio > valorReserva) {
+                return valorPredio - valorReserva;
+            } else {
+                return null
+            }
+        }
+    },
+
     stores: {
+        stEstadoCivil: {
+            fields: ['COD', 'ESTADO'],
+
+            data: [
+                {COD: 'soltero',        ESTADO: 'Soltera/o'},
+                {COD: 'casado',         ESTADO: 'Casada/o'},
+                {COD: 'divorciado',     ESTADO: 'Divorciada/o'},
+                {COD: 'viudo',          ESTADO: 'Viuda/o'}
+            ]
+        },
+
+        stModalidadPago: {
+            fields: ['COD', 'MODALIDAD'],
+
+            data: [
+                {COD: 'vale_vista', MODALIDAD: 'Vale Vista'},
+            ]
+        },
+
+        stModalidadVenta: {
+            fields: ['COD', 'MODALIDAD'],
+
+            data: [
+                {COD: 'directa', MODALIDAD: 'Venta al Contado'},
+                {COD: 'financiamiento', MODALIDAD: 'Venta con Financiamiento'},
+            ]
+        },
+
         stNacionalidad: {
             fields: ['COD', 'NACIONALIDAD'],
             
@@ -204,9 +251,13 @@ Ext.define('vyl.view.ventas.cierre.FormularioViewModel', {
                 {COD: 'zimbabue' ,NACIONALIDAD: 'Zimbabue'},
             ]
         },
-        
-        stVendedores: {
 
+        stVendedores: {
+            fields: ['VENDEDOR_AYN', 'VENDEDOR_RUT', 'EMPRESA', 'EMPRESA_RUT', 'VENDEDOR_ID'],
+
+            data: [
+                {VENDEDOR_AYN: 'CARLOS HUGO GALAZ QUINTANA', VENDEDOR_RUT: '7.894.048-4', EMPRESA_RUT: '76.598.723-7', EMPRESA: 'Inversiones AFT LAKUS LTDA', VENDEDOR_ID: 1}
+            ], 
         }
     }
 });

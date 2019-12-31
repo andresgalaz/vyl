@@ -75,7 +75,7 @@ public class Venta {
         Integer pVenta = u.getInt( frmData, "VYL_ID", 0 );
         Date dCierre = u.getDate( frmData, "VYL_FECHA_CIERRE" );
         Integer fEmpresa = u.getInt( frmData, "VYL_ID_EMPRESA" );
-        Integer fComprador = u.getInt( frmData, "VYL_ID_COMPRADOR" );
+        Integer fComprador = u.getInt( frmData, "VYL_COMPRADOR_ID" );
         Integer nParcela = u.getInt( frmData, "VYL_PARCELA" );
         String cLoteo = u.getString( frmData, "VYL_LOTEO" );
         String cRol = u.getString( frmData, "VYL_ROL" );
@@ -275,7 +275,7 @@ public class Venta {
             mData.put( "VYL_EVENTO", rs.getInt( "fEvento" ) );
             mData.put( "VYL_FECHA_CIERRE", ConvertDate.toString( rs.getDate( "dCierre" ) ) );
             mData.put( "VYL_ID_EMPRESA", rs.getInt( "fEmpresa" ) );
-            mData.put( "VYL_ID_COMPRADOR", rs.getInt( "fComprador" ) );
+            mData.put( "VYL_COMPRADOR_ID", rs.getInt( "fComprador" ) );
             mData.put( "VYL_PARCELA", rs.getInt( "nParcela" ) );
             mData.put( "VYL_LOTEO", rs.getString( "cLoteo" ) );
             mData.put( "VYL_ROL", rs.getString( "cRol" ) );

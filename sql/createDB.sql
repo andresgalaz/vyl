@@ -18,12 +18,12 @@ CREATE TABLE tComprador (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE tEmpresa (
-  idEmpresa int(11) unsigned NOT NULL,
+  pEmpresa int(11) unsigned NOT NULL,
   cNombre varchar(45) NOT NULL,
   cRepresentante varchar(45) NOT NULL,
   cRutEmpresa varchar(11) NOT NULL,
   cRuttRepresentante varchar(11) NOT NULL,
-  PRIMARY KEY (idEmpresa)
+  PRIMARY KEY (pEmpresa)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE tVenta (
@@ -47,7 +47,7 @@ CREATE TABLE tVenta (
   fUsrModificacion int(11) DEFAULT NULL,
   PRIMARY KEY (pVenta),
   CONSTRAINT fk_venta_comprador FOREIGN KEY (fComprador) REFERENCES tComprador (pComprador) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT fk_venta_empresa FOREIGN KEY (fEmpresa) REFERENCES tEmpresa (idEmpresa) ON DELETE NO ACTION ON UPDATE NO ACTION
+  CONSTRAINT fk_venta_empresa FOREIGN KEY (fEmpresa) REFERENCES tEmpresa (pEmpresa) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE tGastoVenta (
