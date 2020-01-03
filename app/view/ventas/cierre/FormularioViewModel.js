@@ -22,6 +22,30 @@ Ext.define('vyl.view.ventas.cierre.FormularioViewModel', {
     },
 
     stores: {
+        stEmpresas: {
+            idProperty: 'EMPRESA_ID',
+
+            fields: [
+                { name: 'EMPRESA_ID', type: 'int' },
+                { name: 'EMPRESA_NOMBRE', type: 'string' },
+                { name: 'EMPRESA_REPRESENTANTE', type: 'string' },
+                { name: 'EMPRESA_RUT', type: 'string' },
+                { name: 'EMPRESA_RUT_REPRESENTANTE', type: 'string' },
+            ],
+
+            proxy: {
+                url : '../do/vyl/bsh/lisEmpresa.bsh',
+                type : 'ajax',
+                reader : {
+                    type : 'json',
+                    rootProperty : 'children',
+                    successProperty : 'success'
+                }
+            },
+
+            autoLoad: true
+        },
+
         stEstadoCivil: {
             fields: ['COD', 'ESTADO'],
 
@@ -251,13 +275,5 @@ Ext.define('vyl.view.ventas.cierre.FormularioViewModel', {
                 {COD: 'zimbabue' ,NACIONALIDAD: 'Zimbabue'},
             ]
         },
-
-        stVendedores: {
-            fields: ['VENDEDOR_AYN', 'VENDEDOR_RUT', 'EMPRESA', 'EMPRESA_RUT', 'VENDEDOR_ID'],
-
-            data: [
-                {VENDEDOR_AYN: 'CARLOS HUGO GALAZ QUINTANA', VENDEDOR_RUT: '7.894.048-4', EMPRESA_RUT: '76.598.723-7', EMPRESA: 'Inversiones AFT LAKUS LTDA', VENDEDOR_ID: 1}
-            ], 
-        }
     }
 });

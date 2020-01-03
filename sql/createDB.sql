@@ -1,13 +1,13 @@
-DROP TABLE IF EXISTS tLeasing;
-DROP TABLE IF EXISTS tGastoVenta;
-DROP TABLE IF EXISTS tVenta;
-DROP TABLE IF EXISTS tEmpresa;
-DROP TABLE IF EXISTS tComprador;
+-- DROP TABLE IF EXISTS tLeasing;
+-- DROP TABLE IF EXISTS tGastoVenta;
+-- DROP TABLE IF EXISTS tVenta;
+-- DROP TABLE IF EXISTS tEmpresa;
+-- DROP TABLE IF EXISTS tComprador;
 
 CREATE TABLE tComprador (
   pComprador int(11) unsigned NOT NULL,
   cNombre varchar(45) NOT NULL,
-  cRut varchar(11) NOT NULL,
+  cRut varchar(12) NOT NULL,
   cTelefono varchar(45) DEFAULT NULL,
   cNacionalidad varchar(45) DEFAULT NULL,
   cEmail varchar(45) DEFAULT NULL,
@@ -18,13 +18,16 @@ CREATE TABLE tComprador (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE tEmpresa (
-  pEmpresa int(11) unsigned NOT NULL,
+  pEmpresa int(11) unsigned NOT NULL,/sb
   cNombre varchar(45) NOT NULL,
   cRepresentante varchar(45) NOT NULL,
-  cRutEmpresa varchar(11) NOT NULL,
-  cRuttRepresentante varchar(11) NOT NULL,
+  cRutEmpresa varchar(12) NOT NULL,
+  cRuttRepresentante varchar(12) NOT NULL,
   PRIMARY KEY (pEmpresa)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO tEmpresa (pEmpresa, cNombre, cRepresentante, cRutEmpresa, cRuttRepresentante) 
+VALUES (1, 'Inversiones AFT LAKUS LTDA', 'CARLOS HUGO GALAZ QUINTANA', '76.598.723-7', '7.894.048-4');
 
 CREATE TABLE tVenta (
   pVenta int(11) unsigned NOT NULL,

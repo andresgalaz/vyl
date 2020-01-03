@@ -1,8 +1,8 @@
 Ext.define('vyl.ux.form.Textfield', {
     // La unica diferencia es que permite bind de allowblank
     extend: 'Ext.form.field.Text',
-    alias: 'widget.wkfTextfield',
-    xtype: 'wkftextfield',
+    alias: 'widget.uxtextfield',
+    xtype: 'uxtextfield',
     
     config: {
         obligatorio: false

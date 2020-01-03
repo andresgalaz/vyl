@@ -1,8 +1,8 @@
 Ext.define('vyl.ux.form.Datefield', {
     // La unica diferencia es que permite bind de allowblank
     extend: 'Ext.form.field.Date',
-    alias: 'widget.wkfDatefield',
-    xtype: 'wkfdatefield',
+    alias: 'widget.uxdatefield',
+    xtype: 'uxdatefield',
     
     config: {
         obligatorio: false

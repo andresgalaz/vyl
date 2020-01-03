@@ -44,10 +44,14 @@ Ext.define('vyl.ux.form.DomicilioField', {
                     options = {
                         bounds: areaCobertura.getBounds(), 
                         types: ['address'],
-                        componentRestrictions: {country: 'ar'}
+                        componentRestrictions: {country: 'cl'}
                     };
     
                     me.setAutocomplete(fld, new google.maps.places.Autocomplete(input, options));
+
+                    if (me.readOnly) {
+                        me.setReadOnly(me.readOnly);
+                    }
                     
                 } else {
                     console.warn('[afterrender] No existe input fld');
@@ -285,17 +289,22 @@ Ext.define('vyl.ux.form.DomicilioField', {
         });
 
         me.autocomplete = obj;
-        me.setReadOnly();
+        me.setReadOnly(me.readOnly);
     },
 
-    setReadOnly: function() {
+    setReadOnly: function(readOnly) {
         var me = this,
             input = Ext.getDom(me.getId() + '-inputEl');
         
-        input.disabled = me.readOnly;
+        input.readOnly = readOnly;
         
-        if (me.readOnly) 
+        if (readOnly) 
             input.style.borderColor = '#c9c9c9';
+
+        if (readOnly) 
+            me.setEmptyText(null);
+        else 
+            me.setEmptyText('Ingrese Domicilio');;
     },
 
     setValue: function(val) {
@@ -345,5 +354,24 @@ Ext.define('vyl.ux.form.DomicilioField', {
 
     isFileUpload: function() {
         return false
+    },
+
+    setEmptyText : function(text) {
+        var me = this,
+            input = Ext.getDom(me.getId() + '-inputEl');
+
+        me.emptyText = text;
+
+        if (input) {
+            if (text == null)
+                input.placeholder = '';
+            else {
+                input.placeholder = text;
+            }
+        }
+    },
+
+    applyDefaults: function(config) {
+        console.log('[applyDefaults]', config);
     }
 });

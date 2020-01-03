@@ -20,7 +20,7 @@ Ext.define('vyl.ux.maps.map', {
 
                 if (cmpMapa) {
                     map = new google.maps.Map(cmpMapa, {
-                        center: {lat: -34.591882, lng: -58.4038007}, //Hospital Aleman,
+                        center: {lat: -33.4378439, lng: -70.6504796}, //Coordenadas Santiago de Chile
                         zoom: 12,
                         panControl: false,
                         streetViewControl: false,

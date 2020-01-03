@@ -27,10 +27,11 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
 
     maxWidth: 1000,
     title: 'Formulario Cierre de Venta',
-    // listeners: {
-    //     cargadatos: 'onCargarFormulario',  // IMPORTANTE: Se dispara desde el [MainController] onRouteChange, token con parametros
-    //     activate: 'onActivate'
-    // },
+
+    listeners: {
+        cargadatos: 'onCargarFormulario',  // IMPORTANTE: Se dispara desde el [MainController] onRouteChange, token con parametros
+        // activate: 'onActivate'
+    },
 
     initComponent: function () {
         Ext.apply(this, {
@@ -94,18 +95,18 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                 },
                                 {
                                     xtype: 'combobox',
-                                    name: '',
-                                    fieldLabel: 'Vendedor',
+                                    name: 'VYL_EMPRESA_ID',
+                                    fieldLabel: 'Empresa Vendedora',
                                     queryMode: 'local',
-                                    displayField: 'VENDEDOR_AYN',
-                                    valueField: 'VENDEDOR_ID',
+                                    displayField: 'EMPRESA_NOMBRE',
+                                    valueField: 'EMPRESA_ID',
                                     allowBlank: false,
                                     forceSelection: true,
                                     bind: {
-                                        store: '{stVendedores}'
+                                        store: '{stEmpresas}'
                                     },
                                     // tpl: Ext.create('Ext.XTemplate', '<tpl for=".">', '{VENDEDOR_AYN} - {EMPRESA}', '</tpl>'),
-                                    displayTpl:  Ext.create('Ext.XTemplate', '<tpl for=".">', '{VENDEDOR_AYN} (RUT {VENDEDOR_RUT}) - {EMPRESA} ({EMPRESA_RUT})', '</tpl>'),
+                                    displayTpl:  Ext.create('Ext.XTemplate', '<tpl for=".">', '{EMPRESA_NOMBRE} ({EMPRESA_RUT}) - Representante: {EMPRESA_REPRESENTANTE} ({EMPRESA_RUT_REPRESENTANTE})', '</tpl>'),
                                     flex: 1
                                 },
                             ]
@@ -200,6 +201,7 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                                 {
                                                     xtype: 'wkfdomiciliofield',
                                                     name: 'VYL_COMPRADOR_DOMICILIO',
+                                                    readOnly: true,
                                                     width: '100%',
                                                     margin: '0 0 5 6'
                                                 }
@@ -257,7 +259,6 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                     items: [
                                         { boxLabel: 'Escritura', name: '', reference: 'chEscritura', inputValue: 'escritura' },
                                         { boxLabel: 'Instrucciones', name: '', reference: 'chInstrucciones', inputValue: 'instrucciones' },
-                                        { boxLabel: 'Leasing', name: 'VYL_IS_LEASING', reference: 'chLeasing', inputValue: 'leasing' },
                                     ],
                                     flex: 1
                                 },
@@ -295,6 +296,9 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                     bind: {
                                         store: '{stModalidadVenta}'
                                     },
+                                    listeners: {
+                                        select: 'onModalidadVentaSelect'
+                                    },
                                     flex: 1
                                 },
                                 {
@@ -323,6 +327,7 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                     xtype: 'numberfield',
                                     fieldLabel: 'Saldo',
                                     readOnly: true,
+                                    allowBlank: true,
                                     jsonSubmit: false,
                                     bind: {
                                         value: '{nfValorPredio}'
@@ -346,19 +351,15 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                         },
                         {
                             xtype: 'container',
+                            reference: 'ctnFinanciamiento',
                             layout: 'hbox',
                             margin: '0 0 5 0',
-                            defaults: {
-                                allowBlank: false
-                            },
-                            bind: {
-                                hidden: '{!chLeasing.checked}'
-                            },
+                            hidden: true,
                             items: [
                                 {
-                                    xtype: 'numberfield',
+                                    xtype: 'uxnumberfield',
                                     fieldLabel: 'Pie de Contado',
-                                    name: 'VYL_PIE',
+                                    name: 'VYL_FINANCIAMIENTO_PIE',
                                     hideTrigger: true,
                                     flex: 1
                                 },
@@ -366,28 +367,29 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                     xtype: 'numberfield',
                                     fieldLabel: 'Monto a Financiar',
                                     readOnly: true,
+                                    allowBlank: true,
                                     jsonSubmit: false,
                                     flex: 1
                                 },
                                 {
-                                    xtype: 'numberfield',
+                                    xtype: 'uxnumberfield',
                                     fieldLabel: 'Cuotas',
-                                    name: 'VYL_CUOTAS',
+                                    name: 'VYL_FINANCIAMIENTO_CUOTAS',
                                     minValue: 1,
                                     width: 100
                                 },
                                 {
                                     xtype: 'numberfield',
                                     fieldLabel: 'Valor Cuota',
-                                    name: '',
+                                    allowBlank: true,
                                     readOnly: true,
                                     flex: 1
                                 },
                                 {
-                                    xtype: 'datefield',
+                                    xtype: 'uxdatefield',
                                     format: "d/m/Y",
                                     fieldLabel: 'Vto. 1er Cuota',
-                                    name: '',
+                                    name: 'VYL_FINANCIAMIENTO_VTO',
                                     width: 150
                                 }
                             ]

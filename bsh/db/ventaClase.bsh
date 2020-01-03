@@ -74,7 +74,7 @@ public class Venta {
         Map frmData = u.getRuta( this.wkfData, "request.json_data.DATOS.formIngreso" );
         Integer pVenta = u.getInt( frmData, "VYL_ID", 0 );
         Date dCierre = u.getDate( frmData, "VYL_FECHA_CIERRE" );
-        Integer fEmpresa = u.getInt( frmData, "VYL_ID_EMPRESA" );
+        Integer fEmpresa = u.getInt( frmData, "VYL_EMPRESA_ID" );
         Integer fComprador = u.getInt( frmData, "VYL_COMPRADOR_ID" );
         Integer nParcela = u.getInt( frmData, "VYL_PARCELA" );
         String cLoteo = u.getString( frmData, "VYL_LOTEO" );
@@ -133,24 +133,24 @@ public class Venta {
         try {
             psUpd = this.cnxHlp.getConnection().prepareStatement( cSql, Statement.RETURN_GENERATED_KEYS );
             int nIdx = 1;
-            psUpd.setInt( nIdx++, fEvento );
+            cnxHlp.setInt( psUpd, nIdx++, fEvento );
             psUpd.setDate( nIdx++, dCierre );
-            psUpd.setInt( nIdx++, nParcela );
+            cnxHlp.setInt( psUpd, nIdx++, nParcela );
             psUpd.setString( nIdx++, cLoteo );
 
             psUpd.setString( nIdx++, cRol );
-            psUpd.setInt( nIdx++, fEmpresa );
-            psUpd.setInt( nIdx++, fComprador );
+            cnxHlp.setInt( psUpd, nIdx++, fEmpresa );
+            cnxHlp.setInt( psUpd, nIdx++, fComprador );
             psUpd.setString( nIdx++, ConvertJSON.ObjectToString( frmData ) );
 
             psUpd.setBoolean( nIdx++, bLeasing );
-            psUpd.setDouble( nIdx++, nValor );
-            psUpd.setDouble( nIdx++, nReserva );
-            psUpd.setDouble( nIdx++, nPie );
+            cnxHlp.setDouble( psUpd, nIdx++, nValor );
+            cnxHlp.setDouble( psUpd, nIdx++, nReserva );
+            cnxHlp.setDouble( psUpd, nIdx++, nPie );
 
-            psUpd.setInt( nIdx++, nCuotas );
+            cnxHlp.setInt( psUpd, nIdx++, nCuotas );
             psUpd.setTimestamp( nIdx++, this.tSistema );
-            psUpd.setInt( nIdx++, fUsuario );
+            cnxHlp.setInt( psUpd, nIdx++, fUsuario );
 
             if (pVenta != null)
                 psUpd.setInt( nIdx++, pVenta );
@@ -222,9 +222,17 @@ public class Venta {
      * @return
      * @throws FrameworkException
      */
-    public Map getVenta(Integer pVenta) throws FrameworkException {
+    public Map getVenta() throws FrameworkException {
+        return getVenta( null );
+    }
+
+    private Map getVenta(Integer pVenta) throws FrameworkException {
         if (ConvertNumber.isCero( pVenta )) {
             Map frmData = u.getRuta( this.wkfData, "request.json_data.DATOS.formIngreso" );
+            pVenta = u.getInt( frmData, "VYL_ID" );
+        }
+        if (ConvertNumber.isCero( pVenta )) {
+            Map frmData = u.getRuta( this.wkfData, "request.prm_pVenta" );
             pVenta = u.getInt( frmData, "VYL_ID" );
         }
         Integer fEvento = null;
@@ -266,7 +274,7 @@ public class Venta {
             if (!rs.next()) {
                 rs.close();
                 ps.close();
-                throw new FrameworkException( "No existe control de cambio ID:" + pVenta + "\no Evento:" + fEvento );
+                throw new FrameworkException( "No existe cierre venta con ID:" + pVenta + "\no Evento:" + fEvento );
             }
             // Crea mData con la info JSON almacenada
             mData = ConvertMap.fromJsonString( rs.getString( "cJsonData" ) );
@@ -274,7 +282,7 @@ public class Venta {
             mData.put( "VYL_ID", pVenta );
             mData.put( "VYL_EVENTO", rs.getInt( "fEvento" ) );
             mData.put( "VYL_FECHA_CIERRE", ConvertDate.toString( rs.getDate( "dCierre" ) ) );
-            mData.put( "VYL_ID_EMPRESA", rs.getInt( "fEmpresa" ) );
+            mData.put( "VYL_EMPRESA_ID", rs.getInt( "fEmpresa" ) );
             mData.put( "VYL_COMPRADOR_ID", rs.getInt( "fComprador" ) );
             mData.put( "VYL_PARCELA", rs.getInt( "nParcela" ) );
             mData.put( "VYL_LOTEO", rs.getString( "cLoteo" ) );
@@ -287,6 +295,16 @@ public class Venta {
             mData.put( "VYL_FECHA_CREACION", ConvertDate.toString( rs.getDate( "tCreacion" ) ) );
             mData.put( "VYL_FECHA_MODIFICACION", ConvertDate.toString( rs.getDate( "tModificacion" ) ) );
 
+            mData.putAll( getEmpresa( rs.getInt( "fEmpresa" ), "VYL" ) );
+            mData.putAll( getComprador( rs.getInt( "fComprador" ), null, "VYL" ) );
+
+            // Map mEmpresa = getEmpresa( rs.getInt( "fEmpresa" ),"VYL" );
+            // if(mEmpresa != null )
+            // mData.putAll( mEmpresa );
+            // Map mComprador = getComprador( rs.getInt( "fComprador" ),null,"VYL" );
+            // if(mComprador!=null)
+            // mComprador.putAll( mComprador );
+
             rs.close();
             ps.close();
 
@@ -298,53 +316,147 @@ public class Venta {
         return mData;
     }
 
-    private String getNombreUsuario(Integer pUsuario) throws FrameworkException {
-        if (ConvertNumber.isCero( pUsuario ))
-            return "";
-        String cSql = "SELECT "
-                + db.convertColumn( "cNombre" )
-                + " FROM xformgen4.tUsuario WHERE pUsuario = ? ";
+    public List lisEmpresa() throws FrameworkException {
         try {
-            PreparedStatement ps = cnxHlp.getConnection().prepareStatement( cSql );
-            ps.setInt( 1, pUsuario );
+            PreparedStatement ps = creaPreparedStatement( " WHERE 1 = 1 ", "" );
             ResultSet rs = ps.executeQuery();
-            if (!rs.next()) {
-                rs.close();
-                ps.close();
-                throw new FrameworkException( "No existe usuario ID:" + pUsuario );
-            }
-            String cNombre = rs.getString( "cNombre" );
+            List lis = ConvertList.fromResultSet( rs );
             rs.close();
             ps.close();
-            return cNombre;
+            return lis;
         } catch (SQLException e) {
-            throw new FrameworkException( "Al buscar usuario ID:" + pUsuario, e );
+            throw new FrameworkException( "Al listar tEmpresa", e );
+
         }
     }
 
-    private String getCliente(Integer pCliente) throws FrameworkException {
-        if (ConvertNumber.isCero( pCliente ))
-            return "";
-        String cSql = "SELECT "
-                + db.convertColumn( "cRazonSocial" ) + ", "
-                + db.convertColumn( "cArea" )
-                + " FROM tCliente WHERE pCliente = ? ";
+    /**
+     * Lee la empresa
+     * 
+     * @return
+     * @throws FrameworkException
+     */
+    public Map getEmpresa() throws FrameworkException {
+        // El parámetro se puede recibir:
+        // - Request : prm_pEmpresa
+        // - Formdata : VYL_EMPRESA_ID
+        Integer pEmpresa = u.getInt( this.request, "prm_pEmpresa" );
+
+        if (ConvertNumber.isCero( pEmpresa )) {
+            Map frmData = u.getRuta( this.wkfData, "request.json_data.DATOS.formIngreso" );
+            pEmpresa = u.getInt( frmData, "VYL_EMPRESA_ID" );
+        }
+        return getEmpresa( pEmpresa, null );
+    }
+
+    private Map getEmpresa(Integer pEmpresa, String cAlias) throws FrameworkException {
+        if (ConvertNumber.isCero( pEmpresa ))
+            return null;
+        if (cAlias == null)
+            cAlias = "";
+        else
+            cAlias += "_";
+
         try {
-            PreparedStatement ps = cnxHlp.getConnection().prepareStatement( cSql );
-            ps.setInt( 1, pCliente );
+            PreparedStatement ps = creaPreparedStatement( " WHERE em.pEmpresa = ? ", cAlias );
+            int nIdx = 1;
+            ps.setInt( nIdx++, pEmpresa );
             ResultSet rs = ps.executeQuery();
             if (!rs.next()) {
                 rs.close();
                 ps.close();
-                throw new FrameworkException( "No existe cliente ID:" + pCliente );
+                throw new FrameworkException( "No existe empresa-vendedor ID:" + pEmpresa );
             }
-            String cNombre = rs.getString( "cRazonSocial" );
-            String cArea = rs.getString( "cArea" );
+            Map mResp = ConvertMap.fromResultSet( rs );
             rs.close();
             ps.close();
-            return cNombre + " / " + cArea;
+            return mResp;
+
         } catch (SQLException e) {
-            throw new FrameworkException( "Al buscar Cliente ID:" + pCliente, e );
+            throw new FrameworkException( "Al leer tEmpresa:" + pEmpresa, e );
+        }
+    }
+
+    private PreparedStatement creaPreparedStatement(String cWhere, String cAlias) throws SQLException {
+        String cSql = "SELECT  \n"
+                + "       em.pEmpresa          as " + cAlias + "EMPRESA_ID, \n"
+                + "       em.cNombre           as " + cAlias + "EMPRESA_NOMBRE , \n"
+                + "       em.cRepresentante    as " + cAlias + "EMPRESA_REPRESENTANTE , \n"
+                + "       em.cRutEmpresa       as " + cAlias + "EMPRESA_RUT, \n"
+                + "       em.cRutRepresentante as " + cAlias + "EMPRESA_RUT_REPRESENTANTE \n"
+                + " FROM  tEmpresa em \n "
+                + cWhere;
+        PreparedStatement ps = this.cnxHlp.getConnection().prepareStatement( cSql );
+        return ps;
+    }
+
+    /**
+     * Lee al comprador
+     * 
+     * @return
+     * @throws FrameworkException
+     */
+    public Map getComprador() throws FrameworkException {
+        // El parámetro se puede recibir:
+        // - Request : prm_cRut
+        // - Request : prm_pComprador
+        // - Formdata : VYL_COMPRADOR_ID
+        String cRut = u.getString( this.request, "prm_cRut" );
+        Integer pComprador = u.getInt( this.request, "prm_pComprador" );
+        if (ConvertNumber.isCero( pComprador )) {
+            Map frmData = u.getRuta( this.wkfData, "request.json_data.DATOS.formIngreso" );
+            pComprador = u.getInt( frmData, "VYL_COMPRADOR_ID" );
+        }
+        return getComprador( pComprador, cRut, null );
+    }
+
+    private Map getComprador(Integer pComprador, String cRut, String cAlias) throws FrameworkException {
+        if (ConvertNumber.isCero( pComprador ))
+            pComprador = null;
+        if (ConvertString.isEmpty( cRut ))
+            cRut = null;
+
+        // Ajusta el nombre del Alias de los campos
+        if (cAlias == null)
+            cAlias = "";
+        else
+            cAlias += "_";
+
+        String cSql = "SELECT  \n"
+                + "       cm.pComprador     as " + cAlias + "COMPRADOR_ID, \n"
+                + "       cm.cNombre        as " + cAlias + "COMPRADOR_NOMBRE , \n"
+                + "       cm.cRut           as " + cAlias + "COMPRADOR_RUT, \n"
+                + "       cm.cTelefono      as " + cAlias + "COMPRADOR_TELEFONO, \n"
+                + "       cm.cNacionalidad  as " + cAlias + "COMPRADOR_NACIONALIDAD , \n"
+                + "       cm.cEmail         as " + cAlias + "COMPRADOR_EMAIL \n"
+                + "       cm.cProfesion     as " + cAlias + "COMPRADOR_PROFESION \n"
+                + "       cm.cDireccion     as " + cAlias + "COMPRADOR_DIRECCION \n"
+                + "       cm.cEstadoCivil   as " + cAlias + "COMPRADOR_ESTADO_CIVIL \n"
+                + " FROM  tComprador cm \n "
+                + " WHERE 1 = 1 \n"
+                + (pComprador != null ? " AND cm.pComprador = ? " : "")
+                + (cRut != null ? " AND cm.cRut = ? " : "");
+
+        try {
+            PreparedStatement ps = this.cnxHlp.getConnection().prepareStatement( cSql );
+            int nIdx = 1;
+            if (pComprador != null)
+                ps.setInt( nIdx++, pComprador );
+            if (cRut != null)
+                ps.setString( nIdx++, cRut );
+            ResultSet rs = ps.executeQuery();
+            if (!rs.next()) {
+                rs.close();
+                ps.close();
+                throw new FrameworkException( "No existe comprador ID:" + pComprador );
+            }
+            Map mResp = ConvertMap.fromResultSet( rs );
+            rs.close();
+            ps.close();
+            return mResp;
+
+        } catch (SQLException e) {
+            throw new FrameworkException( "Al leer tComprador:" + pComprador, e );
         }
     }
 
