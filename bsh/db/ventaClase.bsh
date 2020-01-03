@@ -325,6 +325,7 @@ public class Venta {
             ps.close();
             return lis;
         } catch (SQLException e) {
+            e.printStackTrace();
             throw new FrameworkException( "Al listar tEmpresa", e );
 
         }

@@ -1,4 +1,4 @@
 $call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
 $call.include('vyl/bsh/db/ventaClase.bsh')
 // Trae los datos del comprador por prm_cRut o prm_pComprador
-new Venta(connectionHelper, null, wkfData).getComprador();
+new Venta(request, connectionHelper).getComprador();

@@ -22,11 +22,11 @@ CREATE TABLE tEmpresa (
   cNombre varchar(45) NOT NULL,
   cRepresentante varchar(45) NOT NULL,
   cRutEmpresa varchar(12) NOT NULL,
-  cRuttRepresentante varchar(12) NOT NULL,
+  cRutRepresentante varchar(12) NOT NULL,
   PRIMARY KEY (pEmpresa)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO tEmpresa (pEmpresa, cNombre, cRepresentante, cRutEmpresa, cRuttRepresentante) 
+INSERT INTO tEmpresa (pEmpresa, cNombre, cRepresentante, cRutEmpresa, cRutRepresentante) 
 VALUES (1, 'Inversiones AFT LAKUS LTDA', 'CARLOS HUGO GALAZ QUINTANA', '76.598.723-7', '7.894.048-4');
 
 CREATE TABLE tVenta (
