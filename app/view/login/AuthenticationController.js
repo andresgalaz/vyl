@@ -33,7 +33,7 @@ Ext.define('vyl.view.login.AuthenticationController', {
                 oUsr['bLDAP'] = usr.BLDAP;
 
                 appCtrl.setUsuario(oUsr);
-                view.close();
+                view.destroy();
             },
             
             failure : function(frm, resp) {

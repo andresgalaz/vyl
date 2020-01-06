@@ -3,4 +3,4 @@ $call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
 $call.include('vyl/bsh/db/empresaClase.bsh')
 $call.include('vyl/bsh/db/compradorClase.bsh')
 $call.include('vyl/bsh/db/ventaClase.bsh')
-new Venta(request, connectionHelper).get();
+new Venta(ConexionHelper connectionHelper, ConexionHelper connectionHelperAlt, Map wkfData).insUpd();

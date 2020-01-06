@@ -1,11 +1,11 @@
--- DROP TABLE IF EXISTS tLeasing;
--- DROP TABLE IF EXISTS tGastoVenta;
--- DROP TABLE IF EXISTS tVenta;
--- DROP TABLE IF EXISTS tEmpresa;
--- DROP TABLE IF EXISTS tComprador;
+ DROP TABLE IF EXISTS tLeasing;
+ DROP TABLE IF EXISTS tGastoVenta;
+ DROP TABLE IF EXISTS tVenta;
+ DROP TABLE IF EXISTS tEmpresa;
+ DROP TABLE IF EXISTS tComprador;
 
 CREATE TABLE tComprador (
-  pComprador int(11) unsigned NOT NULL,
+  pComprador int(11) unsigned NOT NULL auto_increment,
   cNombre varchar(45) NOT NULL,
   cRut varchar(12) NOT NULL,
   cTelefono varchar(45) DEFAULT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE tComprador (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE tEmpresa (
-  pEmpresa int(11) unsigned NOT NULL,/sb
+  pEmpresa int(11) unsigned NOT NULL,
   cNombre varchar(45) NOT NULL,
   cRepresentante varchar(45) NOT NULL,
   cRutEmpresa varchar(12) NOT NULL,
@@ -30,7 +30,7 @@ INSERT INTO tEmpresa (pEmpresa, cNombre, cRepresentante, cRutEmpresa, cRutRepres
 VALUES (1, 'Inversiones AFT LAKUS LTDA', 'CARLOS HUGO GALAZ QUINTANA', '76.598.723-7', '7.894.048-4');
 
 CREATE TABLE tVenta (
-  pVenta int(11) unsigned NOT NULL,
+  pVenta int(11) unsigned NOT NULL auto_increment,
   fEvento int(11) unsigned NOT NULL,
   dCierre date NOT NULL,
   nParcela int(11) unsigned DEFAULT NULL,
@@ -58,7 +58,7 @@ CREATE TABLE tGastoVenta (
   pGasto int(11) unsigned NOT NULL,
   cTipo varchar(45) NOT NULL,
   nMonto decimal(14,2) NOT NULL,
-  dVencimiento date NOT NULL,
+  dVencimiento date  DEFAULT NULL,
   dPago date DEFAULT NULL,
   bEstimado char(1) NOT NULL DEFAULT '0',
   bAdeudado char(1) NOT NULL DEFAULT '0',

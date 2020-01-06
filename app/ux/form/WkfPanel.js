@@ -218,13 +218,15 @@ Ext.define('vyl.ux.form.WkfPanel', {
     },
 
     resetForm: function() {
-        var me = this;
+        var me = this,
+            flujo = me.getFlujo() ? me.getFlujo() : null,
+            etapaActual = me.getEtapaActual() ? me.getEtapaActual() : null;
 
         me.reset();
 
-        me.setFlujo(null);
+        me.setFlujo(flujo);
         me.setEvento(0);
-        me.setEtapaActual(null);
+        me.setEtapaActual(etapaActual);
 
         me.cargaBotoneraInicial();
     }

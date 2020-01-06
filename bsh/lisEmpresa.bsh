@@ -1,3 +1,4 @@
+// V1.1d
 $call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
-$call.include('vyl/bsh/db/ventaClase.bsh')
-new Venta(request, connectionHelper).lisEmpresa();
+$call.include('vyl/bsh/db/empresaClase.bsh')
+new Empresa(request, connectionHelper).lista();

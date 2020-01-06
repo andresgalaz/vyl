@@ -10,7 +10,8 @@ Ext.define('vyl.view.main.Main', {
         'vyl.view.login.Login',
 
         // MENU VENTAS
-        'vyl.view.ventas.cierre.Formulario'
+        'vyl.view.ventas.cierre.Formulario',
+        'vyl.view.ventas.cierre.Consulta'     
     ],
 
     controller: 'main',

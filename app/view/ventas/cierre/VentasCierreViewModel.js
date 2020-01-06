@@ -1,22 +1,49 @@
-Ext.define('vyl.view.ventas.cierre.FormularioViewModel', {
+Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
     extend: 'Ext.app.ViewModel',
     alias: 'viewmodel.ventasciere',
 
     data: {
+        formularioId: 0,
+        rutComprador: '',
+        valorPredio: 0,
+        valorReserva: 0,
+        valorContado: 0,
+        cuotas: 0
     },
 
     formulas: {
         getSaldo: function(get) {
             var me = this,
-                view = me.getView(),
-                refs = view.getReferences()
-                valorPredio = refs.nfValorPredio.getValue(),
-                valorReserva = refs.nfReserva.getValue();
+                valorPredio = get('valorPredio'),
+                valorReserva = get('valorReserva');
 
-            if (valorPredio > 0 && valorReserva > 0 && valorPredio > valorReserva) {
+            if (valorPredio > 0 && valorReserva >= 0 && valorPredio >= valorReserva) {
                 return valorPredio - valorReserva;
+            
             } else {
                 return null
+            }
+        },
+        getFinanciamiento: function(get) {
+            var me = this,
+                valorPredio = get('valorPredio'),
+                valorReserva = get('valorReserva'),
+                valorContado = get('valorContado');
+
+            if (valorPredio > 0 && valorReserva >= 0 && valorContado >= 0 && valorPredio >= valorReserva + valorContado) {
+                return valorPredio - valorReserva - valorContado;
+            
+            } else {
+                return null
+            }
+        },
+        getValorCuota: function(get) {
+            var me = this,
+                cuotas = get('cuotas'),
+                finan = get('getFinanciamiento');
+
+            if (cuotas >= 1 && finan > 0 ) {
+                return Ext.Number.roundToPrecision(finan/cuotas, 2);
             }
         }
     },
@@ -38,8 +65,11 @@ Ext.define('vyl.view.ventas.cierre.FormularioViewModel', {
                 type : 'ajax',
                 reader : {
                     type : 'json',
-                    rootProperty : 'children',
+                    rootProperty : 'response',
                     successProperty : 'success'
+                },
+                extraParams: {
+                    prm_dataSource: 'vylDS'
                 }
             },
 
@@ -55,6 +85,46 @@ Ext.define('vyl.view.ventas.cierre.FormularioViewModel', {
                 {COD: 'divorciado',     ESTADO: 'Divorciada/o'},
                 {COD: 'viudo',          ESTADO: 'Viuda/o'}
             ]
+        },
+
+        stFormulariosIngresados: {
+            fields: [
+            ],
+
+            proxy: {
+                url: '',
+                type : 'ajax',
+                reader : {
+                    type : 'json',
+                    rootProperty : 'response',
+                    successProperty : 'success'
+                },
+                extraParams: {
+                    prm_dataSource: 'vylDS'
+                }
+            },
+
+            autoLoad: false,
+
+            listeners: {
+                load: 'onLoadStFormulariosIngresados'
+            }
+        },
+
+        stFormulariosIngresadosLocal: {
+            fields: [
+            ],
+
+            proxy: {
+                type: 'memory',
+                enablePaging: true,
+                reader: {
+                    rootProperty: 'records',
+                    totalProperty: 'count'
+                }
+            },
+
+            pageSize: 25
         },
 
         stModalidadPago: {

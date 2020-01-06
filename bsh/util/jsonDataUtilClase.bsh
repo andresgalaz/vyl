@@ -22,8 +22,11 @@ import prg.util.cnv.ConvertNumber;
 import prg.util.cnv.ConvertString;
 import prg.util.cnv.ConvertTimestamp;
 
-/**
- * Denominar BSH: vyl/bsh/wkf/jsonDataUtilClase.bsh
+/*
+/*
+ * Denominar BSH: 
+ * 
+ * <systema>/bsh/db/jsonDataUtilClase.bsh
  * 
  * @author agalaz
  *
@@ -53,7 +56,7 @@ public class JsonDataUtil {
         Integer n = getInt( mData, cKey );
         if (n == null)
             return nDefecto;
-        return null;
+        return n;
     }
 
     public static Integer getInt(Map mData, String cKey) {
@@ -64,7 +67,7 @@ public class JsonDataUtil {
         Integer n = getInt( request, cKey );
         if (n == null)
             return nDefecto;
-        return null;
+        return n;
     }
 
     public static Integer getInt(HttpServletRequest request, String cKey) {
@@ -167,6 +170,8 @@ public class JsonDataUtil {
      * @return
      */
     public static String getUrlLink(HttpServletRequest request) {
+        if (request == null)
+            return null;
         StringBuffer url = request.getRequestURL();
         String[] arrUrl = url.toString().split( "/", 5 );
         return "https://" + arrUrl[2] + "/" + arrUrl[3];
