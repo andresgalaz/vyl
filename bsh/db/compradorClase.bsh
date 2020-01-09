@@ -38,6 +38,11 @@ public class Comprador {
     private JsonDataUtil       u = new JsonDataUtil();
     // private AbstractDataDB db;
 
+    public Comprador(ConexionHelper connectionHelper) throws FrameworkException {
+        this.cnxHlp = connectionHelper;
+        // this.db = this.cnxHlp.getDataDb();
+    }
+
     public Comprador(HttpServletRequest request, ConexionHelper connectionHelper) throws FrameworkException {
         this.request = request;
         this.cnxHlp = connectionHelper;

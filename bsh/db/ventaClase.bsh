@@ -129,7 +129,7 @@ public class Venta {
                     + " WHERE pVenta = ? \n";
         }
         // Verifica si existe el Comprador por RUT, sino lo crea
-        fComprador = ConvertNumber.toInteger( new Comprador( this.request, this.cnxHlp ).insUpd( frmData, "VYL" ) );
+        fComprador = ConvertNumber.toInteger( new Comprador( this.cnxHlp ).insUpd( frmData, "VYL" ) );
 
         // Ejecuta
         try {

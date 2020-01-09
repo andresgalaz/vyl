@@ -71,6 +71,9 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                     fieldLabel: 'Parcela',
                                     name: 'VYL_PARCELA',
                                     hideTrigger: true,
+                                    submitLocaleSeparator: false,
+                                    allowDecimals: false,
+                                    decimalPrecision: 0,
                                     flex: 1
                                 },
                                 {
@@ -142,6 +145,7 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                             xtype: 'rut',
                                             name: 'VYL_COMPRADOR_RUT',
                                             readOnly: false,
+                                            obligatorio: true,
                                             listeners: {
                                                 blur: 'onClienteBuscar'
                                             },
@@ -178,6 +182,7 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                     items: [
                                         {
                                             xtype: 'numberfield',
+                                            allowThousandSeparator: false,
                                             fieldLabel: 'Fono',
                                             name: 'VYL_COMPRADOR_TELEFONO',
                                             hideTrigger: true,
@@ -284,8 +289,14 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                             xtype: 'container',
                             layout: 'hbox',
                             margin: '0 0 5 0',
+                            defaultType: 'uxnumberfield',
                             defaults: {
-                                allowBlank: false
+                                allowBlank: false,
+                                hideTrigger: true,
+                                allowDecimals: false,
+                                decimalPrecision: 0,
+                                minValue: 0,
+                                flex: 1
                             },
                             items: [
                                 {
@@ -293,6 +304,7 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                     reference: 'cbModalidadVenta',
                                     fieldLabel: 'Modalidad de Venta',
                                     name: 'VYL_MODALIDAD_VENTA',
+                                    hideTrigger: false,
                                     editable: false,
                                     displayField: 'MODALIDAD',
                                     valueField: 'COD',
@@ -301,51 +313,41 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                     },
                                     listeners: {
                                         select: 'onModalidadVentaSelect'
-                                    },
-                                    flex: 1
+                                    }
                                 },
                                 {
-                                    xtype: 'numberfield',
                                     reference: 'nfValorPredio',
                                     fieldLabel: 'Valor del Predio',
                                     name: 'VYL_VALOR',
-                                    allowDecimals: false,
-                                    minValue: 0,
-                                    hideTrigger: true,
+                                    obligatorio: true,
                                     listeners: {
                                         blur: 'onValorPredioBlur'
-                                    },
-                                    flex: 1
+                                    }
                                 },
                                 {
-                                    xtype: 'numberfield',
                                     reference: 'nfReserva',
                                     fieldLabel: 'Reserva',
                                     name: 'VYL_RESERVA',
-                                    allowDecimals: false,
-                                    minValue: 0,
-                                    hideTrigger: true,
+                                    obligatorio: true,
                                     listeners: {
                                         blur: 'onValorReservaBlur'
-                                    },
-                                    flex: 1
+                                    }
                                 },
                                 {
-                                    xtype: 'numberfield',
                                     fieldLabel: 'Saldo',
                                     readOnly: true,
-                                    allowBlank: true,
                                     submitValue: false,
                                     bind: {
                                         value: '{getSaldo}'
-                                    },
-                                    flex: 1
+                                    }
                                 },
                                 {
                                     xtype: 'combobox',
                                     reference: 'cbModalidadPago',
                                     fieldLabel: 'Modalidad de Pago',
                                     name: 'VYL_MODALIDAD_PAGO',
+                                    hideTrigger: false,
+                                    allowBlank: false,
                                     editable: false,
                                     displayField: 'MODALIDAD',
                                     valueField: 'COD',
@@ -362,52 +364,66 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                             layout: 'hbox',
                             margin: '0 0 5 0',
                             hidden: true,
+                            defaultType: 'uxnumberfield',
+                            defaults: {
+                                allowBlank: false,
+                                hideTrigger: true,
+                                allowDecimals: false,
+                                decimalPrecision: 0,
+                                minValue: 0,
+                                flex: 1
+                            },
                             items: [
                                 {
-                                    xtype: 'numberfield',
                                     fieldLabel: 'Pie de Contado',
                                     name: 'VYL_FINANCIAMIENTO_PIE',
-                                    hideTrigger: true,
                                     listeners: {
                                         blur: 'onValorContadoBlur'
-                                    },
-                                    flex: 1
+                                    }
                                 },
                                 {
-                                    xtype: 'numberfield',
                                     fieldLabel: 'Monto a Financiar',
                                     readOnly: true,
                                     submitValue: false,
                                     bind: {
                                         value: '{getFinanciamiento}'
-                                    },
-                                    flex: 1
+                                    }
                                 },
                                 {
-                                    xtype: 'numberfield',
                                     fieldLabel: 'Cuotas',
                                     name: 'VYL_FINANCIAMIENTO_CUOTAS',
                                     minValue: 1,
+                                    hideTrigger: false,
                                     listeners: {
                                         change: 'onCuotasChange'
                                     },
                                     width: 100
                                 },
                                 {
-                                    xtype: 'numberfield',
+                                    fieldLabel: '% Interés Anual',
+                                    name: 'VYL_FINANCIAMIENTO_INTERESES',
+                                    allowDecimals: true,
+                                    decimalPrecision: 2,
+                                    listeners: {
+                                        change: 'onInteresChange'
+                                    },
+                                    value: 0,
+                                    width: 100
+                                },
+                                {
                                     fieldLabel: 'Valor Cuota',
                                     name: 'VYL_VALOR_CUOTA',
                                     readOnly: true,
                                     bind: {
                                         value: '{getValorCuota}'
-                                    },
-                                    flex: 1
+                                    }
                                 },
                                 {
                                     xtype: 'uxdatefield',
                                     format: "d/m/Y",
                                     fieldLabel: 'Vto. 1er Cuota',
                                     name: 'VYL_FINANCIAMIENTO_VTO',
+                                    hideTrigger: false,
                                     width: 150
                                 }
                             ]
@@ -421,26 +437,26 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                     items: [
                         {
                             xtype: 'container',
+                            reference: 'ctnFinanciamientoGastos',
                             layout: 'hbox',
                             margin: '0 0 5 0',
-                            defaultType: 'numberfield',
+                            hidden: true,
+                            defaultType: 'uxnumberfield',
                             defaults: {
                                 allowBlank: false,
                                 hideTrigger: true,
                                 allowDecimals: false,
+                                decimalPrecision: 0,
                                 flex: 1
-                            },
-                            bind: {
-                                hidden: '{!chLeasing.checked}'
                             },
                             items: [
                                 {
                                     fieldLabel: 'Contrato Leasing',
-                                    name: 'VYL_CONTRATO_LEASING'
+                                    name: 'VYL_FINANCIAMIENTO_GASTO_CONTRATO'
                                 },
                                 {
                                     fieldLabel: 'Gasto Notarial',
-                                    name: 'VYL_CONTRATO_LEASING_NOTARIO'
+                                    name: 'VYL_FINANCIAMIENTO_GASTO_NOTARIAL'
                                 },
                             ]
                         },
@@ -453,6 +469,7 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                 allowBlank: false,
                                 hideTrigger: true,
                                 allowDecimals: false,
+                                submitLocaleSeparator: false,
                                 flex: 1
                             },
                             bind: {
@@ -478,6 +495,7 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                 allowBlank: false,
                                 hideTrigger: true,
                                 allowDecimals: false,
+                                submitLocaleSeparator: false,
                                 flex: 1
                             },
                             items: [

@@ -8,7 +8,8 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
         valorPredio: 0,
         valorReserva: 0,
         valorContado: 0,
-        cuotas: 0
+        cuotas: 0,
+        interes: 0
     },
 
     formulas: {
@@ -40,10 +41,18 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
         getValorCuota: function(get) {
             var me = this,
                 cuotas = get('cuotas'),
-                finan = get('getFinanciamiento');
+                finan = get('getFinanciamiento'),
+                interes = get('interes'),
+                tasa = 0;
 
-            if (cuotas >= 1 && finan > 0 ) {
-                return Ext.Number.roundToPrecision(finan/cuotas, 2);
+            if (cuotas == 1) 
+                return finan;
+
+            if (cuotas > 1 && finan > 0 ) {
+                var tasa = interes > 0 ? cuotas * interes / 12 : 0,
+                    total = finan * tasa / 100 + finan;
+                    
+                return Ext.Number.roundToPrecision(total/cuotas, 2);
             }
         }
     },
@@ -148,16 +157,16 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
             fields: ['COD', 'NACIONALIDAD'],
             
             data: [
-                {COD: 'chile',           NACIONALIDAD: 'Chile'},
+                {COD: 'chile',           NACIONALIDAD: 'Chilena'},
                 {COD: 'argentina',       NACIONALIDAD: 'Argentina'},
-                {COD: 'bolivia',         NACIONALIDAD: 'Bolivia'},
-                {COD: 'brasil',          NACIONALIDAD: 'Brasil'},
-                {COD: 'colombia',        NACIONALIDAD: 'Colombia'},
-                {COD: 'ecuador',         NACIONALIDAD: 'Ecuador'},
-                {COD: 'paraguay',        NACIONALIDAD: 'Paraguay'},
-                {COD: 'peru',            NACIONALIDAD: 'Perú'},
-                {COD: 'uruguay',         NACIONALIDAD: 'Uruguay'},
-                {COD: 'venezuela',       NACIONALIDAD: 'Venezuela'},
+                {COD: 'bolivia',         NACIONALIDAD: 'Boliviana'},
+                {COD: 'brasil',          NACIONALIDAD: 'Brasileña'},
+                {COD: 'colombia',        NACIONALIDAD: 'Colombiana'},
+                {COD: 'ecuador',         NACIONALIDAD: 'Ecuatoriana'},
+                {COD: 'paraguay',        NACIONALIDAD: 'Paraguaya'},
+                {COD: 'peru',            NACIONALIDAD: 'Peruana'},
+                {COD: 'uruguay',         NACIONALIDAD: 'Uruguaya'},
+                {COD: 'venezuela',       NACIONALIDAD: 'Venezolana'},
                 {COD: '-',               NACIONALIDAD: '_______________'},
                 {COD: 'afganistán' ,NACIONALIDAD: 'Afganistán'},
                 {COD: 'albania' ,NACIONALIDAD: 'Albania'},

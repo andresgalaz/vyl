@@ -11,10 +11,12 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 
 	borrarFormulario: function() {
 		var me = this,
+			refs = me.getReferences();
 			vm = me.getViewModel(),
 			view = me.getView();
 		
 		view.resetForm();
+		view.setEtapaActual('ingresado');
 
 		vm.setData({
 			formularioId: 0,
@@ -22,8 +24,12 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 			valorPredio: 0,
 			valorReserva: 0,
 			valorContado: 0,
-			cuotas: 0
+			cuotas: 0,
+			interes: 0
 		});
+
+		refs.ctnFinanciamiento.setHidden(true);
+		refs.ctnFinanciamientoGastos.setHidden(true);
 	},
 
 	renderEstado: function(value, meta) {
@@ -45,7 +51,15 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
         meta.style = 'color:' + color + ';';
         
         return valor;
-    },
+	},
+	
+	salir: function() {
+		var me = this,
+			defaultToken = Ext.getApplication().getDefaultToken();
+
+		me.borrarFormulario();
+		me.redirectTo(defaultToken);
+	},
 	
 	onActivateConsulta: function() {
 	},
@@ -144,12 +158,20 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 	onCuotasChange: function(fld, event, eOpts) {
 		var me = this,
 			vm = me.getViewModel(),
-			cuotas = fld.getValue();
+			value = fld.getValue();
 		
-		vm.set('cuotas', cuotas);
+		vm.set('cuotas', value);
 	},
 
 	onFormularioCargar: function() {
+	},
+
+	onInteresChange: function(fld, event, eOpts) {
+		var me = this,
+			vm = me.getViewModel(),
+			value = fld.getValue();
+		
+		vm.set('interes', value);
 	},
 
 	onLoadStFormulariosIngresados: function(st, records, successful, operation, eOpts ) {
@@ -169,16 +191,22 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 
 		if (modalidadVenta == 'financiamiento') {
 			refs.ctnFinanciamiento.setHidden(false);
+			refs.ctnFinanciamientoGastos.setHidden(false);
 
 			arrFldsFinanciamiento.forEach(function(fld) {
-				fld.setObligatorio(true);
-			});
+				if (fld.setObligatorio) {
+					fld.setObligatorio(true);
+				}
+			}); 
 
 		} else {
 			refs.ctnFinanciamiento.setHidden(true);
+			refs.ctnFinanciamientoGastos.setHidden(true);
 
 			arrFldsFinanciamiento.forEach(function(fld) {
-				fld.setObligatorio(false);
+				if (fld.setObligatorio) {
+					fld.setObligatorio(false);
+				}
 			});
 		}
 	},
@@ -312,7 +340,15 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 				}
 
 				break;
-		
+			
+			case 'salir':
+				me.salir();
+				break;
+
+			case 'nuevo':
+				me.borrarFormulario();
+				break;
+
 			default:
 				break;
 		}
