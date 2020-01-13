@@ -1,0 +1,3 @@
+$call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
+$call.include('vyl/bsh/db/loteoClase.bsh')
+new Loteo(request, connectionHelper).nombres();

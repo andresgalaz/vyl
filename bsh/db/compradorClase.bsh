@@ -26,7 +26,12 @@ import util.Rut;
  * 
  * call.include('vyl/bsh/util/Rut.bsh')
  * call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
+ * call.include('vyl/bsh/db/compradorClase.bsh')
+ * // Actualiza los datos de la empresa desde eñ reuqest
  * new Comprador(request, connectionHelper).insUpd();
+ * // Obtiene un registro de empresa con parametros de request:
+ * //   prm_alias, prm_cRut, prm_pComprador
+ * new Comprador(request, connectionHelper).get();
  * 
  * @author agalaz
  *
@@ -170,7 +175,7 @@ public class Comprador {
         // - Request : prm_cRut
         // - Request : prm_pComprador
         String cAlias = u.getString( this.request, "prm_alias" );
-        String cRut = u.getString( this.request, "prm_cRut" );
+        String cRut = Rut.limpia( u.getString( this.request, "prm_cRut" ));
         Integer pComprador = u.getInt( this.request, "prm_pComprador" );
         return getByFilter( pComprador, cRut, cAlias );
     }

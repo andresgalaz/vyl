@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,6 +18,7 @@ import prg.util.cnv.ConvertBoolean;
 import prg.util.cnv.ConvertDate;
 import prg.util.cnv.ConvertException;
 import prg.util.cnv.ConvertJSON;
+import prg.util.cnv.ConvertList;
 import prg.util.cnv.ConvertMap;
 import prg.util.cnv.ConvertNumber;
 import prg.util.cnv.ConvertTimestamp;
@@ -301,6 +303,36 @@ public class Venta {
         mData.put( "HOST_LINK", u.getUrlLink( this.request ) + "/vyl" );
         return mData;
     }
+    
+    /**
+     * Lista todas las empresas. No espera parámetros
+     * 
+     * @return
+     * @throws FrameworkException
+     */
+    public List lista() throws FrameworkException {
+        String cSql = 
+                "SELECT DISTINCT " +
+                "       v.dCierre  as FECHA_VENTA     , v.cLoteo as LOTEO        ,\n" +
+                "       v.nParcela as PARCELA         , v.cRol              as ROL_PROPIEDAD,\n" + 
+                "       c.cNombre  as COMPRADOR_NOMBRE, c.cRut              as COMPRADOR_RUT,\n" +
+                "       et.CTITULO as WKF_ETAPA       , ev.CUSUARIOASIGNADO as WKF_USUARIO \n" + 
+                "FROM tVenta v \n" + 
+                "LEFT JOIN .tComprador          c  ON c.pComprador = v.fComprador \n" + 
+                "LEFT JOIN xformgen4.wkf_evento ev ON ev.PEVENTO   = v.fEvento AND ev.BACTIVA = '1' \n" + 
+                "LEFT JOIN xformgen4.wkf_etapa  et ON et.PETAPA    = ev.FETAPA \n" ; 
+        try {
+            PreparedStatement ps = this.cnxHlp.getConnection().prepareStatement( cSql );
+            ResultSet rs = ps.executeQuery();
+            List lis = ConvertList.fromResultSet( rs );
+            rs.close();
+            ps.close();
+            return lis;
+        } catch (SQLException e) {
+            throw new FrameworkException( "Al listar consulta de ventas", e );
+        }
+    }
+    
 
     /**
      * Inserta cada gasto en tGasto

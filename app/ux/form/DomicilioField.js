@@ -13,7 +13,8 @@ Ext.define('vyl.ux.form.DomicilioField', {
             direccion: '',
             barrio: '',
             lat: 0,
-            lng: 0
+            lng: 0,
+            numero: 0
         },
         obligatorio: false,
     },
@@ -36,6 +37,12 @@ Ext.define('vyl.ux.form.DomicilioField', {
                 input = Ext.getDom(me.getId() + '-inputEl');
                 
                 if (input) {
+                    if (!google) {
+                        console.error('No se cargo API Google');
+                        me.setReadOnly(true);
+                        return;
+                    }
+
                     areaCobertura = new google.maps.Circle({
                         center: new google.maps.LatLng(-33.4378439, -70.6504796), //Coordenadas Santiago de Chile
                         radius: 50000 //50km
@@ -118,8 +125,8 @@ Ext.define('vyl.ux.form.DomicilioField', {
                         georeferencia.address_components.forEach(function(cmp) {
                             if ((cmp.types[0] == 'political' || cmp.types[0] == 'locality') && (cmp.long_name != "Buenos Aires" || cmp.short_name != 'CABA')) {
                                 direccion['barrio'] = cmp.long_name ? cmp.long_name : cmp.short_name;
-                                return;
                             }
+                            return;
                         });
                         me.setDireccion(direccion);
                     }
@@ -211,6 +218,7 @@ Ext.define('vyl.ux.form.DomicilioField', {
                         if (cmp.types[0] == 'postal_code') {
                             value['cp'] = cmp.short_name ? cmp.short_name : cmp.long_name;
                         }
+                        return;
                     });
                 }
             }
@@ -223,19 +231,30 @@ Ext.define('vyl.ux.form.DomicilioField', {
                     addressCmp.forEach(function(cmp) {
                         if (cmp.types[0] == 'sublocality_level_1' || cmp.types[0] == 'locality') {
                             value['barrio'] = cmp.long_name ? me.fnSacaAcentos(cmp.long_name) : me.fnSacaAcentos(cmp.short_name);
-                            return;
                         }
+                        return;
                     });
 
                     if (!value.barrio) {
                         console.warn('[wkfDomicilioField] No se pudo determinar barrio', addressCmp);
-                    } 
-                    // else {
-                    //     if (DEBUG) console.log('[wkfDomicilioField] Barrio ' + value.barrio, addressCmp);
-                    // }
+                    }
                 }
             }
-            // if (DEBUG) console.log('[getValue]', value);
+
+            // Obtiene numeracion
+            if (objDireccion.numero) {
+                value['numero'] = objDireccion.numero;
+
+            } else {
+                addressCmp.forEach(function(cmp) {
+                    if (cmp.types[0] == 'street_number') {
+                        value['numero'] = cmp.long_name ? cmp.long_name : cmp.short_name;
+                    }
+                    return;
+                });
+            }
+
+            console.log('[getValue]', value);
             return value;
         }
     },
@@ -274,7 +293,10 @@ Ext.define('vyl.ux.form.DomicilioField', {
             ubicacion.address_components.forEach(function(cmp) {
                 if (cmp.types[0] == 'sublocality_level_1' || cmp.types[0] == 'locality') {
                     direccion['barrio'] = cmp.long_name ? cmp.long_name : cmp.short_name;
-                    return;
+                }
+
+                if (cmp.types[0] == 'street_number') {
+                    direccion['numero'] = cmp.long_name ? cmp.long_name : cmp.short_name;
                 }
             });
 

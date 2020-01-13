@@ -4,6 +4,15 @@
  DROP TABLE IF EXISTS tEmpresa;
  DROP TABLE IF EXISTS tComprador;
 
+﻿CREATE TABLE `tLoteo` (
+  `pLoteo` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `cNombre` varchar(20) NOT NULL,
+  `cDescripción` varchar(120) DEFAULT NULL,
+  `cDeslinde` text,
+  PRIMARY KEY (`pLoteo`),
+  UNIQUE KEY `iu1_loteo_nombre` (`cNombre`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 CREATE TABLE tComprador (
   pComprador int(11) unsigned NOT NULL auto_increment,
   cNombre varchar(45) NOT NULL,

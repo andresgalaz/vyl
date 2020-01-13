@@ -109,7 +109,7 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
             ],
 
             proxy: {
-                url: '../do/vyl/bsh/lisVenta.bsh',
+                url: '',
                 type : 'ajax',
                 reader : {
                     type : 'json',

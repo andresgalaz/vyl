@@ -9,7 +9,115 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 		me.cxnCtrl = Ext.getApplication().getController('Conexion');
 	},
 
-	borrarFormulario: function() {
+	formularioGrabar: function(accion, borrarFormulario) {
+		var me = this,
+			refs = me.getReferences(),
+			vm = me.getViewModel(),
+			formularioId = vm.get('formularioId'),
+			view = me.getView(),
+			datos = {}
+			jsonData = {};
+		
+		datos = view.getValues();
+
+		// Modifica nacionalidad
+		if (datos.VYL_COMPRADOR_SEXO && datos.VYL_COMPRADOR_NACIONALIDAD) {
+			var nacSelect = refs.cbNacionalidad.getSelection();
+
+			if (datos.VYL_COMPRADOR_SEXO == 'femenino') {
+				datos['VYL_COMPRADOR_NACIONALIDAD'] = nacSelect.get('COD_F') ? nacSelect.get('COD_F') : nacSelect.get('COD');
+			} else {
+				datos['VYL_COMPRADOR_NACIONALIDAD'] = nacSelect.get('COD_M') ? nacSelect.get('COD_M') : nacSelect.get('COD') ;
+			}
+		}
+
+		jsonData['DATOS'] = {};
+		jsonData.DATOS['formIngreso'] = datos;
+		jsonData.DATOS['usuario'] = me.cxnCtrl.getUsuario();
+
+		if (formularioId == 0) {
+			// Solicitud nueva
+			if (view.getEvento() == 0) {
+				// Crea el evento
+				view.creaEvento(function callback() {
+					// Ejecuta la accion
+					jsonData['TOKEN'] = {};
+					jsonData.TOKEN['url'] = 'ventas-cierre/' + view.getEvento();
+					
+					Ext.Ajax.request({
+						url : '../do/wkfAccionEvento',
+						method : 'POST',
+						params : {
+							prm_dataSource : 'vylDS', 
+							prm_nEvento: view.getEvento(),
+							prm_cEtapaActual: view.getEtapaActual(),
+							prm_cAccion: accion,
+							json_data: JSON.stringify(jsonData)
+						},
+			
+						success : function(response, opts) {
+							var resp = Ext.decode(response.responseText);
+							if (resp.success) {
+								Ext.Msg.alert(me.titulo, 'Formulario grabado con éxito.');
+
+								if (borrarFormulario) {
+									me.formularioReiniciar();
+								}
+
+							} else {
+								console.error('[formularioGrabar] Error inesperado', resp);
+								
+								Ext.Msg.show({
+									title: me.titulo,
+									message: resp.message,
+									buttons: Ext.Msg.OK,
+									icon: Ext.Msg.ERROR
+								});
+							} 
+						},
+
+						failure : function(response, opts) {
+							var resp = Ext.decode(response.responseText);
+							console.error('[ejecutarAcciones] Falla del lado del servidor', resp);
+							Ext.Msg.show({
+								title: me.titulo,
+								message: 'Falla del lado del servidor',
+								buttons: Ext.Msg.OK,
+								icon: Ext.Msg.ERROR
+							});
+						}
+					});
+					
+				}, me.cxnCtrl.getUsuarioId(), jsonData);
+
+			} else {
+				// Error evento <> 0, solicitud = 0
+				console.error('[formularioGrabar] Error inesperado: WkfEvento '|| view.getEvento()||' solicitud = 0');
+				Ext.Msg.show({
+					title: me.titulo,
+					message: 'Error inesperado: Se reiniciará el formulario',
+					buttons: Ext.Msg.OK,
+					icon: Ext.Msg.ERROR
+				});
+
+				me.formularioReiniciar();
+			}
+		} else {
+			// Solicitud creada
+			jsonData['TOKEN'] = {};
+			jsonData.TOKEN['url'] = 'ventas-cierre/' + view.getEvento();
+
+			btn.ejecutarAcciones(jsonData, view.getEvento(), view.getEtapaActual(), function(dataOut) {
+				Ext.Msg.alert(me.titulo, 'Formulario grabado con éxito.');
+			});
+		}
+	},
+
+	formularioLeer: function(eventoId) {
+
+	},
+
+	formularioReiniciar: function() {
 		var me = this,
 			refs = me.getReferences();
 			vm = me.getViewModel(),
@@ -57,11 +165,16 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 		var me = this,
 			defaultToken = Ext.getApplication().getDefaultToken();
 
-		me.borrarFormulario();
+		me.formularioReiniciar();
 		me.redirectTo(defaultToken);
 	},
 	
 	onActivateConsulta: function() {
+		var me = this,
+			vm = me.getViewModel(),
+			stFormulariosIngresados = vm.getStore('stFormulariosIngresados');
+		
+		stFormulariosIngresados.load();
 	},
 
 	onClienteBuscar: function(fld, event, eOpts) {
@@ -164,6 +277,9 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 	},
 
 	onFormularioCargar: function() {
+		var me = this;
+
+		// me.formularioLeer();
 	},
 
 	onInteresChange: function(fld, event, eOpts) {
@@ -187,11 +303,17 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 			refs = me.getReferences(),
 			view = me.getView(),
 			modalidadVenta = record.get('COD'),
-			arrFldsFinanciamiento = view.query('[name^="VYL_FINANCIAMIENTO"]');
+			arrFldsFinanciamiento = view.query('[name^="VYL_FINANCIAMIENTO"]'),
+			btnContadoFinalizar = view.query('[name="finalizar"]')[0],
+			btnLeasing = view.query('[name^="leasing"]')[0];
 
 		if (modalidadVenta == 'financiamiento') {
+			// Leasing
 			refs.ctnFinanciamiento.setHidden(false);
 			refs.ctnFinanciamientoGastos.setHidden(false);
+
+			btnLeasing.setHidden(false);
+			btnContadoFinalizar.setHidden(true);
 
 			arrFldsFinanciamiento.forEach(function(fld) {
 				if (fld.setObligatorio) {
@@ -200,8 +322,12 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 			}); 
 
 		} else {
+			// Contado
 			refs.ctnFinanciamiento.setHidden(true);
 			refs.ctnFinanciamientoGastos.setHidden(true);
+
+			btnLeasing.setHidden(true);
+			btnContadoFinalizar.setHidden(false);
 
 			arrFldsFinanciamiento.forEach(function(fld) {
 				if (fld.setObligatorio) {
@@ -246,88 +372,21 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 	onWkfAccion: function(btn, event, eOpts) {
 		var me = this,
 			accion = btn.name,
-			vm = me.getViewModel(),
-			formularioId = vm.get('formularioId'),
-			view = me.getView(),
-			datos = {}
-			jsonData = {};
+			view = me.getView();
 		
-		datos = view.getValues();
-
-		jsonData['DATOS'] = {};
-		jsonData.DATOS['formIngreso'] = datos;
-		jsonData.DATOS['usuario'] = me.cxnCtrl.getUsuario();
-
 		switch (accion) {
+			case 'cancelar': 
+				// TODO
+				break;
+				å
+			case 'grabar':
+				me.formularioGrabar(accion, true);
+				break;
+
 			case 'finalizar':
+			case 'leasing':
 				if (view.isValid()) {
-					if (formularioId == 0) {
-						// Solicitud nueva
-						if (view.getEvento() == 0) {
-							// Crea el evento
-							view.creaEvento(function callback() {
-								// Ejecuta la accion
-								jsonData['TOKEN'] = {};
-								jsonData.TOKEN['url'] = 'ventas-cierre/' + view.getEvento();
-								
-								Ext.Ajax.request({
-                                    url : '../do/wkfAccionEvento',
-                                    method : 'POST',
-                                    params : {
-                                        prm_dataSource : 'vylDS', 
-                                        prm_nEvento: view.getEvento(),
-                                        prm_cEtapaActual: view.getEtapaActual(),
-                                        prm_cAccion: accion,
-                                        json_data: JSON.stringify(jsonData)
-                                    },
-                        
-                                    success : function(response, opts) {
-                                        var resp = Ext.decode(response.responseText);
-                                        if (resp.success) {
-											Ext.Msg.alert(me.titulo, 'Formulario grabado con éxito.');
-
-											me.borrarFormulario();
-
-                                        } else {
-                                            console.error('[onWkfAccion] Error inesperado', resp);
-                                            
-                                            Ext.Msg.show({
-                                                title: me.titulo,
-                                                message: resp.message,
-                                                buttons: Ext.Msg.OK,
-                                                icon: Ext.Msg.ERROR
-                                            });
-                                        } 
-                                    },
-
-                                    failure : function(response, opts) {
-										var resp = Ext.decode(response.responseText);
-                                        console.error('[ejecutarAcciones] Falla del lado del servidor', resp);
-                                        Ext.Msg.show({
-                                            title: me.titulo,
-                                            message: 'Falla del lado del servidor',
-                                            buttons: Ext.Msg.OK,
-                                            icon: Ext.Msg.ERROR
-                                        });
-                                    }
-								});
-								
-							}, me.cxnCtrl.getUsuarioId(), jsonData);
-
-						} else {
-							// Error evento <> 0, solicitud =0
-						}
-					} else {
-						// Solicitud creada
-						jsonData['TOKEN'] = {};
-						jsonData.TOKEN['url'] = 'ventas-cierre/' + view.getEvento();
-
-						btn.ejecutarAcciones(jsonData, view.getEvento(), view.getEtapaActual(), function(dataOut) {
-                            Ext.Msg.alert(me.titulo, 'Formulario grabado con éxito.');
-
-							me.borrarFormulario()
-                        });
-					}
+					me.formularioGrabar(accion, true);
 
 				} else {
 					// Campos invalidos
@@ -346,7 +405,7 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 				break;
 
 			case 'nuevo':
-				me.borrarFormulario();
+				me.formularioReiniciar();
 				break;
 
 			default:

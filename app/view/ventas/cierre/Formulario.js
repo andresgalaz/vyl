@@ -152,12 +152,25 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                             width: 200
                                         },
                                         {
-                                            fieldLabel: 'Apellido y Nombre',
+                                            fieldLabel: 'Nombre y Apellido',
                                             name: 'VYL_COMPRADOR_NOMBRE',
                                             flex: 2
                                         },
                                         {
                                             xtype: 'combobox',
+                                            fieldLabel: 'Sexo',
+                                            name: 'VYL_COMPRADOR_SEXO',
+                                            editable: false,
+                                            displayField: 'SEXO',
+                                            valueField: 'COD',
+                                            bind: {
+                                                store: '{stSexo}'
+                                            },
+                                            width: 200
+                                        },
+                                        {
+                                            xtype: 'combobox',
+                                            reference: 'cbNacionalidad',
                                             fieldLabel: 'Nacionalidad',
                                             name: 'VYL_COMPRADOR_NACIONALIDAD',
                                             allowBlank: true,
@@ -214,6 +227,20 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                                     margin: '0 0 5 6'
                                                 }
                                             ]
+                                        },
+                                        {
+                                            xtype: 'numberfield',
+                                            name: 'VYL_COMPRADOR_DOMICILIO_PISO',
+                                            fieldLabel: 'Piso',
+                                            allowDecimals: false,
+                                            decimalPrecision: 0,
+                                            minValue: 0,
+                                            width: 80
+                                        },
+                                        {
+                                            name: 'VYL_COMPRADOR_DOMICILIO_DTO',
+                                            fieldLabel: 'Dpto.',
+                                            width: 80
                                         }
                                     ]
                                 },
@@ -443,7 +470,8 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                             hidden: true,
                             defaultType: 'uxnumberfield',
                             defaults: {
-                                allowBlank: false,
+                                allowBlank: true,
+                                mouseWheelEnabled: false,
                                 hideTrigger: true,
                                 allowDecimals: false,
                                 decimalPrecision: 0,
@@ -466,7 +494,8 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                             margin: '0 0 5 0',
                             defaultType: 'numberfield',
                             defaults: {
-                                allowBlank: false,
+                                allowBlank: true,
+                                mouseWheelEnabled: false,
                                 hideTrigger: true,
                                 allowDecimals: false,
                                 submitLocaleSeparator: false,
@@ -492,7 +521,7 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                             margin: '0 0 5 0',
                             defaultType: 'numberfield',
                             defaults: {
-                                allowBlank: false,
+                                allowBlank: true,
                                 hideTrigger: true,
                                 allowDecimals: false,
                                 submitLocaleSeparator: false,

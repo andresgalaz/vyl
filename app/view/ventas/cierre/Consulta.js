@@ -43,34 +43,33 @@ Ext.define('vyl.view.ventas.cierre.Consulta', {
     columns: [
         {
             text: "Fecha Vta.",
-            dataIndex: '',
+            dataIndex: 'FECHA_VENTA',
             width: 130,
             formatter: 'date("d/m/Y")',
         },
         {
             text: "Loteo",
-            dataIndex: '',
+            dataIndex: 'LOTEO',
             flex: 1
         },
         {
             text: "Parcela",
-            dataIndex: '',
+            dataIndex: 'PARCELA',
             width: 130
         },
         {
             text: "Rol",
-            dataIndex: '',
+            dataIndex: 'ROL_PROPIEDAD',
             width: 130
         },
         {
             text: "Comprador",
-            dataIndex: '',
+            dataIndex: 'COMPRADOR_NOMBRE',
             flex: 2
         },
         {
             text: "Estado",
-            dataIndex: '',
-            renderer: 'renderEstado',
+            dataIndex: 'WKF_ETAPA',
             width: 130
         },
         {

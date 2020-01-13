@@ -18,13 +18,18 @@ import util.JsonDataUtil;
 
 /*
  * Denominar BSH:
- * vyl/bsh/db/ventaClase.bsh
+ * vyl/bsh/db/empresaClase.bsh
  * 
  * BSH de llamada para lista de empresas:
  * 
  * call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
+ * call.include('vyl/bsh/db/empresaClase.bsh')
+ * // Lista todas las empresas
  * new Empresa(request, connectionHelper).lista();
- * 
+ * // Obtiene la empresa por usando prm_pEmpresa y se puede indicar
+ * // prm_alias como prefijo de los campos de salida 
+ * new Empresa(request, connectionHelper).get();
+ *
  * @author agalaz
  *
  */
@@ -56,7 +61,6 @@ public class Empresa {
             ps.close();
             return lis;
         } catch (SQLException e) {
-            e.printStackTrace();
             throw new FrameworkException( "Al listar tEmpresa", e );
 
         }
