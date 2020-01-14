@@ -1,0 +1,4 @@
+$call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
+$call.include('vyl/bsh/db/loteoClase.bsh')
+// Actualiza datos de Loteos
+new Loteo(request, connectionHelper).insUpd();

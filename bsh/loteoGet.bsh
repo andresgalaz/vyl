@@ -1,0 +1,4 @@
+$call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
+$call.include('vyl/bsh/db/loteoClase.bsh')
+// Trae los datos del loteo por prm_pLoteo o prm_cNombre
+new Loteo(request, connectionHelper).get();
