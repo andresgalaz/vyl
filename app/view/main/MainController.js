@@ -2,10 +2,10 @@ Ext.define('vyl.view.main.MainController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.main',
 
-    listen : {
-        controller : {
-            '#' : {
-                unmatchedroute : 'onNoRoute'
+    listen: {
+        controller: {
+            '#': {
+                unmatchedroute: 'onNoRoute'
             }
         }
     },
@@ -25,7 +25,7 @@ Ext.define('vyl.view.main.MainController', {
     lastView: null,
     activeNode: null,
 
-    init: function() {
+    init: function () {
         var me = this;
 
         console.log('[init]');
@@ -33,22 +33,19 @@ Ext.define('vyl.view.main.MainController', {
     },
 
     beforeRoute: function (node, action) {
-        // if (DEBUG) console.log('[MainController] beforeRoute id:' + id, node);
         // Tipicamente controla el acceso del usuario a la ruta
         var me = this,
             vm = me.getViewModel(),
             refs = me.getReferences(),
             stNavigationTree = vm.getStore('stNavigationTree'),
             token, newToken;
-// AGALAZ DEBUG            
-console.log('beforeRoute',node,action);    
         Ext.Ajax.request({
-            url : '../do/estadoSesion',
-            method : 'POST',
- extraParams: {
-     st: stNavigationTree
-  },
-            success : function(response, opts) {
+            url: '../do/estadoSesion',
+            method: 'POST',
+            extraParams: {
+                st: stNavigationTree
+            },
+            success: function (response, opts) {
                 var rta = Ext.decode(response.responseText);
                 if (!rta.bConectado || rta.cUsuario == 'automata') {
                     // Si no esta conectado => fuerza pantalla login
@@ -56,7 +53,7 @@ console.log('beforeRoute',node,action);
                         refs.wndLogin.show();
                     } else {
                         var pnLogin = refs.wndLogin ? refs.wndLogin : Ext.create({
-                            xtype : 'login',
+                            xtype: 'login',
                             reference: 'wndLogin',
                             listeners: {
                                 close: 'onLoginOk',
@@ -66,7 +63,7 @@ console.log('beforeRoute',node,action);
                 } else {
                     // Control de acceso al modulo destino
                     newToken = action.getUrlParams().input;
-                    var node = opts.extraParams.st.findNode('viewType',newToken);
+                    var node = opts.extraParams.st.findNode('viewType', newToken);
 
                     if (node && node.data.cTpAcceso == 'DENEGAR') {
                         Ext.Msg.show({
@@ -81,7 +78,7 @@ console.log('beforeRoute',node,action);
                     action.resume();
                 }
             },
-            failure : function(response, opts) {
+            failure: function (response, opts) {
                 console.error('Falla del lado del servidor, código respuesta: ' + response.responseText);
                 Ext.Msg.show({
                     title: me.title,
@@ -97,10 +94,10 @@ console.log('beforeRoute',node,action);
         action.resume();
     },
 
-    doLogin: function() {
+    doLogin: function () {
         var me = this,
             wndLogin = Ext.create({
-                xtype : 'login',
+                xtype: 'login',
                 reference: 'wndLogin',
                 listeners: {
                     close: 'onLoginOk',
@@ -111,23 +108,23 @@ console.log('beforeRoute',node,action);
     },
 
 
-    filterNodes: function() {
+    filterNodes: function () {
         var me = this,
             store = me.getViewModel().getStore('stNavigationTree'),
             nodeMsj = store.findNode('viewType', 'pe-mensajes-inbox');
 
         if (nodeMsj) {
-            store.filterBy(function(rec) {
+            store.filterBy(function (rec) {
                 return rec != nodeMsj;
             });
         }
     },
 
-    getActiveNode: function() {
+    getActiveNode: function () {
         return this.activeNode;
     },
 
-    setCurrentView: function(hashTag, callback) {
+    setCurrentView: function (hashTag, callback) {
         hashTag = (hashTag || '').toLowerCase();
 
         var me = this,
@@ -137,7 +134,7 @@ console.log('beforeRoute',node,action);
             navigationList = refs.navigationTreeList,
             store = navigationList.getStore(),
             node = store.findNode('routeId', hashTag) ||
-                   store.findNode('viewType', hashTag),
+                store.findNode('viewType', hashTag),
             view = (node && node.get('viewType')), // || 'page404',
             lastView = me.lastView,
             existingItem = mainCard.child('component[routeId=' + hashTag + ']'),
@@ -155,7 +152,7 @@ console.log('beforeRoute',node,action);
             if (!view) {
                 // A veces sucede que no llega a levantar el viewType al iniciar el sistema
                 // Vuelve a llamar onRoteChange
-                
+
                 console.warn('[setCurrentView] No existe view, vuelve a cargar onRouteChange', node);
                 this.onRouteChange(hashTag);
                 return;
@@ -172,10 +169,10 @@ console.log('beforeRoute',node,action);
         if (!newView || !newView.isWindow) {
             // !newView means we have an existing view, but if the newView isWindow
             // we don't add it to the card layout.
-            
+
             // Asigno el node aca para que el listener activate pueda tomar el nodo activo y asi determinar los permisos sobre el 
             me.activeNode = node;
-            
+
             if (existingItem) {
                 // We don't have a newView, so activate the existing view.
                 if (existingItem !== lastView) {
@@ -206,14 +203,14 @@ console.log('beforeRoute',node,action);
         }
     },
 
-    onLoadStNavigationTree: function(tree, records, successful, operation, node, eOpts) {
+    onLoadStNavigationTree: function (tree, records, successful, operation, node, eOpts) {
         // Filtra nodo mensajes que debe existir en el treeStore pero no mostrarse
         if (successful) {
             this.filterNodes();
         }
     },
 
-    onMensajes: function() {
+    onMensajes: function () {
         // this.redirectTo('pe-mensajes-inbox');
     },
 
@@ -262,17 +259,17 @@ console.log('beforeRoute',node,action);
 
                 me.filterNodes();
             }
-            
+
             navigationList.canMeasure = false;
 
             // Start this layout first since it does not require a layout
-            refs.haLogo.animate({dynamic: true, to: {width: new_width}});
+            refs.haLogo.animate({ dynamic: true, to: { width: new_width } });
 
             // Directly adjust the width config and then run the main wrap container layout
             // as the root layout (it and its chidren). This will cause the adjusted size to
             // be flushed to the element and animate to that new size.
             navigationList.width = new_width;
-            wrapContainer.updateLayout({isRoot: true});
+            wrapContainer.updateLayout({ isRoot: true });
             navigationList.el.addCls('nav-tree-animating');
 
             // We need to switch to micro mode on the navlist *after* the animation (this
@@ -294,7 +291,7 @@ console.log('beforeRoute',node,action);
         }
     },
 
-    onLoginOk : function(pnl, opts) {
+    onLoginOk: function (pnl, opts) {
         var me = this,
             refs = me.getReferences(),
             stNavigationTree = refs.navigationTreeList.getStore(),
@@ -309,68 +306,62 @@ console.log('beforeRoute',node,action);
             stNavigationTree.getRoot().removeAll();
         }
 
-        // AGALAZ DEBUG
-        console.log('onLoginOk',cxnCtrl.getSistemaId());
 
         stNavigationTree.load({
-            params : {
-                prm_cCodArbol : cxnCtrl.getSistemaId()
-                // Se hizo el cambio en el Framework para soportar este tipo de llamada
-                // prm_sistema: cxnCtrl.getSistemaId(),
-                // prm_usuario: cxnCtrl.getUsuarioId(),
-                // prm_dataSource: cxnCtrl.getDefaultDS()
+            params: {
+                prm_cCodArbol: cxnCtrl.getSistemaId()
             },
-            callback: function(records, operation, success) {
-                var app = Ext.getApplication(),
-                    defaultToken = app.getDefaultToken();
+            callback: function (records, operation, success) {
+                // var app = Ext.getApplication(),
+                //     defaultToken = app.getDefaultToken();
 
-                // IMPORTANTE: Modificar aca si se quiere usar otro view predeterminado segun perfil usuario
-                // me.setCurrentView(defaultToken);
+                // // IMPORTANTE: Modificar aca si se quiere usar otro view predeterminado segun perfil usuario
+                // // me.setCurrentView(defaultToken);
 
-                // Modifica el defaultToken en caso que el perfil requiera otro que el dashboard de tareas
-                Ext.Ajax.request({
-                    url : '../do/vyl/bsh/main/menuPerfiles.bsh',
-                    method : 'POST',
-                    params : {
-                        prm_dataSource : cxnCtrl.getDefaultDS(), 
-                    },
-                    success : function(response, opts) {
-                        var obj = Ext.decode(response.responseText);
-                        if (obj.success) {
-                            var data = obj.response,
-                                importancia = 0;
-                            
-                            data.forEach(function(pf) {
-                                switch (pf) {
-                                    // Perfiles con el mismo nivel de importancia son incompatibles
-                                }
-                            });
+                // // Modifica el defaultToken en caso que el perfil requiera otro que el dashboard de tareas
+                // Ext.Ajax.request({
+                //     url: '../do/vyl/bsh/main/menuPerfiles.bsh',
+                //     method: 'POST',
+                //     params: {
+                //         prm_dataSource: cxnCtrl.getDefaultDS(),
+                //     },
+                //     success: function (response, opts) {
+                //         var obj = Ext.decode(response.responseText);
+                //         if (obj.success) {
+                //             var data = obj.response,
+                //                 importancia = 0;
 
-                            if (app.getDefaultToken()) {
-                                app.redirectTo(app.getDefaultToken());
-                            }
-                        }
-                    }
-                });
+                //             data.forEach(function (pf) {
+                //                 switch (pf) {
+                //                     // Perfiles con el mismo nivel de importancia son incompatibles
+                //                 }
+                //             });
+
+                //             if (app.getDefaultToken()) {
+                //                 app.redirectTo(app.getDefaultToken());
+                //             }
+                //         }
+                //     }
+                // });
             }
         });
     },
 
-    onLogout: function() {
+    onLogout: function () {
         var me = this,
             refs = me.getReferences();
 
         Ext.Ajax.request({
-            url : '../do/salir',
-            method : 'POST',
-            success : function(response, opts) {
+            url: '../do/salir',
+            method: 'POST',
+            success: function (response, opts) {
                 if (response.status == 200) {
-                    console.log('[onLogout] references',refs);
+                    console.log('[onLogout] references', refs);
                     if (refs.wndLogin) {
                         refs.wndLogin.show();
                     } else {
                         var pnLogin = Ext.create({
-                            xtype : 'login',
+                            xtype: 'login',
                             reference: 'wndLogin',
                             listeners: {
                                 close: 'onLoginOk',
@@ -380,13 +371,13 @@ console.log('beforeRoute',node,action);
                 } else
                     console.error(response.responseText);
             },
-            failure : function(response, opts) {
+            failure: function (response, opts) {
                 console.error('Falla del lado del servidor, código respuesta: ' + response.status);
             }
         });
     },
 
-    onMainViewBeforeRender: function() {
+    onMainViewBeforeRender: function () {
         var me = this,
             refs = me.getReferences(),
             view = me.getView(),
@@ -395,58 +386,51 @@ console.log('beforeRoute',node,action);
 
     },
 
-    onNoRoute: function(node, evento_id) {
+    onNoRoute: function (node, evento_id) {
         console.error('No existe el nodo', node);
     },
-    
-    onRouteChange: function(node, evento_id) {
-    // IMPORTANTE: El parametro evento_id corresponde a la PK de wkf_evento que la vista espera para poder 
-    // cargar datos. Dicha vista debe tener el listener 'cargadatos' direccionado a una funcion u otro evento.
-    // Ejemplo this.redirectTo('pe-ingreso-solicitud/1234'); carga la vista pe-ingreso-solicitud cuyo wkf_evento_id=1234
+
+    onRouteChange: function (node, evento_id) {
+        // IMPORTANTE: El parametro evento_id corresponde a la PK de wkf_evento que la vista espera para poder 
+        // cargar datos. Dicha vista debe tener el listener 'cargadatos' direccionado a una funcion u otro evento.
+        // Ejemplo this.redirectTo('pe-ingreso-solicitud/1234'); carga la vista pe-ingreso-solicitud cuyo wkf_evento_id=1234
 
         var me = this,
             view = me.getView(),
             cxnCtrl = Ext.getApplication().getController('Conexion'),
             stNavigationTree = me.getViewModel().getStore('stNavigationTree'),
             activeView;
-        
+
         view.mask('Cargando Sistema');
 
         if (stNavigationTree.getCount() == 0) {
             // Primera carga del sistema requiere sincronismo con el store del mainTree
             // Fuerza espera 3s para volver a intentar
-            setTimeout(function() {
+            setTimeout(function () {
                 if (stNavigationTree.getCount() == 0) {
 
-                    // AGALAZ DEBUG
-                    console.log('onRouteChange', node, evento_id);
-
                     stNavigationTree.load({
-                        params : {
-                			prm_cCodArbol : cxnCtrl.getSistemaId()
-                            // Se hizo el cambio en el Framework para soportar este tipo de llamada
-                			// prm_sistema: cxnCtrl.getSistemaId(),
-                			// prm_usuario: cxnCtrl.getUsuarioId(),
-                			// prm_dataSource: cxnCtrl.getDefaultDS()
+                        params: {
+                            prm_cCodArbol: cxnCtrl.getSistemaId()
                         },
-                        callback: function(records, operation, success) {
+                        callback: function (records, operation, success) {
                             if (success && records.length > 0) {
-    
-                                me.setCurrentView(node, function() {
+
+                                me.setCurrentView(node, function () {
                                     // Funcion callback que carga datos en la vista
                                     if (id) {
                                         activeView = me.lastView;
                                         activeView.fireEvent('cargadatos', evento_id);
                                     }
                                     view.unmask();
-                                }); 
+                                });
                             } else {
                                 Ext.Msg.show({
                                     title: me.title,
                                     message: 'El usuario logeado no tiene permisos para utilizar este sistema',
                                     buttons: Ext.Msg.OK,
                                     icon: Ext.Msg.ERROR,
-                                    fn: function(btn) {
+                                    fn: function (btn) {
                                         if (btn === 'ok') {
                                             view.unmask();
                                             me.onLogout();
@@ -457,30 +441,29 @@ console.log('beforeRoute',node,action);
                         }
                     });
                 } else {
-                    me.setCurrentView(node, function() {
+                    me.setCurrentView(node, function () {
                         // Funcion callback que carga datos en la vista
                         if (id) {
                             activeView = me.lastView;
                             activeView.fireEvent('cargadatos', evento_id);
                         }
                         view.unmask();
-                    }); 
+                    });
                 }
             }, 2000);
         } else {
-            me.setCurrentView(node, function() {
+            me.setCurrentView(node, function () {
                 // Funcion callback que carga datos en la vista
                 if (id) {
                     activeView = me.lastView;
                     activeView.fireEvent('cargadatos', evento_id);
                 }
                 view.unmask();
-            }); 
+            });
         }
     },
 
-    getHash: function() {
-        // if (DEBUG) console.log('[Main] getRoutes', this.routes);
+    getHash: function () {
         return window.location.hash;
     }
 });

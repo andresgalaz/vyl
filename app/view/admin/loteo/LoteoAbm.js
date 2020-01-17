@@ -1,7 +1,6 @@
-Ext.define('vyl.view.administracion.LoteoAbm', {
+Ext.define('vyl.view.admin.loteo.LoteoAbm', {
     extend: 'Ext.form.Panel',
     xtype: 'abmloteo',
-    // url: '../do/jsonCall',
     frame: false,
     scrollable: true,
     bodyPadding: 15,
@@ -32,22 +31,6 @@ Ext.define('vyl.view.administracion.LoteoAbm', {
             ui: 'wkf-btn-ok',
             name: 'grabar',
             handler: 'onAccionAbm'
-        }, {
-            text: 'Desactivar',
-            reference: 'btnBaja',
-            hidden: true,
-            iconCls: 'x-fa fa-arrow-circle-down',
-            ui: 'wkf-btn-no-ok',
-            name: 'desactivar',
-            handler: 'onAccionAbm'
-        }, {
-            text: 'Activar',
-            reference: 'btnActivar',
-            hidden: true,
-            iconCls: 'x-fa fa-arrow-circle-up',
-            ui: 'wkf-btn-ok',
-            name: 'activar',
-            handler: 'onAccionAbm'
         }]
     },
 
@@ -69,14 +52,11 @@ Ext.define('vyl.view.administracion.LoteoAbm', {
             items: [{
                 xtype: 'hidden',
                 reference: 'idRegistro',
-                name: 'LOTEO_PLOTEO',
+                name: 'LOTEO_ID',
                 value: 0
             }, {
-                xtype: 'hidden',
-                name: 'LOTEO_CPASSWORD'
-            }, {
                 xtype: 'fieldset',
-                name: 'datosPersonales',
+                name: 'datosPpal',
                 title: 'Datos Principales',
                 layout: { type: 'vbox', align: 'stretch' },
                 items: [{
@@ -85,16 +65,16 @@ Ext.define('vyl.view.administracion.LoteoAbm', {
                     margin: '0 0 5 0',
                     defaultType: 'textfield',
                     items: [{
-                        fieldLabel: 'Nombre y Apellido',
-                        name: 'LOTEO_CNOMBRE',
+                        fieldLabel: 'Nombre',
+                        name: 'LOTEO_NOMBRE',
                         allowBlank: false,
-                        maxLength: 80,
-                        flex: 2
-                    }, {
-                        fieldLabel: 'Loteo',
-                        name: 'LOTEO_CLOTEO',
                         maxLength: 20,
                         flex: 1
+                    }, {
+                        fieldLabel: 'Descripción',
+                        name: 'LOTEO_DESCRIPCION',
+                        maxLength: 120,
+                        flex: 4
                     }]
                 }, {
                     xtype: 'container',
@@ -102,60 +82,13 @@ Ext.define('vyl.view.administracion.LoteoAbm', {
                     margin: '0 0 5 0',
                     defaultType: 'textfield',
                     items: [{
-                        fieldLabel: 'Email',
-                        name: 'LOTEO_CEMAIL',
-                        vtype: 'email',
-                        allowBlank: false,
-                        maxLength: 80,
-                        flex: 2
-                    }, {
-                        xtype: 'combobox',
-                        name: 'LOTEO_FGRUPO',
-                        fieldLabel: 'Cargo',
-                        displayField: 'DESCRIPCION',
-                        valueField: 'COD',
-                        editable: false,
-                        allowBlank: false,
-                        bind: { store: '{stCargos}' },
-                        flex: 1
-                    }]
-                }]
-            }, {
-                xtype: 'fieldset',
-                title: 'Accesos',
-                layout: { type: 'vbox', align: 'stretch' },
-                items: [{
-                    xtype: 'tagfield',
-                    fieldLabel: 'Perfiles',
-                    name: 'LOTEO_ACCESOS',
-                    bind: { store: '{stPerfiles}' },
-                    emptyText: 'Seleccione al menos un perfil...',
-                    displayField: 'DESCRIPCION',
-                    valueField: 'COD',
-                    filterPickList: true,
-                    queryMode: 'local',
-                    publishes: 'value',
-                    allowBlank: false,
-                    flex: 1
-                }, {
-                    xtype: 'container',
-                    layout: 'hbox',
-                    margin: '0 0 5 0',
-                    defaultType: 'textfield',
-                    items: [{
-                        xtype: 'checkbox',
-                        reference: 'chCambioPassword',
-                        boxLabel: '<b>Solicitar cambio password</b>',
-                        name: 'LOTEO_BPASSWORDCADUCA',
-                        inputValue: '1',
-                        margin: '25 0 0 0',
-                        width: 200
-                    }, {
-                        fieldLabel: 'Password Reinicio',
-                        reference: 'txPasswordReinicio',
-                        submitValue: false,
-                        bind: { visible: '{chCambioPassword.checked}' },
-                        flex: 1
+                        fieldLabel: 'Deslinde Escritura',
+                        xtype: 'textarea',
+                        name: 'LOTEO_DESLINDE',
+                        allowBlank: true,
+                        anchor: '100%',
+                        grow: true,
+                        flex: 4
                     }]
                 }]
             }]

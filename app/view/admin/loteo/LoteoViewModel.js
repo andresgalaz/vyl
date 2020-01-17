@@ -1,4 +1,4 @@
-Ext.define('vyl.view.administracion.LoteoViewModel', {
+Ext.define('vyl.view.admin.loteo.LoteoViewModel', {
     extend: 'Ext.app.ViewModel',
     alias: 'viewmodel.loteo',
 
@@ -27,9 +27,25 @@ Ext.define('vyl.view.administracion.LoteoViewModel', {
         },
 
         stListaLoteo: {
-            source: { type: 'gStLoteo' },
-            autoLoad: true,
-            listeners: { load: 'onLoadStLoteo' }
+            fields: ['LOTEO_ID', 'LOTEO_NOMBRE', 'LOTEO_DESCRIPCION', 'LOTEO_DESLINDE'],
+            autoLoad: false,
+            proxy: {
+                url: '../do/vyl/bsh/loteoNombres.bsh',
+                type : 'ajax',
+                reader : {
+                    type : 'json',
+                    rootProperty : 'response',
+                    successProperty : 'success'
+                },
+                extraParams: {
+                    prm_dataSource: 'vylDS'
+                }
+            },
+
+
+            listeners: {
+                load: 'onLoadStLoteo'
+            }
         },
 
         stPerfiles: {

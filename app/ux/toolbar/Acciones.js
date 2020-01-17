@@ -61,7 +61,6 @@ Ext.define('vyl.ux.toolbar.Acciones', {
 
         me.removeAll();
 
-        // if (DEBUG) console.log('[cargaBotonera] node', node.data);
         switch (node.data.cTpAcceso) {
             case "READ":
                 pTpAcceso = 10;

@@ -203,8 +203,6 @@ Ext.define('vyl.ux.form.DomicilioField', {
                 lng = objDireccion.lng ? objDireccion.lng : objGeoreferencia.geometry.location.lng(),
                 addressCmp = me.getGeoreferencia().address_components ? objGeoreferencia.address_components : null;
             
-            // if (DEBUG) console.log('[getValue] objDireccion', objDireccion);
-
             value['direccion'] = me.fnSacaAcentos(direccion);
             value['lat'] = lat;
             value['lng'] = lng;
@@ -280,8 +278,6 @@ Ext.define('vyl.ux.form.DomicilioField', {
             var me = this,
                 ubicacion = me.getPlace();
             
-            // if (DEBUG) console.log('[wkfDomicilioField] setAutocomplete()', ubicacion);
-
             // Guarda objeto completo
             fld.setGeoreferencia(ubicacion);
             
@@ -300,7 +296,6 @@ Ext.define('vyl.ux.form.DomicilioField', {
                 }
             });
 
-            // if (DEBUG) console.log('[setAutocomplete] objDireccion', direccion);
             fld.setDireccion(direccion);
         
             input.value = ubicacion.formatted_address;
@@ -341,7 +336,6 @@ Ext.define('vyl.ux.form.DomicilioField', {
             latlng = {lat: parseFloat(val.lat), lng: parseFloat(val.lng)};
 
             // Setea los objetos del config
-            // if (DEBUG) console.log('[setValue]', val);
             me.setDireccion(val);
         }
         

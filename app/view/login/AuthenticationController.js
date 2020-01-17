@@ -34,6 +34,12 @@ Ext.define('vyl.view.login.AuthenticationController', {
 
                 appCtrl.setUsuario(oUsr);
                 view.destroy();
+                // Hace un F5 después de 300 milisegundos, suficiente
+                // para que el usuario este correctamente logueado
+                setTimeout(() => {
+                    location.reload();
+                }, 300);
+
             },
             
             failure : function(frm, resp) {

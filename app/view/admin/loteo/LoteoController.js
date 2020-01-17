@@ -1,81 +1,71 @@
-Ext.define('vyl.view.administracion.LoteoController', {
+Ext.define('vyl.view.admin.loteo.LoteoController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.loteo',
 
-    init: function() {
+    init: function () {
         var me = this;
 
         me.defaultToken = Ext.getApplication().getDefaultToken();
         me.msgTitle = 'VYL - Loteo';
     },
 
-    actualizar: function() {
+    actualizar: function () {
         var me = this,
-            stListaLoteo = me.getViewModel().getStore('stListaLoteo');
-        
-        stListaLoteo.getSource().load();
+            vm = me.getViewModel(),
+            stListaLoteo = vm.getStore('stListaLoteo');
+
+        stListaLoteo.load();
     },
 
-    borrarFormulario: function() {
+    borrarFormulario: function () {
         var me = this,
             refs = me.getReferences(),
             frmLoteo = refs.frmAbmLoteo,
             arrFields = frmLoteo.query("field{submitValue==true}");
-        
+
         frmLoteo.reset();
-        refs.btnBaja.setVisible(false);
-        refs.btnActivar.setVisible(false);
 
         // console.log('[cargarLoteo] arrFields', arrFields);
-        arrFields.forEach(function(fld) {
+        arrFields.forEach(function (fld) {
             if (fld.isVisible()) {
                 fld.setReadOnly(false);
             }
         });
     },
 
-    cargarLoteo: function(loteo_id) {
+    cargarLoteo: function (loteo_id) {
         var me = this,
             refs = me.getReferences(),
             frmLoteo = refs.frmAbmLoteo;
-        
+
         me.borrarFormulario();
 
         if (loteo_id > 0) {
             Ext.Ajax.request({
-                url: '../do/getLoteo.bsh',
+                url: '../do/vyl/bsh/loteoGet.bsh',
                 params: {
-                    prm_dataSource : 'vylDS',
-                    prm_pLoteo : loteo_id
+                    prm_dataSource: 'vylDS',
+                    prm_pLoteo: loteo_id
                 },
-        
-                success: function(response, opts) {
-// DEBUG AGV                    
-console.log(response.responseText,response);
+
+                success: function (response, opts) {
                     var rta = JSON.parse(response.responseText),
                         data = Ext.create('vyl.model.Base');
 
                     if (rta.success) {
                         refs.tabPrincipal.setActiveTab(1);
-                        
-// DEBUG AGV                    
-console.log( rta.records[0]);
-                        
+
+                        data.set(rta);
                         frmLoteo.loadRecord(data);
 
                         var arrFields = frmLoteo.query("field{submitValue==true}");
                         // console.log('[cargarLoteo] arrFields', arrFields);
-                        arrFields.forEach(function(fld) {
+                        arrFields.forEach(function (fld) {
                             if (fld.isVisible()) {
-                                fld.setReadOnly(true);
+                                fld.setReadOnly(false);
                             }
                         });
-
-                        refs.btnBaja.setVisible(false);
-                        refs.btnActivar.setVisible(true);
                     } else {
-// DEBUG AGV                    
-console.error(rta.message);
                         Ext.Msg.show({
                             title: me.msgTitle,
                             message: response.responseText,
@@ -84,7 +74,7 @@ console.error(rta.message);
                         });
                     }
                 },
-                failure: function(response, opts) {
+                failure: function (response, opts) {
                     console.error('[resolverTarea] Error en llamada : ' + response.status);
                     Ext.Msg.show({
                         title: me.msgTitle,
@@ -120,22 +110,22 @@ console.error(rta.message);
         switch (btnName) {
             case 'salir':
                 me.salir();
-            break;
+                break;
 
             case 'nuevo':
                 me.borrarFormulario();
-            break;
+                break;
 
             case 'grabar':
                 if (frmAbmLoteo.isValid()) {
                     view.mask('Grabando datos');
-                    
+
                     Ext.Ajax.request({
-                        url : '../do/vyl/bsh/wkf/loteoInsUpd.bsh',
-                        method : 'POST',
-                        params : {
-                            prm_dataSource : 'vylDS', 
-                            prm_data : JSON.stringify(datos)
+                        url: '../do/vyl/bsh/wkf/loteoInsUpd.bsh',
+                        method: 'POST',
+                        params: {
+                            prm_dataSource: 'vylDS',
+                            prm_data: JSON.stringify(datos)
                         },
 
                         success: function (response, opts) {
@@ -150,7 +140,7 @@ console.error(rta.message);
                                     buttons: Ext.Msg.OK,
                                     icon: Ext.Msg.ERROR
                                 });
-                                
+
                             } else {
                                 Ext.Msg.show({
                                     title: me.msgTitle,
@@ -158,12 +148,12 @@ console.error(rta.message);
                                     buttons: Ext.Msg.OK,
                                     icon: Ext.Msg.INFO,
                                 });
-                                
+
                                 me.borrarFormulario();
                             }
                         },
 
-                        failure: function(response, opts) {
+                        failure: function (response, opts) {
                             view.unmask();
 
                             console.error('[onAccionAbm] Error en llamada loteoInsUpd.bsh: ' + response.status);
@@ -184,16 +174,16 @@ console.error(rta.message);
                     });
                 }
 
-            break;
+                break;
 
         }
     },
 
-    onActivateGrillaLista: function() {
+    onActivateGrillaLista: function () {
         this.actualizar();
     },
 
-    onActivateAbmLoteo: function() {
+    onActivateAbmLoteo: function () {
         this.borrarFormulario();
     },
 
@@ -204,16 +194,20 @@ console.error(rta.message);
         me.cargarLoteo(rec.data.LOTEO_ID);
     },
 
-    onLoadStLoteo: function(st, records, successful, operation, eOpts) {
+    onDblClickGrillaLista: function (grid, record, item, rowIndex, eOpts) {
+        this.onCargarRegistro(grid, rowIndex);
+    },
+
+    onLoadStLoteo: function (st, records, successful, operation, eOpts) {
         var me = this,
             grid = me.getView(),
             stListaLoteoLocal = me.getViewModel().getStore('stListaLoteoLocal');
-        
+
         stListaLoteoLocal.getProxy().setData(st.getRange());
         stListaLoteoLocal.load();
     },
 
-    onRefrescar: function() {
+    onRefrescar: function () {
         this.actualizar();
     }
 });

@@ -1,13 +1,16 @@
-Ext.define('vyl.view.administracion.LoteoLista', {
+Ext.define('vyl.view.admin.loteo.LoteoLista', {
     extend: 'Ext.grid.Panel',
     xtype: 'loteoLista',
     plugins: 'gridfilters',
-    bind: { store: '{stListaLoteoLocal}' },
     width: '100%',
     scrollable: true,
     emptyText: 'No existen loteo ingresados con este filtro',
     viewConfig: { stripeRows: true },
-    listeners: { activate: 'onActivateGrillaLista' },
+    listeners: {
+        activate: 'onActivateGrillaLista',
+        itemdblclick: 'onDblClickGrillaLista' 
+    },
+    bind: { store: '{stListaLoteoLocal}' },
     dockedItems: [{
         xtype: 'pagingtoolbar',
         dock: 'bottom',
@@ -17,34 +20,23 @@ Ext.define('vyl.view.administracion.LoteoLista', {
         listeners: { refrescar: 'onRefrescar' }
     }],
     columns: [{
-        text: "Apellido y Nombre",
-        dataIndex: 'LOTEO_AYN',
-        flex: 2,
+        text: "ID",
+        dataIndex: 'LOTEO_ID',
+        hidden: true
+    }, {
+        text: "Nombre",
+        dataIndex: 'LOTEO_NOMBRE',
+        flex: 1,
         filter: {
             type: 'string',
             itemDefaults: {
-                emptyText: 'Buscar por apellido, nombre...'
+                emptyText: 'Buscar por nombre...'
             }
         }
     }, {
-        text: "Cargo",
-        dataIndex: 'LOTEO_CARGO',
-        flex: 1,
-        filter: {
-            type: 'list'
-        }
-    }, {
-        xtype: 'checkcolumn',
-        text: 'Autorizante',
-        dataIndex: 'LOTEO_AUTORIZANTE',
-        disabled: true
-    }, {
-        text: "Estado",
-        dataIndex: 'LOTEO_VIGENTE',
-        flex: 1,
-        filter: {
-            type: 'list'
-        }
+        text: "Descripción",
+        dataIndex: 'LOTEO_DESCRIPCION',
+        flex: 3
     }, {
         xtype: 'actioncolumn',
         align: 'center',

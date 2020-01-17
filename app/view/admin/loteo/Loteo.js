@@ -1,13 +1,12 @@
-Ext.define('vyl.view.admin.Loteo', {
+Ext.define('vyl.view.admin.loteo.Loteo', {
     extend: 'Ext.container.Container',
     xtype: 'admin-loteo',
     requires: [
-        'vyl.view.admin.LoteoController',
-        'vyl.view.admin.LoteoViewModel',
+        'vyl.view.admin.loteo.LoteoController',
+        'vyl.view.admin.loteo.LoteoViewModel',
 
-        'vyl.view.admin.LoteoLista',
-        'vyl.view.admin.LoteoAbm',
-        'vyl.store.Loteo',
+        'vyl.view.admin.loteo.LoteoLista',
+        'vyl.view.admin.loteo.LoteoAbm'
     ],
     controller: 'loteo',
     viewModel: { type: 'loteo' },

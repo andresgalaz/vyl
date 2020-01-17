@@ -2,7 +2,7 @@ Ext.define('vyl.ux.form.FieldSet', {
     extend: 'Ext.form.FieldSet',
     alias: 'widget.wkfFieldSet',
     xtype: 'wkffieldset',
-    
+
     invalidMsg: 'Campo inválido',
     valid: true,
     // allowBlank: true,
@@ -14,18 +14,18 @@ Ext.define('vyl.ux.form.FieldSet', {
 
     listeners: {
         focusleave: {
-            fn: function(fld, ev, opts) {
+            fn: function (fld, ev, opts) {
                 this.isValid();
             }
         },
         activate: {
-            fn: function(fld, ev, opts) {
+            fn: function (fld, ev, opts) {
                 this.isValid();
             }
         }
     },
 
-    initComponent: function() {
+    initComponent: function () {
         var me = this;
         this.callParent();
 
@@ -36,31 +36,31 @@ Ext.define('vyl.ux.form.FieldSet', {
         me.setValid(me.valid);
     },
 
-    validaItems: function(arrItems, valor) {
+    validaItems: function (arrItems, valor) {
         var me = this,
             valido = valor;
 
-        arrItems.forEach(function(item){
+        arrItems.forEach(function (item) {
             if (item.xtype !== 'container') {
                 if (item.submitValue) {
                     if (!item.isValid())
                         valido = false;
-                }    
+                }
             } else {
                 valido = me.validaItems(item.items.items, valido);
-            }      
+            }
         });
 
         if (valido == undefined) {
             valido = true;
-        } 
-        
+        }
+
         return valido;
     },
 
-    isValid: function() {
+    isValid: function () {
         var me = this
-            valido = true;
+        valido = true;
 
         valido = me.validaItems(me.items.items);
 
@@ -69,26 +69,24 @@ Ext.define('vyl.ux.form.FieldSet', {
         return valido;
     },
 
-    reset: function() {
+    reset: function () {
         var me = this;
 
         me.setValid(true);
     },
 
-    setInvalidMsg: function(msg) {
+    setInvalidMsg: function (msg) {
         this.invalidMsg = msg;
     },
 
-    setTooltip: function(obj) {
+    setTooltip: function (obj) {
         this.tooltip = obj;
     },
 
-    setValid: function(value) {
+    setValid: function (value) {
         var me = this;
 
         me.valid = value;
-
-        // if (DEBUG) console.log('[setValid]', me.removeCls);
 
         if (!me.valid) {
             if (me.removeCls && me.addCls) {
@@ -120,13 +118,5 @@ Ext.define('vyl.ux.form.FieldSet', {
                 me.tooltip = null;
             }
         }
-    },
-
-    // removeCls: function(cls) {
-    //     if (DEBUG) console.log('[FieldSet] removeCls',cls);
-    // },
-
-    // addCls: function(cls) {
-    //     if (DEBUG) console.log('[FieldSet] addCls',cls);
-    // },
+    }
 });

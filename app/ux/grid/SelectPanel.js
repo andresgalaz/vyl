@@ -62,7 +62,6 @@ Ext.define('vyl.ux.grid.SelectPanel', {
         
         data[me.getName()] = value ? value : null;
 
-        // if (DEBUG) console.log('[wkfGridSelect] getSubmitData()', data);
         return data;
     },
 
@@ -89,7 +88,6 @@ Ext.define('vyl.ux.grid.SelectPanel', {
         var me = this;
 
         me.getStore().removeAll();
-        // if (DEBUG) console.log('[wkfGridSelect] reset()');
     },
 
     resetSelection: function() {

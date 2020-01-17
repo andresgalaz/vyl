@@ -77,7 +77,6 @@ Ext.define('vyl.ux.grid.SubmitData', {
         
         data[me.getName()] = values ? values : null;
 
-        // if (DEBUG) console.log('[wkfSubmitData] getSubmitData()', data);
         return data;
     },
 

@@ -61,7 +61,8 @@ public class Loteo {
         try {
             String cSql = "SELECT  \n"
                     + "       lo.pLoteo          as LOTEO_ID, \n"
-                    + "       lo.cNombre         as LOTEO_NOMBRE \n"
+                    + "       lo.cNombre         as LOTEO_NOMBRE, \n"
+                    + "       lo.cDescripcion    as LOTEO_DESCRIPCION \n"
                     + " FROM  tLoteo lo \n ";
             PreparedStatement ps = this.cnxHlp.getConnection().prepareStatement( cSql );
             ResultSet rs = ps.executeQuery();

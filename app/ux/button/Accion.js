@@ -23,7 +23,6 @@ Ext.define('vyl.ux.button.Accion', {
             mensaje = 'Error inesperado en botón ' + me.getText(),
             json = JSON.stringify(jsonData);
 
-        // if (DEBUG) console.log('[ejecutarAcciones] idAccion: ' + idAccion);
         Ext.Ajax.request({
             url : '../do/wkfAccionEvento',
             method : 'POST',
