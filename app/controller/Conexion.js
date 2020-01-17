@@ -5,7 +5,7 @@ Ext.define('vyl.controller.Conexion', {
         var me = this;
 
         me.usuario = {};
-        me.appId = 4; // ID del sistema, corresponde a la PK de xformgen4.tSistema, se utiliza en permisos y carga del menu
+        me.appId = '04'; // ID del sistema, corresponde a la PK de xformgen4.tSistema, se utiliza en permisos y carga del menu
         me.defaultDataSource = "xgenJNDI";
     },
 

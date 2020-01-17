@@ -40,13 +40,14 @@ Ext.define('vyl.view.main.MainController', {
             refs = me.getReferences(),
             stNavigationTree = vm.getStore('stNavigationTree'),
             token, newToken;
-        
+// AGALAZ DEBUG            
+console.log('beforeRoute',node,action);    
         Ext.Ajax.request({
             url : '../do/estadoSesion',
             method : 'POST',
-            extraParams: {
-                st: stNavigationTree
-            },
+ extraParams: {
+     st: stNavigationTree
+  },
             success : function(response, opts) {
                 var rta = Ext.decode(response.responseText);
                 if (!rta.bConectado || rta.cUsuario == 'automata') {
@@ -308,11 +309,16 @@ Ext.define('vyl.view.main.MainController', {
             stNavigationTree.getRoot().removeAll();
         }
 
+        // AGALAZ DEBUG
+        console.log('onLoginOk',cxnCtrl.getSistemaId());
+
         stNavigationTree.load({
             params : {
-                prm_sistema: cxnCtrl.getSistemaId(),
-                prm_usuario: cxnCtrl.getUsuarioId(),
-                prm_dataSource: cxnCtrl.getDefaultDS()
+                prm_cCodArbol : cxnCtrl.getSistemaId()
+                // Se hizo el cambio en el Framework para soportar este tipo de llamada
+                // prm_sistema: cxnCtrl.getSistemaId(),
+                // prm_usuario: cxnCtrl.getUsuarioId(),
+                // prm_dataSource: cxnCtrl.getDefaultDS()
             },
             callback: function(records, operation, success) {
                 var app = Ext.getApplication(),
@@ -411,11 +417,17 @@ Ext.define('vyl.view.main.MainController', {
             // Fuerza espera 3s para volver a intentar
             setTimeout(function() {
                 if (stNavigationTree.getCount() == 0) {
+
+                    // AGALAZ DEBUG
+                    console.log('onRouteChange', node, evento_id);
+
                     stNavigationTree.load({
                         params : {
-                            prm_sistema: cxnCtrl.getSistemaId(),
-                            prm_usuario: cxnCtrl.getUsuarioId(),
-                            prm_dataSource: cxnCtrl.getDefaultDS()
+                			prm_cCodArbol : cxnCtrl.getSistemaId()
+                            // Se hizo el cambio en el Framework para soportar este tipo de llamada
+                			// prm_sistema: cxnCtrl.getSistemaId(),
+                			// prm_usuario: cxnCtrl.getUsuarioId(),
+                			// prm_dataSource: cxnCtrl.getDefaultDS()
                         },
                         callback: function(records, operation, success) {
                             if (success && records.length > 0) {

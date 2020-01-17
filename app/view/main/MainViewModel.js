@@ -27,7 +27,9 @@ Ext.define('vyl.view.main.MainViewModel', {
             },
 
             proxy: {
-                url : '../do/vyl/bsh/main/menuGet.bsh',
+                 url : '../do/menuFull',
+                 method : 'POST',
+                 // url : '../do/vyl/bsh/main/menuGet.bsh',
                 type : 'ajax',
                 reader : {
                     type : 'json',
