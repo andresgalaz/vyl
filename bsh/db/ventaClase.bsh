@@ -1,15 +1,35 @@
 package vyl.db;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.Principal;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
+import javax.servlet.AsyncContext;
+import javax.servlet.DispatcherType;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -210,14 +230,14 @@ public class Venta {
     public Map get() throws FrameworkException {
         Integer pVenta = null;
         Integer fEvento = null;
-
         if (this.request != null)
-            u.getInt( this.request, "prm_pVenta" );
+            pVenta = u.getInt( this.request, "prm_pVenta" );
 
         if (this.wkfData != null) {
             if (ConvertNumber.isCero( pVenta )) {
                 Map frmData = u.getRuta( this.wkfData, "request.json_data.DATOS.formIngreso" );
-                pVenta = u.getInt( frmData, "VYL_ID" );
+                if (frmData != null)
+                    pVenta = u.getInt( frmData, "VYL_ID" );
             }
             if (ConvertNumber.isCero( pVenta )) {
                 // Si aún es cero puede ser que recién se haya creado el registro en tVenta
@@ -247,10 +267,11 @@ public class Venta {
                 + db.convertColumn( "ve.tCreacion" ) + ", \n"
                 + db.convertColumn( "ve.fUsrCreacion" ) + ", \n"
                 + db.convertColumn( "ve.tModificacion" ) + ", \n"
-                + db.convertColumn( "ve.fUsrModificacion" ) + ", \n"
+                + db.convertColumn( "ve.fUsrModificacion" ) + " \n"
                 + " FROM  tVenta ve \n "
                 + (ConvertNumber.isCero( pVenta ) ? "" : " WHERE ve.pVenta = ? ")
                 + (ConvertNumber.isCero( fEvento ) ? "" : " WHERE ve.fEvento = ? ");
+        System.err.println( "[100] getById :" + pVenta + "," + fEvento );
         try {
             PreparedStatement ps = this.cnxHlp.getConnection().prepareStatement( cSql );
             int nIdx = 1;
@@ -283,8 +304,15 @@ public class Venta {
             mData.put( "VYL_FECHA_CREACION", ConvertDate.toString( rs.getDate( "tCreacion" ) ) );
             mData.put( "VYL_FECHA_MODIFICACION", ConvertDate.toString( rs.getDate( "tModificacion" ) ) );
 
-            mData.putAll( new Empresa( this.request, this.cnxHlp ).getById( rs.getInt( "fEmpresa" ), "VYL" ) );
-            mData.putAll( new Comprador( this.request, this.cnxHlp ).getByFilter( rs.getInt( "fComprador" ), null, "VYL" ) );
+            Integer fEmpresa = rs.getInt( "fEmpresa" );
+            Integer fComprador = rs.getInt( "fComprador" );
+            if (this.request == null) {
+                mData.putAll( new Comprador( this.cnxHlp ).getByFilter( fComprador, null, "VYL" ) );
+                mData.putAll( new Empresa( this.cnxHlp ).getById( fEmpresa, "VYL" ) );
+            } else {
+                mData.putAll( new Comprador( this.request, this.cnxHlp ).getByFilter( fComprador, null, "VYL" ) );
+                mData.putAll( new Empresa( this.request, this.cnxHlp ).getById( fEmpresa, "VYL" ) );
+            }
 
             // Map mEmpresa = getEmpresa( rs.getInt( "fEmpresa" ),"VYL" );
             // if(mEmpresa != null )
@@ -293,6 +321,7 @@ public class Venta {
             // if(mComprador!=null)
             // mComprador.putAll( mComprador );
 
+            System.err.println( "[400] getById :" + pVenta + "," + fEvento );
             rs.close();
             ps.close();
 
@@ -300,10 +329,11 @@ public class Venta {
             throw new FrameworkException( "Al leer tVenta:" + pVenta, e );
         }
         // LINK de URL para el retorno desde afuera (p.ej: cuando es un mail)
+        System.err.println( "[500] getById :" + pVenta + "," + fEvento );
         mData.put( "HOST_LINK", u.getUrlLink( this.request ) + "/vyl" );
         return mData;
     }
-    
+
     /**
      * Lista todas las empresas. No espera parámetros
      * 
@@ -311,16 +341,16 @@ public class Venta {
      * @throws FrameworkException
      */
     public List lista() throws FrameworkException {
-        String cSql = 
-                "SELECT DISTINCT " +
+        String cSql = "SELECT DISTINCT " +
                 "       v.dCierre  as FECHA_VENTA     , v.cLoteo as LOTEO        ,\n" +
-                "       v.nParcela as PARCELA         , v.cRol              as ROL_PROPIEDAD,\n" + 
+                "       v.nParcela as PARCELA         , v.cRol              as ROL_PROPIEDAD,\n" +
                 "       c.cNombre  as COMPRADOR_NOMBRE, c.cRut              as COMPRADOR_RUT,\n" +
-                "       et.CTITULO as WKF_ETAPA       , ev.CUSUARIOASIGNADO as WKF_USUARIO \n" + 
-                "FROM tVenta v \n" + 
-                "LEFT JOIN .tComprador          c  ON c.pComprador = v.fComprador \n" + 
-                "LEFT JOIN xformgen4.wkf_evento ev ON ev.PEVENTO   = v.fEvento AND ev.BACTIVA = '1' \n" + 
-                "LEFT JOIN xformgen4.wkf_etapa  et ON et.PETAPA    = ev.FETAPA \n" ; 
+                "       et.CTITULO as WKF_ETAPA       , ev.CUSUARIOASIGNADO as WKF_USUARIO,\n" +
+                "       ev.PEVENTO as WKF_EVENTO \n" +
+                "FROM tVenta v \n" +
+                "LEFT JOIN .tComprador          c  ON c.pComprador = v.fComprador \n" +
+                "LEFT JOIN xformgen4.wkf_evento ev ON ev.PEVENTO   = v.fEvento AND ev.BACTIVA = '1' \n" +
+                "LEFT JOIN xformgen4.wkf_etapa  et ON et.PETAPA    = ev.FETAPA \n";
         try {
             PreparedStatement ps = this.cnxHlp.getConnection().prepareStatement( cSql );
             ResultSet rs = ps.executeQuery();
@@ -332,7 +362,6 @@ public class Venta {
             throw new FrameworkException( "Al listar consulta de ventas", e );
         }
     }
-    
 
     /**
      * Inserta cada gasto en tGasto

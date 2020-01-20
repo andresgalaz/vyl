@@ -3,6 +3,7 @@ package vyl.db;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,8 +11,11 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import prg.glz.FrameworkException;
+import prg.util.cnv.ConvertException;
 import prg.util.cnv.ConvertList;
 import prg.util.cnv.ConvertMap;
+import prg.util.cnv.ConvertNumber;
+import prg.util.cnv.ConvertString;
 import prg.util.db.hlp.ConexionHelper;
 import util.JsonDataUtil;
 
@@ -39,7 +43,7 @@ public class Loteo {
     private ConexionHelper     cnxHlp;
     // Solo como alias para acortar la sintaxis
     private JsonDataUtil       u = new JsonDataUtil();
-    
+
     public Loteo(HttpServletRequest request, ConexionHelper connectionHelper) throws FrameworkException {
         this.request = request;
         this.cnxHlp = connectionHelper;
@@ -50,7 +54,76 @@ public class Loteo {
         this.cnxHlp = connectionHelper;
         // this.db = this.cnxHlp.getDataDb();
     }
-    
+
+    /**
+     * Actualiza loteos
+     * 
+     * @return
+     * @throws FrameworkException 
+     */
+    public String insUpd() throws FrameworkException {
+        String cJsonData = request.getParameter( "prm_data" );
+        if (ConvertString.isEmpty( cJsonData ))
+            throw new FrameworkException( "Falta parámetro prm_data" );
+
+        Map mData = ConvertMap.fromJsonString( cJsonData );
+        Integer pLoteo = u.getInt( mData, "LOTEO_ID" );
+        String cNombre = u.getString( mData, "LOTEO_NOMBRE" );
+        String cDescripcion = u.getString( mData, "LOTEO_DESCRIPCION" );
+        String cDeslinde = u.getString( mData, "LOTEO_DESLINDE" );
+
+        Map mRegAct = null;
+        if (ConvertNumber.isCero( pLoteo )) {
+            pLoteo = null;
+            // Si no hay ID se busca por Nombre
+            mRegAct = getByFiltro( null, cNombre, null );
+            // Verifica si existe ID
+            if (mRegAct.containsKey( "LOTEO_ID" ))
+                pLoteo = u.getInt( mRegAct, "LOTEO_ID" );
+            else
+                mRegAct = null;
+        } else {
+            mRegAct = getByFiltro( pLoteo, null, null );
+            // Si existe registro se recupera ID
+            if (!mRegAct.containsKey( "LOTEO_ID" ))
+                mRegAct = null;
+        }
+
+        String cSql;
+        if (mRegAct == null) {
+            // Inserta
+            cSql = "INSERT INTO tLoteo ( cNombre , cDescripcion, cDeslinde ) \n"
+                    + " VALUES ( ?, ?, ?,  )";
+        } else {
+            // Actualiza
+            cSql = "UPDATE tLoteo \n"
+                    + " SET cNombre  = ?, cDescripcion = ?, cDeslinde = ? \n"
+                    + " WHERE pLoteo = ? \n";
+        }
+        try {
+            PreparedStatement psUpd = this.cnxHlp.getConnection().prepareStatement( cSql, Statement.RETURN_GENERATED_KEYS );
+            int nIdx = 1;
+            cnxHlp.setString( psUpd, nIdx++, cNombre );
+            cnxHlp.setString( psUpd, nIdx++, cDescripcion );
+            cnxHlp.setString( psUpd, nIdx++, cDeslinde );
+            if (mRegAct != null)
+                psUpd.setInt( nIdx++, pLoteo );
+            psUpd.execute();
+
+            if (mRegAct == null) {
+                // Obtiene la llave generada en caso de ser un insert
+                ResultSet rs = psUpd.getGeneratedKeys();
+                if (rs.next())
+                    pLoteo = rs.getInt( 1 );
+                rs.close();
+            }
+            psUpd.close();
+        } catch (SQLException e) {
+            throw new FrameworkException( "Al insertar en la tabla tLoteo\n" + ConvertException.stackTrace2string( e ) );
+        }
+        return pLoteo.toString();
+    }
+
     /**
      * Lista todas las loteos. No espera parámetros
      * 
@@ -108,9 +181,8 @@ public class Loteo {
                     + "       lo.cDeslinde       as " + cAlias + "LOTEO_DESLINDE \n"
                     + " FROM  tLoteo lo \n "
                     + " WHERE 1 = 1 \n"
-                    + (pLoteo  != null ? " AND lo.pLoteo  = ? " : "" )
-                    + (cNombre != null ? " AND lo.cNombre = ? " : "" )
-                    ;
+                    + (pLoteo != null ? " AND lo.pLoteo  = ? " : "")
+                    + (cNombre != null ? " AND lo.cNombre = ? " : "");
             PreparedStatement ps = this.cnxHlp.getConnection().prepareStatement( cSql );
             int nIdx = 1;
             ps.setInt( nIdx++, pLoteo );

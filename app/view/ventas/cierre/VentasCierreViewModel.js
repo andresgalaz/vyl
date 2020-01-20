@@ -105,7 +105,8 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
 				{ name: 'COMPRADOR_NOMBRE', type: 'string' },
 				{ name: 'COMPRADOR_RUT', type: 'string' },
 				{ name: 'WKF_ETAPA', type: 'string' },
-				{ name: 'WKF_USUARIO', type: 'string' }
+                { name: 'WKF_USUARIO', type: 'string' },
+                { name: 'WKF_EVENTO', type: 'int' }
             ],
 
             proxy: {
@@ -137,7 +138,8 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
 				{ name: 'COMPRADOR_NOMBRE', type: 'string' },
 				{ name: 'COMPRADOR_RUT', type: 'string' },
 				{ name: 'WKF_ETAPA', type: 'string' },
-				{ name: 'WKF_USUARIO', type: 'string' }
+                { name: 'WKF_USUARIO', type: 'string' },
+                { name: 'WKF_EVENTO', type: 'int' }
             ],
 
             proxy: {
@@ -150,6 +152,31 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
             },
 
             pageSize: 25
+        },
+
+        stLoteo: {
+            idProperty: 'LOTEO_ID',
+
+            fields: [
+                { name: 'LOTEO_ID', type: 'int' },
+                { name: 'LOTEO_NOMBRE', type: 'string' },
+                { name: 'LOTEO_DESCRIPCION', type: 'string' }
+            ],
+
+            proxy: {
+                url : '../do/vyl/bsh/loteoNombres.bsh',
+                type : 'ajax',
+                reader : {
+                    type : 'json',
+                    rootProperty : 'response',
+                    successProperty : 'success'
+                },
+                extraParams: {
+                    prm_dataSource: 'vylDS'
+                }
+            },
+
+            autoLoad: true
         },
 
         stModalidadPago: {

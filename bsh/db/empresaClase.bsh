@@ -38,12 +38,14 @@ public class Empresa {
     private ConexionHelper     cnxHlp;
     // Solo como alias para acortar la sintaxis
     private JsonDataUtil       u = new JsonDataUtil();
-    // private AbstractDataDB db;
 
     public Empresa(HttpServletRequest request, ConexionHelper connectionHelper) throws FrameworkException {
         this.request = request;
         this.cnxHlp = connectionHelper;
-        // this.db = this.cnxHlp.getDataDb();
+    }
+
+    public Empresa(ConexionHelper connectionHelper) throws FrameworkException {
+        this.cnxHlp = connectionHelper;
     }
 
     /**

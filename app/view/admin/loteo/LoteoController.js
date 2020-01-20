@@ -121,7 +121,7 @@ Ext.define('vyl.view.admin.loteo.LoteoController', {
                     view.mask('Grabando datos');
 
                     Ext.Ajax.request({
-                        url: '../do/vyl/bsh/wkf/loteoInsUpd.bsh',
+                        url: '../do/vyl/bsh/loteoInsUpd.bsh',
                         method: 'POST',
                         params: {
                             prm_dataSource: 'vylDS',

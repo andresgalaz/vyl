@@ -80,7 +80,7 @@ Ext.define('vyl.view.ventas.cierre.Consulta', {
                 {
                     iconCls: 'x-fa fa-file-text-o',
                     tooltip: 'Consultar Formulario',
-                    handler: ''
+                    handler: 'onConsultarFormulario'
                 }
             ]
         }

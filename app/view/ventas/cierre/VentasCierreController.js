@@ -114,7 +114,15 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 	},
 
 	formularioLeer: function(eventoId) {
+		var me = this,
+			view = me.getView();
 
+		me.formularioReiniciar();
+
+		view.setEvento(eventoId);
+		view.leeEvento(function(rta) {
+			// Cargar formulario
+		});
 	},
 
 	formularioReiniciar: function() {
@@ -138,27 +146,6 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 
 		refs.ctnFinanciamiento.setHidden(true);
 		refs.ctnFinanciamientoGastos.setHidden(true);
-	},
-
-	renderEstado: function(value, meta) {
-        var color, valor;
-
-        switch(value) {
-            case '1':
-                valor = 'Vigente';
-                color = 'green';
-                break;
-            case '0':
-                valor = 'Dado baja';
-                color = 'red';
-                break;
-            default: 
-                color = 'grey';
-        }
-
-        meta.style = 'color:' + color + ';';
-        
-        return valor;
 	},
 	
 	salir: function() {
@@ -268,6 +255,18 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 		}
 	},
 
+	onConsultarFormulario: function(view, rowIdx, colIdx, item, e, record, row) {
+		var me = this,
+			eventoId = record.get('WKF_EVENTO');
+
+		if (eventoId > 0) {
+			me.redirectTo('ventas-cierre/' + eventoId);
+		
+		} else {
+			console.warn('[onConsultarFormulario] Evento invalido ' + eventoId, record);
+		}
+	},
+
 	onCuotasChange: function(fld, event, eOpts) {
 		var me = this,
 			vm = me.getViewModel(),
@@ -276,10 +275,20 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 		vm.set('cuotas', value);
 	},
 
-	onFormularioCargar: function() {
+	onFormularioActivate: function() {
+		var me = this,
+			vm = me.getViewModel(),
+			stLoteo = vm.getStore('stLoteo');
+
+		stLoteo.reload();
+	},
+
+	onFormularioCargar: function(eventoId) {
 		var me = this;
 
-		// me.formularioLeer();
+		if (eventoId > 0) {
+			me.formularioLeer(eventoId);
+		}	
 	},
 
 	onInteresChange: function(fld, event, eOpts) {
@@ -296,7 +305,13 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
         
 		stLocal.getProxy().setData(st.getRange());
 		stLocal.load();
-    },
+	},
+	
+	onLoteoNuevo: function() {
+		var me = this;
+
+		me.redirectTo('admin-loteo');
+	},
 
 	onModalidadVentaSelect: function(cb, record, eOpts) {
 		var me = this,

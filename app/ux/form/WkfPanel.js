@@ -167,14 +167,15 @@ Ext.define('vyl.ux.form.WkfPanel', {
 
     leeEvento: function(callback) {
         var me = this,
-            pEvento = me.getEvento();
+            pEvento = me.getEvento(),
+            cxnCtrl = Ext.getApplication().getController('Conexion');
 
         if (pEvento > 0) {
             Ext.Ajax.request({
                 url : '../do/wkfLeeEvento',
                 method : 'POST',
                 params : {
-                    // prm_dataSource : 'xgenJNDI', 
+                    prm_dataSource : cxnCtrl.getDefaultDS(), 
                     prm_nEvento : pEvento
                 },
     

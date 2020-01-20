@@ -30,7 +30,7 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
 
     listeners: {
         cargadatos: 'onFormularioCargar',  // IMPORTANTE: Se dispara desde el [MainController] onRouteChange, token con parametros
-        // activate: 'onActivate'
+        activate: 'onFormularioActivate'
     },
 
     initComponent: function () {
@@ -62,9 +62,25 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                             },
                             items: [
                                 {
-                                    fieldLabel: 'Loteo',
+                                    xtype: 'combobox',
                                     name: 'VYL_LOTEO',
+                                    fieldLabel: 'Loteo',
+                                    queryMode: 'local',
+                                    displayField: 'LOTEO_NOMBRE',
+                                    valueField: 'LOTEO_ID',
+                                    allowBlank: false,
+                                    forceSelection: true,
+                                    bind: {
+                                        store: '{stLoteo}'
+                                    },
                                     flex: 2
+                                },
+                                {
+                                    xtype: 'button',
+                                    iconCls: 'x-fa fa-plus-circle',
+                                    text: 'Nuevo Loteo',
+                                    margin: '26 0 5 5',
+                                    handler: 'onLoteoNuevo'
                                 },
                                 {
                                     xtype: 'numberfield',
