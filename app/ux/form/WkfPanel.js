@@ -114,6 +114,7 @@ Ext.define('vyl.ux.form.WkfPanel', {
 
     creaEvento: function(callback, pusuario, json_data) {
         var me = this,
+            cxnCtrl = Ext.getApplication().getController('Conexion')
             flujo = me.getFlujo();
         
         if (flujo) {
@@ -122,6 +123,7 @@ Ext.define('vyl.ux.form.WkfPanel', {
                 url : '../do/wkfCreaEvento',
                 method : 'POST',
                 params : {
+                    prm_dataSource : cxnCtrl.getDefaultDS(), 
                     prm_cFlujo : flujo,
                     prm_pUsuario: pusuario ? pusuario : null,
                     json_data: json_data ? JSON.stringify(json_data) : null,

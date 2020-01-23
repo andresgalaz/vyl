@@ -230,7 +230,7 @@ public class Comprador {
             ps.close();
             return mResp;
 
-        } catch (SQLException e) {
+        } catch (SQLException e) {        
             throw new FrameworkException( "Al leer tComprador" + msgWhere + "\n" + ConvertException.stackTrace2string( e ), e );
         }
     }

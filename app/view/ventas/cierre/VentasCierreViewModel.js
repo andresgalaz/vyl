@@ -58,6 +58,25 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
     },
 
     stores: {
+        stArchivos: {
+            idProperty: 'ARCHIVO_ID',
+
+            fields: [
+                { name: 'ARCHIVO_ID', type: 'int' },
+                { name: 'ARCHIVO_NOMBRE', type: 'string' },
+                { name: 'ARCHIVO_DESCRIPCION', type: 'string' },
+                { name: 'ARCHIVO_FECHA', type: 'date', dateFormat: 'Y-m-d'},
+            ],
+
+            data: [
+                { ARCHIVO_ID: 0, ARCHIVO_NOMBRE: 'Prueba', ARCHIVO_DESCRIPCION: 'Archivo de prueba 1', ARCHIVO_FECHA: '2020-01-20' },
+                { ARCHIVO_ID: 1, ARCHIVO_NOMBRE: 'Prueba', ARCHIVO_DESCRIPCION: 'Archivo de prueba 2', ARCHIVO_FECHA: '2020-01-20' },
+                { ARCHIVO_ID: 2, ARCHIVO_NOMBRE: 'Prueba', ARCHIVO_DESCRIPCION: 'Archivo de prueba 3', ARCHIVO_FECHA: '2020-01-20' },
+                { ARCHIVO_ID: 3, ARCHIVO_NOMBRE: 'Prueba', ARCHIVO_DESCRIPCION: 'Archivo de prueba 4', ARCHIVO_FECHA: '2020-01-20' },
+                { ARCHIVO_ID: 4, ARCHIVO_NOMBRE: 'Prueba', ARCHIVO_DESCRIPCION: 'Archivo de prueba 5', ARCHIVO_FECHA: '2020-01-20' }
+            ]
+        },
+
         stEmpresas: {
             idProperty: 'EMPRESA_ID',
 

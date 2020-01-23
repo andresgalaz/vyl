@@ -37,7 +37,8 @@ Ext.define('vyl.view.ventas.cierre.Consulta', {
     ],
 
     listeners: {
-        activate: 'onActivateConsulta'
+        activate: 'onConsultaActivate',
+        rowdblclick: 'onConsultaRowDblClick'
     },
 
     columns: [

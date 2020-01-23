@@ -12,6 +12,10 @@ Ext.define('vyl.view.admin.loteo.Loteo', {
     viewModel: { type: 'loteo' },
     layout: { type: 'vbox', align: 'stretch' },
     margin: '10 20 5 20',
+    
+    listeners: {
+        cargadatos: 'onLoteoCargar',  // IMPORTANTE: Se dispara desde el [MainController] onRouteChange, token con parametros
+    },
 
     items: [{
         xtype: 'tabpanel',

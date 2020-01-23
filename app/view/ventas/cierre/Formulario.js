@@ -19,14 +19,15 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
     flujo: 'VENTA_CIERRE',
     etapaActual: 'ingresado',
 
-    // cls: '',
+    cls: 'formulario-venta',
+
     layout: {
         type: 'vbox',
         align: 'stretch'
     },
 
     maxWidth: 1000,
-    title: 'Formulario Cierre de Venta',
+    title: 'Formulario Cierre de Venta - Nuevo',
 
     listeners: {
         cargadatos: 'onFormularioCargar',  // IMPORTANTE: Se dispara desde el [MainController] onRouteChange, token con parametros
@@ -41,13 +42,13 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                 align: 'stretch'
             },
             items: [
-                {
-                    xtype: 'hidden',
-                    name: 'VYL_ID',
-                    bind: {
-                        value: '{formularioId}'
-                    }
-                },
+                // {
+                //     xtype: 'hidden',
+                //     name: 'VYL_ID',
+                //     bind: {
+                //         value: '{formularioId}'
+                //     }
+                // },
                 {
                     xtype: 'fieldset',
                     title: 'Datos de Venta',
@@ -559,8 +560,44 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                             ]
                         },
                     ]
+                },
+                {
+                    xtype: 'fieldset',
+                    title: 'Archivos Generados',
+                    collapsible: true,
+                    items: [
+                        {
+                            xtype: 'dataview',
+                            cls: 'archivos-dataview',
+                            emptyText: 'No hay archivos generados',
+                            bind: {
+                                store: '{stArchivos}',
+                            },
+                            itemSelector: 'div.thumb-wrap',
+                            tpl: Ext.create('Ext.XTemplate',
+                                '<tpl for=".">',
+                                    '<div class="thumb-wrap">',
+                                        '<a class="thumb" href="{[this.getUrl(values.ARCHIVO_ID)]}" download="{ARCHIVO_NOMBRE}">',
+                                            '<div class="thumb-icon"></div>',
+                                            '<div class="thumb-title-container">',
+                                                '<div class="thumb-title">{ARCHIVO_DESCRIPCION}</div>',
+                                                '<div class="thumb-title-small">Fecha creacion: {ARCHIVO_FECHA:date("d/m/Y")}</div>',
+                                            '</div>',
+                                            '<div class="thumb-download"></div>',
+                                        '</a>',
+                                    '</div>',
+                                '</tpl>', 
+                                {
+                                    getUrl: function(archivoId) {
+                                        // Llamada al bsh que genere el PDF del lado del servidor
+                                        return '../do/vyl/bsh/';
+                                    }
+                                },
+                            ),
+                            flex: 1
+                        },
+                    ]
                 }
-                
             ],
         });
 

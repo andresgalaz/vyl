@@ -1,0 +1,18 @@
+$call.include('vyl/bsh/util/rutClase.bsh')
+$call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
+$call.include('vyl/bsh/db/compradorClase.bsh')
+// Trae los datos del comprador por prm_cRut o prm_pComprador
+print( "100 =================================" );
+Comprador c = new Comprador();
+print( "110 =================================" );
+c.setConexionHelper(connectionHelper);
+print( "120 =================================" );
+c.get();
+print( request );
+print( "200 =================================" );
+print( connectionHelper );
+print( "300 =================================" );
+if(connectionHelperAlt != void){
+	print( connectionHelperAlt );
+	print( "400 =================================" );
+}

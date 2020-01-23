@@ -1,35 +1,16 @@
 package vyl.db;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.Principal;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
-import javax.servlet.AsyncContext;
-import javax.servlet.DispatcherType;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.Part;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -93,6 +74,8 @@ public class Venta {
      */
     public String insUpd() throws FrameworkException {
         Map frmData = u.getRuta( this.wkfData, "request.json_data.DATOS.formIngreso" );
+        if (frmData == null)
+            throw new FrameworkException( "Se esperaba la estructura json_data.DATOS.formIngreso" );
         Integer pVenta = u.getInt( frmData, "VYL_ID", 0 );
         Date dCierre = u.getDate( frmData, "VYL_FECHA_CIERRE" );
         Integer fEmpresa = u.getInt( frmData, "VYL_EMPRESA_ID" );
@@ -188,19 +171,19 @@ public class Venta {
             }
             psUpd.close();
 
-            String sqlDel = "DELETE FROM tGastoVenta WHERE pVenta = ?";
-            PreparedStatement psDel = this.cnxHlp.getConnection().prepareStatement( sqlDel );
-            psDel.setInt( 1, pVenta );
-            psDel.execute();
-            psDel.close();
+            // String sqlDel = "DELETE FROM tGastoVenta WHERE pVenta = ?";
+            // PreparedStatement psDel = this.cnxHlp.getConnection().prepareStatement( sqlDel );
+            // psDel.setInt( 1, pVenta );
+            // psDel.execute();
+            // psDel.close();
 
-            int pGasto = 1;
-            gastoIns( pVenta, pGasto++, frmData, "VYL_CONTRATO_LEASING" );
-            gastoIns( pVenta, pGasto++, frmData, "VYL_CONTRATO_LEASING_NOTARIO" );
-            gastoIns( pVenta, pGasto++, frmData, "VYL_INSTRUCCIONES_NOTARIO" );
-            gastoIns( pVenta, pGasto++, frmData, "VYL_ESCRITURA" );
-            gastoIns( pVenta, pGasto++, frmData, "VYL_ESCRITURA_NOTARIO" );
-            gastoIns( pVenta, pGasto++, frmData, "VYL_CBR" );
+            // int pGasto = 1;
+            // gastoIns( pVenta, pGasto++, frmData, "VYL_CONTRATO_LEASING" );
+            // gastoIns( pVenta, pGasto++, frmData, "VYL_CONTRATO_LEASING_NOTARIO" );
+            // gastoIns( pVenta, pGasto++, frmData, "VYL_INSTRUCCIONES_NOTARIO" );
+            // gastoIns( pVenta, pGasto++, frmData, "VYL_ESCRITURA" );
+            // gastoIns( pVenta, pGasto++, frmData, "VYL_ESCRITURA_NOTARIO" );
+            // gastoIns( pVenta, pGasto++, frmData, "VYL_CBR" );
 
             if (bLeasing && nCuotas != null) {
                 // Ingresa las cuotas
@@ -251,6 +234,7 @@ public class Venta {
         Map mData = null;
         String cSql = "SELECT \n"
                 + db.convertColumn( "ve.fEvento" ) + ", \n"
+                + db.convertColumn( "ve.pVenta" ) + ", \n"
                 + db.convertColumn( "ve.dCierre" ) + ", \n"
                 + db.convertColumn( "ve.nParcela" ) + ", \n"
                 + db.convertColumn( "ve.cLoteo" ) + ", \n"
@@ -271,7 +255,6 @@ public class Venta {
                 + " FROM  tVenta ve \n "
                 + (ConvertNumber.isCero( pVenta ) ? "" : " WHERE ve.pVenta = ? ")
                 + (ConvertNumber.isCero( fEvento ) ? "" : " WHERE ve.fEvento = ? ");
-        System.err.println( "[100] getById :" + pVenta + "," + fEvento );
         try {
             PreparedStatement ps = this.cnxHlp.getConnection().prepareStatement( cSql );
             int nIdx = 1;
@@ -283,12 +266,16 @@ public class Venta {
             if (!rs.next()) {
                 rs.close();
                 ps.close();
-                throw new FrameworkException( "No existe cierre venta con ID:" + pVenta + "\no Evento:" + fEvento );
+                Map mResp = new HashMap(0);
+                mResp.put( "success", true );
+                mResp.put( "message", "No existe cierre venta con ID:" + pVenta + "\no Evento:" + fEvento );                        
+                return mResp;
+                // throw new FrameworkException( "No existe cierre venta con ID:" + pVenta + "\no Evento:" + fEvento );
             }
             // Crea mData con la info JSON almacenada
             mData = ConvertMap.fromJsonString( rs.getString( "cJsonData" ) );
 
-            mData.put( "VYL_ID", pVenta );
+            mData.put( "VYL_ID", rs.getInt( "pVenta" ) );
             mData.put( "VYL_EVENTO", rs.getInt( "fEvento" ) );
             mData.put( "VYL_FECHA_CIERRE", ConvertDate.toString( rs.getDate( "dCierre" ) ) );
             mData.put( "VYL_EMPRESA_ID", rs.getInt( "fEmpresa" ) );
@@ -313,15 +300,6 @@ public class Venta {
                 mData.putAll( new Comprador( this.request, this.cnxHlp ).getByFilter( fComprador, null, "VYL" ) );
                 mData.putAll( new Empresa( this.request, this.cnxHlp ).getById( fEmpresa, "VYL" ) );
             }
-
-            // Map mEmpresa = getEmpresa( rs.getInt( "fEmpresa" ),"VYL" );
-            // if(mEmpresa != null )
-            // mData.putAll( mEmpresa );
-            // Map mComprador = getComprador( rs.getInt( "fComprador" ),null,"VYL" );
-            // if(mComprador!=null)
-            // mComprador.putAll( mComprador );
-
-            System.err.println( "[400] getById :" + pVenta + "," + fEvento );
             rs.close();
             ps.close();
 
@@ -329,7 +307,6 @@ public class Venta {
             throw new FrameworkException( "Al leer tVenta:" + pVenta, e );
         }
         // LINK de URL para el retorno desde afuera (p.ej: cuando es un mail)
-        System.err.println( "[500] getById :" + pVenta + "," + fEvento );
         mData.put( "HOST_LINK", u.getUrlLink( this.request ) + "/vyl" );
         return mData;
     }
@@ -370,20 +347,20 @@ public class Venta {
      * @param regGasto
      * @throws SQLException
      */
-    private void gastoIns(Integer pVenta, Integer pGasto, Map frmData, String cKeyGasto) throws SQLException {
-        Double nMonto = u.getDouble( frmData, cKeyGasto );
-        if (nMonto == null)
-            return;
-
-        String sqlIns = "INSERT INTO tGastoVenta ( pVenta, pGasto, cTipo, nMonto ) VALUES ( ?, ?, ?, ? )";
-        PreparedStatement psIns = this.cnxHlp.getConnection().prepareStatement( sqlIns );
-        int idx = 1;
-        psIns.setInt( idx++, pVenta );
-        psIns.setInt( idx++, pGasto );
-        psIns.setString( idx++, cKeyGasto );
-        psIns.setDouble( idx++, nMonto );
-        psIns.execute();
-        psIns.close();
-    }
+    // private void gastoIns(Integer pVenta, Integer pGasto, Map frmData, String cKeyGasto) throws SQLException {
+    //     Double nMonto = u.getDouble( frmData, cKeyGasto );
+    //     if (nMonto == null)
+    //         return;
+    //
+    //     String sqlIns = "INSERT INTO tGastoVenta ( pVenta, pGasto, cTipo, nMonto ) VALUES ( ?, ?, ?, ? )";
+    //     PreparedStatement psIns = this.cnxHlp.getConnection().prepareStatement( sqlIns );
+    //     int idx = 1;
+    //     psIns.setInt( idx++, pVenta );
+    //     psIns.setInt( idx++, pGasto );
+    //     psIns.setString( idx++, cKeyGasto );
+    //     psIns.setDouble( idx++, nMonto );
+    //     psIns.execute();
+    //     psIns.close();
+    // }
 
 }

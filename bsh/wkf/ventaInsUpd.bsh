@@ -3,4 +3,5 @@ $call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
 $call.include('vyl/bsh/db/empresaClase.bsh')
 $call.include('vyl/bsh/db/compradorClase.bsh')
 $call.include('vyl/bsh/db/ventaClase.bsh')
-new Venta(connectionHelper, connectionHelperAlt, wkfData).insUpd();
+traza.add("Crea objeto Venta");
+new Venta(connectionHelper, (connectionHelperAlt == null ? connectionHelper : connectionHelperAlt), wkfData).insUpd();

@@ -1,4 +1,4 @@
-.formulario-venta .recetas-dataview {
+.formulario-venta .archivos-dataview {
     padding: 10px 5px 10px;
 }
 .formulario-venta .statement-type {
@@ -23,7 +23,7 @@
     font-weight: 500;
 }
 .formulario-venta .thumb-icon {
-    background-image: url(../../../build/resources/icons/reporte.png);
+    background-image: url(../../../../../build/resources/icons/archivo-icon.png);
     height: 40px;
     width: 40px;
     background-size: contain;
@@ -32,12 +32,12 @@
     margin-right: 5px;
 }
 .x-ie8 .formulario-venta .thumb-icon {
-    background-image: url(../../../build/resources/icons/reporte-small.png);
+    background-image: url(../../../../../build/resources/icons/archivo-small-icon.png);
 }
 .formulario-venta .thumb-download {
     height: 40px;
     width: 40px;
-    background-image: url(../../../build/resources/icons/download-small.png);
+    background-image: url(../../../../../build/resources/icons/download-small.png);
     background-position: right center;
     background-repeat: no-repeat;
     background-size: 50%;

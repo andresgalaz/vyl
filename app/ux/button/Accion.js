@@ -20,6 +20,7 @@ Ext.define('vyl.ux.button.Accion', {
     ejecutarAcciones : function(jsonData, idEvento, cEtapaActual, fnCallback, fecha_programada) {
         var me = this, 
             cAccion = me.getCAccion(),
+            cxnCtrl = Ext.getApplication().getController('Conexion'), 
             mensaje = 'Error inesperado en botón ' + me.getText(),
             json = JSON.stringify(jsonData);
 
@@ -27,7 +28,7 @@ Ext.define('vyl.ux.button.Accion', {
             url : '../do/wkfAccionEvento',
             method : 'POST',
             params : {
-                // prm_dataSource : 'xgenJNDI', 
+                prm_dataSource : cxnCtrl.getDefaultDS(), 
                 prm_nEvento: idEvento,
                 prm_cEtapaActual: cEtapaActual,
                 prm_cAccion: cAccion,

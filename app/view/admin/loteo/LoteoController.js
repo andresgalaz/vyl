@@ -198,6 +198,20 @@ Ext.define('vyl.view.admin.loteo.LoteoController', {
         this.onCargarRegistro(grid, rowIndex);
     },
 
+    onLoteoCargar: function(loteoId) {
+        var me = this,
+            refs = me.getReferences();
+
+        if (loteoId == 0) {
+            // Loteo nuevo, proviene de Formulario.js
+            me.borrarFormulario();
+        } else {
+            me.cargarLoteo(loteoId);
+        }
+     
+        refs.tabPrincipal.setActiveTab(1);
+    },
+
     onLoadStLoteo: function (st, records, successful, operation, eOpts) {
         var me = this,
             grid = me.getView(),
