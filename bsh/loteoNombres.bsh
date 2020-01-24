@@ -1,3 +1,4 @@
 $call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
 $call.include('vyl/bsh/db/loteoClase.bsh')
-new Loteo(request, connectionHelper).nombres();
+traza.add("new Loteo");
+new Loteo(request, connectionHelper, traza).nombres();

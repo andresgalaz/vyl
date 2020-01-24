@@ -1,0 +1,4 @@
+$call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
+$call.include('vyl/bsh/db/ventaArchivosClase.bsh')
+VentaArchivos va = new VentaArchivos(connectionHelper, connectionHelperAlt, wkfData, traza);
+va.inserta("escritura","vyl/bsh/print/escritura.bsh");

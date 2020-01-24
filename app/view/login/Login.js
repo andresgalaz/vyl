@@ -6,7 +6,7 @@ Ext.define('vyl.view.login.Login', {
         'vyl.view.login.Dialog',
     ],
 
-    title: 'Compustrom - Proyecto Base',
+    title: 'Compustrom - Lakus Sistema de Venta y Leasing',
     defaultFocus: 'authdialog', // Focus the Auth Form to force field focus as well
 
     items: [
@@ -27,10 +27,6 @@ Ext.define('vyl.view.login.Login', {
             defaults : {
                 margin : '5 0'
             },
-
-            // listeners: {
-            //     conexionValida: 'onConexionValida'
-            // },
 
             items: [
                 {

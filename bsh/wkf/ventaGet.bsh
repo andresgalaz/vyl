@@ -2,5 +2,6 @@ $call.include('vyl/bsh/util/rutClase.bsh')
 $call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
 $call.include('vyl/bsh/db/empresaClase.bsh')
 $call.include('vyl/bsh/db/compradorClase.bsh')
+$call.include('vyl/bsh/db/leasingClase.bsh')
 $call.include('vyl/bsh/db/ventaClase.bsh')
-new Venta(connectionHelper, connectionHelperAlt, wkfData).get();
+new Venta(connectionHelper, connectionHelperAlt, wkfData, traza).get();

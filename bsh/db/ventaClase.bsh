@@ -48,20 +48,23 @@ public class Venta {
     private ConexionHelper     cnxHlp;
     private Map                wkfData;
     private Timestamp          tSistema;
+    private List               traza;
     // Solo como alias para acortar la sintaxis
     private JsonDataUtil       u = new JsonDataUtil();
     private AbstractDataDB     db;
 
-    public Venta(ConexionHelper connectionHelper, ConexionHelper connectionHelperAlt, Map wkfData) throws FrameworkException {
+    public Venta(ConexionHelper connectionHelper, ConexionHelper connectionHelperAlt, Map wkfData, List traza) throws FrameworkException {
         this.cnxHlp = (connectionHelperAlt == null ? connectionHelper : connectionHelperAlt);
         this.db = this.cnxHlp.getDataDb();
         this.wkfData = wkfData;
+        this.traza = traza;
     }
 
-    public Venta(HttpServletRequest request, ConexionHelper connectionHelper) throws FrameworkException {
+    public Venta(HttpServletRequest request, ConexionHelper connectionHelper, List traza) throws FrameworkException {
         this.request = request;
         this.cnxHlp = connectionHelper;
         this.db = this.cnxHlp.getDataDb();
+        this.traza = traza;
     }
 
     /**
@@ -74,8 +77,11 @@ public class Venta {
      */
     public String insUpd() throws FrameworkException {
         Map frmData = u.getRuta( this.wkfData, "request.json_data.DATOS.formIngreso" );
-        if (frmData == null)
-            throw new FrameworkException( "Se esperaba la estructura json_data.DATOS.formIngreso" );
+        if (frmData == null) {
+            String cMsg;
+            traza.add( cMsg = "Se esperaba la estructura json_data.DATOS.formIngreso" );
+            throw new FrameworkException( cMsg );
+        }
         Integer pVenta = u.getInt( frmData, "VYL_ID", 0 );
         Date dCierre = u.getDate( frmData, "VYL_FECHA_CIERRE" );
         Integer fEmpresa = u.getInt( frmData, "VYL_EMPRESA_ID" );
@@ -83,11 +89,11 @@ public class Venta {
         Integer nParcela = u.getInt( frmData, "VYL_PARCELA" );
         String cLoteo = u.getString( frmData, "VYL_LOTEO" );
         String cRol = u.getString( frmData, "VYL_ROL" );
-        Boolean bLeasing = u.getBoolean( frmData, "VYL_IS_LEASING", false );
+        Boolean bLeasing = "financiamiento".equalsIgnoreCase( u.getString( frmData, "VYL_MODALIDAD_VENTA" ) );
         Double nValor = u.getDouble( frmData, "VYL_VALOR" );
         Double nReserva = u.getDouble( frmData, "VYL_RESERVA" );
-        Double nPie = u.getDouble( frmData, "VYL_PIE" );
-        Integer nCuotas = u.getInt( frmData, "VYL_CUOTAS", 0 );
+        Double nPie = u.getDouble( frmData, "VYL_FINANCIAMIENTO_PIE" );
+        Integer nCuotas = u.getInt( frmData, "VYL_FINANCIAMIENTO_CUOTAS", 0 );
 
         // pEvento viene en la estructura del Workflow, si no se pasa por el WKF hay que pasarlo en la DATA del
         // cdformulario
@@ -170,29 +176,26 @@ public class Venta {
                 rs.close();
             }
             psUpd.close();
-
-            // String sqlDel = "DELETE FROM tGastoVenta WHERE pVenta = ?";
-            // PreparedStatement psDel = this.cnxHlp.getConnection().prepareStatement( sqlDel );
-            // psDel.setInt( 1, pVenta );
-            // psDel.execute();
-            // psDel.close();
-
-            // int pGasto = 1;
-            // gastoIns( pVenta, pGasto++, frmData, "VYL_CONTRATO_LEASING" );
-            // gastoIns( pVenta, pGasto++, frmData, "VYL_CONTRATO_LEASING_NOTARIO" );
-            // gastoIns( pVenta, pGasto++, frmData, "VYL_INSTRUCCIONES_NOTARIO" );
-            // gastoIns( pVenta, pGasto++, frmData, "VYL_ESCRITURA" );
-            // gastoIns( pVenta, pGasto++, frmData, "VYL_ESCRITURA_NOTARIO" );
-            // gastoIns( pVenta, pGasto++, frmData, "VYL_CBR" );
+            traza.add( "Venta.insUpd->Actualizado pVenta=" + pVenta );
 
             if (bLeasing && nCuotas != null) {
+                Leasing leasing = new Leasing( this.cnxHlp, traza );
+                Date dInicio = u.getDate( frmData, "VYL_FINANCIAMIENTO_VTO" );
+                Double nMontoCuota = u.getDouble( frmData, "VYL_VALOR_CUOTA" );
                 // Ingresa las cuotas
+                if (!leasing.hayCuotasGeneradas( pVenta )) {
+                    // Si no hay cuotas generadas
+                    String cMsg = leasing.generaCuotas( pVenta, nCuotas, nMontoCuota, dInicio );
+                    traza.add( "Venta.insUpd->" + cMsg );
+                }
 
             }
 
         } catch (JsonProcessingException e) {
+            traza.add( "Venta.insUpd->JsonProcessingException" );
             throw new FrameworkException( "Al convertir MAP request.json_data.DATOS.formIngreso a String\n" + ConvertException.stackTrace2string( e ) );
         } catch (SQLException e) {
+            traza.add( "Venta.insUpd->SQLException=" + e.getMessage() );
             throw new FrameworkException( "Al insertar en la tabla tVenta\n" + ConvertException.stackTrace2string( e ) );
         }
         return pVenta.toString();
@@ -266,9 +269,9 @@ public class Venta {
             if (!rs.next()) {
                 rs.close();
                 ps.close();
-                Map mResp = new HashMap(0);
+                Map mResp = new HashMap( 0 );
                 mResp.put( "success", true );
-                mResp.put( "message", "No existe cierre venta con ID:" + pVenta + "\no Evento:" + fEvento );                        
+                mResp.put( "message", "No existe cierre venta con ID:" + pVenta + "\no Evento:" + fEvento );
                 return mResp;
                 // throw new FrameworkException( "No existe cierre venta con ID:" + pVenta + "\no Evento:" + fEvento );
             }
@@ -286,8 +289,8 @@ public class Venta {
             mData.put( "VYL_IS_LEASING", ConvertBoolean.toString4Sql( rs.getBoolean( "bLeasing" ) ) );
             mData.put( "VYL_VALOR", rs.getDouble( "nValor" ) );
             mData.put( "VYL_RESERVA", rs.getDouble( "nReserva" ) );
-            mData.put( "VYL_PIE", rs.getDouble( "nPie" ) );
-            mData.put( "VYL_CUOTAS", rs.getInt( "nCuotas" ) );
+            mData.put( "VYL_FINANCIAMIENTO_PIE", rs.getDouble( "nPie" ) );
+            mData.put( "VYL_FINANCIAMIENTO_CUOTAS", rs.getInt( "nCuotas" ) );
             mData.put( "VYL_FECHA_CREACION", ConvertDate.toString( rs.getDate( "tCreacion" ) ) );
             mData.put( "VYL_FECHA_MODIFICACION", ConvertDate.toString( rs.getDate( "tModificacion" ) ) );
 
@@ -319,13 +322,14 @@ public class Venta {
      */
     public List lista() throws FrameworkException {
         String cSql = "SELECT DISTINCT " +
-                "       v.dCierre  as FECHA_VENTA     , v.cLoteo as LOTEO        ,\n" +
+                "       v.dCierre  as FECHA_VENTA     , lo.cNombre          as LOTEO        ,\n" +
                 "       v.nParcela as PARCELA         , v.cRol              as ROL_PROPIEDAD,\n" +
                 "       c.cNombre  as COMPRADOR_NOMBRE, c.cRut              as COMPRADOR_RUT,\n" +
                 "       et.CTITULO as WKF_ETAPA       , ev.CUSUARIOASIGNADO as WKF_USUARIO,\n" +
                 "       ev.PEVENTO as WKF_EVENTO \n" +
                 "FROM tVenta v \n" +
-                "LEFT JOIN .tComprador          c  ON c.pComprador = v.fComprador \n" +
+                "LEFT JOIN tLoteo               lo ON lo.pLoteo    = v.cLoteo \n" +
+                "LEFT JOIN tComprador           c  ON c.pComprador = v.fComprador \n" +
                 "LEFT JOIN xformgen4.wkf_evento ev ON ev.PEVENTO   = v.fEvento AND ev.BACTIVA = '1' \n" +
                 "LEFT JOIN xformgen4.wkf_etapa  et ON et.PETAPA    = ev.FETAPA \n";
         try {
@@ -339,28 +343,4 @@ public class Venta {
             throw new FrameworkException( "Al listar consulta de ventas", e );
         }
     }
-
-    /**
-     * Inserta cada gasto en tGasto
-     * 
-     * @param pVenta
-     * @param regGasto
-     * @throws SQLException
-     */
-    // private void gastoIns(Integer pVenta, Integer pGasto, Map frmData, String cKeyGasto) throws SQLException {
-    //     Double nMonto = u.getDouble( frmData, cKeyGasto );
-    //     if (nMonto == null)
-    //         return;
-    //
-    //     String sqlIns = "INSERT INTO tGastoVenta ( pVenta, pGasto, cTipo, nMonto ) VALUES ( ?, ?, ?, ? )";
-    //     PreparedStatement psIns = this.cnxHlp.getConnection().prepareStatement( sqlIns );
-    //     int idx = 1;
-    //     psIns.setInt( idx++, pVenta );
-    //     psIns.setInt( idx++, pGasto );
-    //     psIns.setString( idx++, cKeyGasto );
-    //     psIns.setDouble( idx++, nMonto );
-    //     psIns.execute();
-    //     psIns.close();
-    // }
-
 }

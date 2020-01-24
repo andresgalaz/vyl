@@ -42,13 +42,13 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                 align: 'stretch'
             },
             items: [
-                // {
-                //     xtype: 'hidden',
-                //     name: 'VYL_ID',
-                //     bind: {
-                //         value: '{formularioId}'
-                //     }
-                // },
+                {
+                    xtype: 'hidden',
+                    name: 'VYL_ID',
+                    bind: {
+                        value: '{formularioId}'
+                    }
+                },
                 {
                     xtype: 'fieldset',
                     title: 'Datos de Venta',
@@ -132,6 +132,19 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                     displayTpl:  Ext.create('Ext.XTemplate', '<tpl for=".">', '{EMPRESA_NOMBRE} ({EMPRESA_RUT}) - Representante: {EMPRESA_REPRESENTANTE} ({EMPRESA_RUT_REPRESENTANTE})', '</tpl>'),
                                     flex: 1
                                 },
+                            ]
+                        },
+                        {
+                            xtype: 'container',
+                            layout: 'hbox',
+                            margin: '0 0 5 0',
+                            items: [
+                                {
+                                    xtype: 'textarea',
+                                    fieldLabel: 'Observaciones',
+                                    name: 'VYL_VENTAS_OBSERVACIONES',
+                                    flex: 1
+                                }
                             ]
                         }
                     ]
@@ -471,6 +484,19 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                     width: 150
                                 }
                             ]
+                        },
+                        {
+                            xtype: 'container',
+                            layout: 'hbox',
+                            margin: '0 0 5 0',
+                            items: [
+                                {
+                                    xtype: 'textarea',
+                                    fieldLabel: 'Importante',
+                                    name: 'VYL_FORMA_PAGO_OBSERVACIONES',
+                                    flex: 1
+                                }
+                            ]
                         }
                     ]
                 },
@@ -492,6 +518,7 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                 hideTrigger: true,
                                 allowDecimals: false,
                                 decimalPrecision: 0,
+                                minValue: 0,
                                 flex: 1
                             },
                             items: [
@@ -509,13 +536,14 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                             xtype: 'container',
                             layout: 'hbox',
                             margin: '0 0 5 0',
-                            defaultType: 'numberfield',
+                            defaultType: 'uxnumberfield',
                             defaults: {
                                 allowBlank: true,
                                 mouseWheelEnabled: false,
                                 hideTrigger: true,
                                 allowDecimals: false,
-                                submitLocaleSeparator: false,
+                                decimalPrecision: 0,
+                                minValue: 0,
                                 flex: 1
                             },
                             bind: {
@@ -536,12 +564,13 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                             xtype: 'container',
                             layout: 'hbox',
                             margin: '0 0 5 0',
-                            defaultType: 'numberfield',
+                            defaultType: 'uxnumberfield',
                             defaults: {
                                 allowBlank: true,
                                 hideTrigger: true,
                                 allowDecimals: false,
-                                submitLocaleSeparator: false,
+                                decimalPrecision: 0,
+                                minValue: 0,
                                 flex: 1
                             },
                             items: [
@@ -559,6 +588,19 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                 },
                             ]
                         },
+                        {
+                            xtype: 'container',
+                            layout: 'hbox',
+                            margin: '0 0 5 0',
+                            items: [
+                                {
+                                    xtype: 'textarea',
+                                    fieldLabel: 'Observaciones',
+                                    name: 'VYL_GASTOS_OBSERVACIONES',
+                                    flex: 1
+                                }
+                            ]
+                        }
                     ]
                 },
                 {

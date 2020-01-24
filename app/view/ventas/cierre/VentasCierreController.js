@@ -95,6 +95,7 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 	formularioLeer: function(eventoId) {
 		var me = this,
 			vm = me.getViewModel(),
+			refs = me.getReferences(),
 			view = me.getView();
 
 		me.formularioReiniciar();
@@ -128,6 +129,13 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 				
 				if (formData.VYL_FINANCIAMIENTO_PIE)
 					me.setValorContado(formData.VYL_FINANCIAMIENTO_PIE);
+
+				if (formData.VYL_MODALIDAD_VENTA == 'financiamiento') {
+					refs.ctnFinanciamiento.setHidden(false);
+					
+				} else {
+					refs.ctnFinanciamiento.setHidden(true);
+				}
 			}
 
 			view.unmask();

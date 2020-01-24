@@ -21,7 +21,7 @@ import util.JsonDataUtil;
 
 /*
  * Denominar BSH:
- * vyl/bsh/db/lotetoClase.bsh
+ * vyl/bsh/db/loteoClase.bsh
  * 
  * BSH de llamada para lista de loteos:
  * 
@@ -29,7 +29,7 @@ import util.JsonDataUtil;
  * call.include('vyl/bsh/db/loteoClase.bsh')
  * // Opciones
  * // Listado de nombres de Loteo ( LOTEO_ID y LOTEO_NOMBRE )
- * new Loteo(request, connectionHelper).nombres();
+ * new Loteo(request, connectionHelper, traza).nombres();
  * // Obtener por ID o Nombre : prm_pLoteo y/o prm_cNombre, parámetro
  * // adicional prm_alias que se pega como prefijo a los nombres de los campos
  * // de salida. 
@@ -41,17 +41,20 @@ import util.JsonDataUtil;
 public class Loteo {
     private HttpServletRequest request;
     private ConexionHelper     cnxHlp;
+    private List               traza;
     // Solo como alias para acortar la sintaxis
     private JsonDataUtil       u = new JsonDataUtil();
 
-    public Loteo(HttpServletRequest request, ConexionHelper connectionHelper) throws FrameworkException {
+    public Loteo(HttpServletRequest request, ConexionHelper connectionHelper, List traza) throws FrameworkException {
         this.request = request;
         this.cnxHlp = connectionHelper;
+        this.traza = traza;
         // this.db = this.cnxHlp.getDataDb();
     }
 
-    public Loteo(ConexionHelper connectionHelper) throws FrameworkException {
+    public Loteo(ConexionHelper connectionHelper, List traza) throws FrameworkException {
         this.cnxHlp = connectionHelper;
+        this.traza = traza;
         // this.db = this.cnxHlp.getDataDb();
     }
 
@@ -93,7 +96,7 @@ public class Loteo {
         if (mRegAct == null) {
             // Inserta
             cSql = "INSERT INTO tLoteo ( cNombre , cDescripcion, cDeslinde ) \n"
-                    + " VALUES ( ?, ?, ?,  )";
+                    + " VALUES ( ?, ?, ?  )";
         } else {
             // Actualiza
             cSql = "UPDATE tLoteo \n"
@@ -119,6 +122,7 @@ public class Loteo {
             }
             psUpd.close();
         } catch (SQLException e) {
+            traza.add( "Loteo.insUpd->SQLException->message=" + e.getMessage() );
             throw new FrameworkException( "Al insertar en la tabla tLoteo\n" + ConvertException.stackTrace2string( e ) );
         }
         return pLoteo.toString();
@@ -144,6 +148,7 @@ public class Loteo {
             ps.close();
             return lis;
         } catch (SQLException e) {
+            traza.add( "Loteo.nombres->SQLException->message=" + e.getMessage() );
             throw new FrameworkException( "Al listar tLoteo", e );
 
         }
@@ -183,22 +188,32 @@ public class Loteo {
                     + " WHERE 1 = 1 \n"
                     + (pLoteo != null ? " AND lo.pLoteo  = ? " : "")
                     + (cNombre != null ? " AND lo.cNombre = ? " : "");
+            traza.add( cSql );
             PreparedStatement ps = this.cnxHlp.getConnection().prepareStatement( cSql );
             int nIdx = 1;
-            ps.setInt( nIdx++, pLoteo );
+            if (pLoteo != null) {
+                traza.add( "pLoteo:" + pLoteo );
+                ps.setInt( nIdx++, pLoteo );
+            }
+            if (cNombre != null) {
+                traza.add( "cNombre:" + cNombre );
+                ps.setString( nIdx++, cNombre );
+            }
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 mResp = ConvertMap.fromResultSet( rs );
             } else {
                 mResp = new HashMap();
+                traza.add( "No existe loteo-vendedor ID:" + pLoteo + " ," + cNombre );
                 mResp.put( "success", true );
-                mResp.put( "message", "No existe loteo-vendedor ID:" + pLoteo );
+                mResp.put( "message", "No existe loteo-vendedor ID:" + pLoteo + " ," + cNombre );
             }
             rs.close();
             ps.close();
             return mResp;
 
         } catch (SQLException e) {
+            traza.add( "Loteo.getByFiltro->SQLException->message=" + e.getMessage() );
             throw new FrameworkException( "Al leer tLoteo:" + pLoteo, e );
         }
     }

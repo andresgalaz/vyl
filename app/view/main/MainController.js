@@ -29,7 +29,7 @@ Ext.define('vyl.view.main.MainController', {
         var me = this;
 
         console.log('[init]');
-        me.title = 'OndontAr - Sistema Gestión Odontológica';
+        me.titulo = 'Compustrom - Lakus Sistema Venta y Leasing';
     },
 
     beforeRoute: function (node, action) {
@@ -39,6 +39,7 @@ Ext.define('vyl.view.main.MainController', {
             refs = me.getReferences(),
             stNavigationTree = vm.getStore('stNavigationTree'),
             token, newToken;
+        
         Ext.Ajax.request({
             url: '../do/estadoSesion',
             method: 'POST',
@@ -58,7 +59,10 @@ Ext.define('vyl.view.main.MainController', {
                             listeners: {
                                 close: 'onLoginOk',
                             }
-                        }).show();
+                        });
+
+                        console.log('[beforeRoute] login', pnLogin);
+                        pnLogin.show();
                     }
                 } else {
                     // Control de acceso al modulo destino
@@ -67,7 +71,7 @@ Ext.define('vyl.view.main.MainController', {
 
                     if (node && node.data.cTpAcceso == 'DENEGAR') {
                         Ext.Msg.show({
-                            title: me.title,
+                            title: me.titulo,
                             message: 'Usted no tiene permisos al módulo que intenta acceder',
                             buttons: Ext.Msg.OK,
                             icon: Ext.Msg.ERROR
@@ -81,7 +85,7 @@ Ext.define('vyl.view.main.MainController', {
             failure: function (response, opts) {
                 console.error('Falla del lado del servidor, código respuesta: ' + response.responseText);
                 Ext.Msg.show({
-                    title: me.title,
+                    title: me.titulo,
                     message: 'Error inesperado del servidor',
                     buttons: Ext.Msg.OK,
                     icon: Ext.Msg.ERROR
@@ -96,7 +100,8 @@ Ext.define('vyl.view.main.MainController', {
 
     doLogin: function () {
         var me = this,
-            wndLogin = Ext.create({
+            refs = me.getReferences(),
+            pnLogin = refs.wndLogin ? refs.wndLogin : Ext.create({
                 xtype: 'login',
                 reference: 'wndLogin',
                 listeners: {
@@ -104,7 +109,8 @@ Ext.define('vyl.view.main.MainController', {
                 }
             });
 
-        wndLogin.show();
+        console.log('[doLogin] login', pnLogin);
+        pnLogin.show();
     },
 
 
@@ -294,9 +300,11 @@ Ext.define('vyl.view.main.MainController', {
     onLoginOk: function (pnl, opts) {
         var me = this,
             refs = me.getReferences(),
+            app =  Ext.getApplication(),
             stNavigationTree = refs.navigationTreeList.getStore(),
-            cxnCtrl = Ext.getApplication().getController('Conexion'),
-            usrNombre = cxnCtrl.getUsuarioNombre();
+            cxnCtrl = app.getController('Conexion'),
+            usrNombre = cxnCtrl.getUsuarioNombre(),
+            hash = me.getHash() ? me.getHash() : app.getDefaultToken();
 
         if (usrNombre)
             refs.usrConectado.setData(usrNombre);
@@ -306,12 +314,15 @@ Ext.define('vyl.view.main.MainController', {
             stNavigationTree.getRoot().removeAll();
         }
 
-
+        console.log('[onLoginOk] usuario', cxnCtrl.getUsuario());
         stNavigationTree.load({
             params: {
                 prm_cCodArbol: cxnCtrl.getSistemaId()
             },
             callback: function (records, operation, success) {
+                if (hash)
+                    me.setCurrentView(hash);
+            
                 // var app = Ext.getApplication(),
                 //     defaultToken = app.getDefaultToken();
 
@@ -349,25 +360,23 @@ Ext.define('vyl.view.main.MainController', {
 
     onLogout: function () {
         var me = this,
-            refs = me.getReferences();
+            refs = me.getReferences(),
+            pnLogin = refs.wndLogin ? refs.wndLogin : Ext.create({
+                xtype: 'login',
+                reference: 'wndLogin',
+                listeners: {
+                    close: 'onLoginOk',
+                }
+            });
 
         Ext.Ajax.request({
             url: '../do/salir',
             method: 'POST',
             success: function (response, opts) {
                 if (response.status == 200) {
-                    console.log('[onLogout] references', refs);
-                    if (refs.wndLogin) {
-                        refs.wndLogin.show();
-                    } else {
-                        var pnLogin = Ext.create({
-                            xtype: 'login',
-                            reference: 'wndLogin',
-                            listeners: {
-                                close: 'onLoginOk',
-                            }
-                        }).show();
-                    }
+                    console.log('[onLogout] login', pnLogin);
+                    pnLogin.show();
+
                 } else
                     console.error(response.responseText);
             },
@@ -375,15 +384,6 @@ Ext.define('vyl.view.main.MainController', {
                 console.error('Falla del lado del servidor, código respuesta: ' + response.status);
             }
         });
-    },
-
-    onMainViewBeforeRender: function () {
-        var me = this,
-            refs = me.getReferences(),
-            view = me.getView(),
-            vm = me.getViewModel(),
-            stNavigationTree = vm.getStore('stNavigationTree');
-
     },
 
     onNoRoute: function (node, evento_id) {
@@ -402,6 +402,8 @@ Ext.define('vyl.view.main.MainController', {
             activeView;
 
         view.mask('Cargando Sistema');
+
+        console.log('[onRouteChange] usuario', cxnCtrl.getUsuario());
 
         if (stNavigationTree.getCount() == 0) {
             // Primera carga del sistema requiere sincronismo con el store del mainTree
@@ -426,7 +428,7 @@ Ext.define('vyl.view.main.MainController', {
                                 });
                             } else {
                                 Ext.Msg.show({
-                                    title: me.title,
+                                    title: me.titulo,
                                     message: 'El usuario logeado no tiene permisos para utilizar este sistema',
                                     buttons: Ext.Msg.OK,
                                     icon: Ext.Msg.ERROR,
@@ -464,6 +466,8 @@ Ext.define('vyl.view.main.MainController', {
     },
 
     getHash: function () {
-        return window.location.hash;
+        var hash = window.location.hash;
+        
+        return hash.substring(1, hash.length);
     }
 });

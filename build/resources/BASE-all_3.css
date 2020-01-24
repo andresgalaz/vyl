@@ -4752,7 +4752,7 @@
 }
 /* C:/workspace/sencha/webDesap4/desa/PE/app/view/login/Login.scss:12 */
 .auth-locked-window .x-window-body {
-    background-image: url('images/fondo_login.jpg');
+    background-image: url('../../resources/images/fondo_login.jpg');
     background-size: cover;
     background-repeat: repeat;
 }

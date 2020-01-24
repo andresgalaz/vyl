@@ -49,5 +49,5 @@ Ext.define('vyl.controller.Conexion', {
         var me = this;
 
         me.usuario = usr;
-    },
+    }
 });

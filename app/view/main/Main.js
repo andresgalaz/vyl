@@ -3,6 +3,7 @@ Ext.define('vyl.view.main.Main', {
     extend: 'Ext.container.Viewport',
 
     requires: [
+        // 'vyl.store.NavigationTree',
         'vyl.view.main.MainViewModel',
         'vyl.view.main.MainController',
         'vyl.view.main.MainContainerWrap',
@@ -14,7 +15,8 @@ Ext.define('vyl.view.main.Main', {
         'vyl.view.ventas.cierre.Consulta',
         
         // ADMIN
-        'vyl.view.admin.loteo.Loteo'
+        'vyl.view.admin.loteo.Loteo',
+        'vyl.view.admin.cobranza.Consulta'
     ],
 
     controller: 'main',
@@ -25,10 +27,6 @@ Ext.define('vyl.view.main.Main', {
     layout: {
         type: 'vbox',
         align: 'stretch'
-    },
-
-    listeners: {
-        beforerender: 'onMainViewBeforeRender'
     },
 
     items: [
@@ -43,7 +41,7 @@ Ext.define('vyl.view.main.Main', {
                     xtype: 'component',
                     reference: 'haLogo',
                     cls: 'ha-logo',
-                    html: '<div class="main-logo"><img src="resources/images/compustrom.png"><b style="position: relative; top: -20px;">Demo Lakus<b></div>',
+                    html: '<div class="main-logo"><img src="resources/images/compustrom.png"><b style="position: relative; top: -20px;">Lakus Ventas y Leasing<b></div>',
                     width: 250 
                 },
                 {

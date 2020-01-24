@@ -170,6 +170,17 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
                 }
             },
 
+            sorters: [
+                {
+                    property: 'FECHA_VENTA',
+                    direction: 'DESC'
+                },
+                {
+                    property: 'LOTEO',
+                    direction: 'ASC'
+                }
+            ],
+
             pageSize: 25
         },
 

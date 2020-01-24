@@ -1,0 +1,209 @@
+package vyl.db;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+import prg.glz.FrameworkException;
+import prg.util.cnv.ConvertException;
+import prg.util.cnv.ConvertJSON;
+import prg.util.cnv.ConvertMap;
+import prg.util.db.AbstractDataDB;
+import prg.util.db.hlp.ConexionHelper;
+import util.JsonDataUtil;
+
+/**
+ * Denominar BSH:
+ * vyl/bsh/db/ventaArchivosClase.bsh
+ * 
+ * BSH de llamada para actualizar:
+ * 
+ * call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
+ * call.include('vyl/bsh/db/ventaArchivosClase.bsh')
+ * // Inserta se llama desde funcion de WKF
+ * new VentaArchivos(connectionHelper, connectionHelperAlt, wkfData, traza).inserta("Escritura","vyl/bsh/print/escritura.bsh");
+ * // Elimina se llama desde funcion de WKF
+ * new VentaArchivos(connectionHelper, connectionHelperAlt, wkfData, traza).elimina("Escritura");
+ * // Lista. Requiere request->prm_pVenta
+ * new VentaArchivos(request, connectionHelper, traza).lista;
+ * 
+ * @author agalaz
+ *
+ */
+public class VentaArchivos {
+    private HttpServletRequest request;
+    private ConexionHelper     cnxHlp;
+    private Map                wkfData;
+    private List               traza;
+    // Solo como alias para acortar la sintaxis
+    private JsonDataUtil       u = new JsonDataUtil();
+    private AbstractDataDB     db;
+
+    // Instanciación desde el WKF
+    public VentaArchivos(ConexionHelper connectionHelper, ConexionHelper connectionHelperAlt, Map wkfData, List traza) throws FrameworkException {
+        this.cnxHlp = (connectionHelperAlt == null ? connectionHelper : connectionHelperAlt);
+        this.db = this.cnxHlp.getDataDb();
+        this.wkfData = wkfData;
+        this.traza = traza;
+    }
+
+    // Instanciación via AJAX
+    public VentaArchivos(HttpServletRequest request, ConexionHelper connectionHelper, List traza) throws FrameworkException {
+        this.request = request;
+        this.cnxHlp = connectionHelper;
+        this.db = this.cnxHlp.getDataDb();
+        this.traza = traza;
+    }
+
+    /**
+     * Inserta el archivo identificado por cTitulo.
+     * El segundo parámetro es el BSH que va a generar PDF y el Download    
+     * El ID Venta lo saca del wkfData. 
+     * 
+     * @param cTitulo
+     * @param cBSH
+     * @return
+     * @throws FrameworkException 
+     */
+    public String inserta(String cTitulo, String cBSH) throws FrameworkException {
+        Integer pVenta = null;
+        if (this.request != null) {
+            pVenta = u.getInt( request, "prm_pVenta", 0 );
+        } else {
+            Map frmData = u.getRuta( this.wkfData, "request.json_data.DATOS.formIngreso" );
+            if (frmData == null) {
+                String cMsg;
+                traza.add( cMsg = "Se esperaba la estructura json_data.DATOS.formIngreso" );
+                throw new FrameworkException( cMsg );
+            }
+            pVenta = u.getInt( frmData, "VYL_ID", 0 );
+        }
+        if (pVenta == 0) {
+            String cMsg;
+            traza.add( cMsg = "No está VYL_ID en json_data.DATOS.formIngreso" );
+            throw new FrameworkException( cMsg );
+        }
+        Map mArchivos = getById( pVenta );
+        // Actualiza MAP
+        mArchivos.put( cTitulo, cBSH );
+        update( pVenta, mArchivos );
+        return "Transacción OK";
+    }
+
+    /**
+     * Elimina el archivo identificado por cTitulo.
+     * El segundo parámetro es el BSH que va a generar PDF y el Download    
+     * El ID Venta lo saca del wkfData. 
+     * 
+     * @param cTitulo
+     * @param cBSH
+     * @return
+     * @throws FrameworkException 
+     */
+    public String elimina(String cTitulo) throws FrameworkException {
+        Integer pVenta = null;
+        if (this.request != null) {
+            pVenta = u.getInt( request, "prm_pVenta", 0 );
+        } else {
+            Map frmData = u.getRuta( this.wkfData, "request.json_data.DATOS.formIngreso" );
+            if (frmData == null) {
+                String cMsg;
+                traza.add( cMsg = "Se esperaba la estructura json_data.DATOS.formIngreso" );
+                throw new FrameworkException( cMsg );
+            }
+            pVenta = u.getInt( frmData, "VYL_ID", 0 );
+        }
+        if (pVenta == 0) {
+            String cMsg;
+            traza.add( cMsg = "No está VYL_ID en json_data.DATOS.formIngreso" );
+            throw new FrameworkException( cMsg );
+        }
+        Map mArchivos = getById( pVenta );
+        // Actualiza MAP
+        mArchivos.remove( cTitulo );
+        update( pVenta, mArchivos );
+        return "Transacción OK";
+    }
+
+    /**
+     * Lista todos los archivos de una venta.
+     * Recibe los parámetros por request: prm_pVenta
+     * 
+     * @return
+     * @throws FrameworkException 
+     */
+    public List lista() throws FrameworkException {
+        Integer pVenta = u.getInt( this.request, "prm_pVenta" );
+        Map mArchivos = getById( pVenta );
+        // Convierte mArchivos a List con field: cTitulo, cBsh
+        List lResp = new ArrayList();
+        for (Object llave : mArchivos.keySet()) {
+            Map mReg = new HashMap();
+            mReg.put( "TITULO", llave );
+            mReg.put( "BSH", mArchivos.get( llave ) );
+            lResp.add( mReg );
+        }
+        return lResp;
+    }
+
+    private Map getById(Integer pVenta) throws FrameworkException {
+        if (pVenta == 0) {
+            String cMsg;
+            traza.add( cMsg = "No está VYL_ID en json_data.DATOS.formIngreso" );
+            throw new FrameworkException( cMsg );
+        }
+        Map mArchivos = null;
+        // Lee cJsonArchivos
+        String cSql = "SELECT CONVERT(cJsonArchivos USING utf8) FROM tVenta WHERE pVenta = ?";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = this.cnxHlp.getConnection().prepareStatement( cSql );
+            ps.setInt( 1, pVenta );
+            rs = ps.executeQuery();
+            if (rs.next())
+                mArchivos = ConvertMap.fromJsonString( rs.getString( 1 ) );
+            rs.close();
+            ps.close();
+
+        } catch (SQLException e) {
+            db.close( rs );
+            db.close( ps );
+            traza.add( "Venta.archivoIns.SELECT->SQLException=" + e.getMessage() );
+            throw new FrameworkException( "Al leer tabla tVenta\n" + ConvertException.stackTrace2string( e ) );
+        }
+
+        if (mArchivos == null)
+            mArchivos = new HashMap();
+        return mArchivos;
+    }
+
+    private void update(Integer pVenta, Map mArchivos) throws FrameworkException {
+        // Actualiza tVenta.cJsonArchivos
+        String cSql = "UPDATE tVenta SET cJsonArchivos=? WHERE pVenta = ?";
+        PreparedStatement ps = null;
+        try {
+            ps = this.cnxHlp.getConnection().prepareStatement( cSql );
+            ps.setString( 1, ConvertJSON.ObjectToString( mArchivos ) );
+            ps.setInt( 2, pVenta );
+            ps.execute();
+            ps.close();
+        } catch (SQLException e) {
+            db.close( ps );
+            traza.add( "Venta.archivoIns.UPDATE->SQLException=" + e.getMessage() );
+            throw new FrameworkException( "Al leer tabla tVenta\n" + ConvertException.stackTrace2string( e ) );
+        } catch (JsonProcessingException e) {
+            db.close( ps );
+            traza.add( "Venta.archivoIns.ConvertJSON=" + mArchivos );
+            throw new FrameworkException( "Al convertir MAP a JSON tabla tVenta\n" + ConvertException.stackTrace2string( e ) );
+        }
+    }
+}

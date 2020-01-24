@@ -82,6 +82,7 @@ public class Comprador {
         String cTelefono = u.getString( frmData, cAlias + "COMPRADOR_TELEFONO" );
         String cNacionalidad = u.getString( frmData, cAlias + "COMPRADOR_NACIONALIDAD" );
         String cEmail = u.getString( frmData, cAlias + "COMPRADOR_EMAIL" );
+        String cSexo = u.getString( frmData, cAlias + "COMPRADOR_SEXO" );
         String cProfesion = u.getString( frmData, cAlias + "COMPRADOR_PROFESION" );
         String cEstadoCivil = u.getString( frmData, cAlias + "COMPRADOR_ESTADO_CIVIL" );
         String cDireccion = null;
@@ -120,18 +121,21 @@ public class Comprador {
         if (mRegAct == null) {
             // Inserta
             cSql = "INSERT INTO tComprador (\n"
-                    + "     cNombre , cRut       , cTelefono  , cNacionalidad , \n"
-                    + "     cEmail  , cProfesion , cDireccion , cEstadoCivil \n"
+                    + "     cNombre , cRut       , cTelefono  , cNacionalidad, \n"
+                    + "     cEmail  , cProfesion , cDireccion , cEstadoCivil, \n"
+                    + "     cSexo  \n"
                     + " ) VALUES (\n"
                     + "     ?, ?, ?, ?, \n"
-                    + "     ?, ?, ?, ? \n"
+                    + "     ?, ?, ?, ?, \n"
+                    + "     ? \n"
                     + ")\n";
         } else {
             // Actualiza
 
             cSql = "UPDATE tComprador \n"
                     + " SET cNombre  = ?, cRut       = ?, cTelefono  = ?, cNacionalidad = ?, \n"
-                    + "     cEmail   = ?, cProfesion = ?, cDireccion = ?, cEstadoCivil  = ? \n"
+                    + "     cEmail   = ?, cProfesion = ?, cDireccion = ?, cEstadoCivil  = ?, \n"
+                    + "     cSexo    = ? \n"
                     + " WHERE pComprador = ? \n";
         }
         try {
@@ -145,6 +149,7 @@ public class Comprador {
             cnxHlp.setString( psUpd, nIdx++, cProfesion );
             cnxHlp.setString( psUpd, nIdx++, cDireccion );
             cnxHlp.setString( psUpd, nIdx++, cEstadoCivil );
+            cnxHlp.setString( psUpd, nIdx++, cSexo );
             if (mRegAct != null)
                 psUpd.setInt( nIdx++, pComprador );
             psUpd.execute();

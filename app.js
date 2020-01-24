@@ -19,7 +19,7 @@ Ext.application({
 
     launch: function () {
         var app = this,
-            mainCtrl = app.getMainView().getController()
+            mainCtrl = app.getMainView().getController(),
             cnxCtrl = app.getController('Conexion');
 
         Ext.Ajax.request({
