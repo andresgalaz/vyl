@@ -67,6 +67,12 @@ public class Venta {
         this.traza = traza;
     }
 
+    public Venta(ConexionHelper connectionHelper, List traza) throws FrameworkException {
+        this.cnxHlp = connectionHelper;
+        this.db = this.cnxHlp.getDataDb();
+        this.traza = traza;
+    }
+
     /**
      * 
      * Inserta o Actualiza los datos de la tabla tVenta y sus tablas asociadas tGastoVenta(se limpia y se vuelve a
@@ -233,7 +239,8 @@ public class Venta {
         return getById( pVenta, fEvento );
     }
 
-    private Map getById(Integer pVenta, Integer fEvento) throws FrameworkException {
+    public Map getById(Integer pVenta, Integer fEvento) throws FrameworkException {
+        traza.add( "Venta.getById->(pVenta,fEevento)=(" + pVenta + "," + fEvento + ")" );
         Map mData = null;
         String cSql = "SELECT \n"
                 + db.convertColumn( "ve.fEvento" ) + ", \n"
@@ -296,15 +303,12 @@ public class Venta {
 
             Integer fEmpresa = rs.getInt( "fEmpresa" );
             Integer fComprador = rs.getInt( "fComprador" );
-            if (this.request == null) {
-                mData.putAll( new Comprador( this.cnxHlp ).getByFilter( fComprador, null, "VYL" ) );
-                mData.putAll( new Empresa( this.cnxHlp ).getById( fEmpresa, "VYL" ) );
-            } else {
-                mData.putAll( new Comprador( this.request, this.cnxHlp ).getByFilter( fComprador, null, "VYL" ) );
-                mData.putAll( new Empresa( this.request, this.cnxHlp ).getById( fEmpresa, "VYL" ) );
-            }
+            
             rs.close();
             ps.close();
+            
+            mData.putAll( new Comprador( this.cnxHlp ).getByFilter( fComprador, null, "VYL" ) );
+            mData.putAll( new Empresa( this.cnxHlp ).getById( fEmpresa, "VYL" ) );
 
         } catch (SQLException e) {
             throw new FrameworkException( "Al leer tVenta:" + pVenta, e );

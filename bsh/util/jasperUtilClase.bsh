@@ -1,0 +1,36 @@
+package util;
+
+import java.util.Map;
+
+import prg.util.cnv.ConvertObject;
+
+/*
+/*
+ * Denominar BSH: 
+ * 
+ * <systema>/bsh/util/jasperUtilClase.bsh
+ * 
+ * @author agalaz
+ *
+ */
+public class JasperUtil {
+
+    /**
+     * Corrige el contenido de mData, convirtiendo todas los parametros incluidos
+     * en ek array arrParams a STRING y NO Nulos.
+     * 
+     * @param mData
+     * @param aParams
+     * @return
+     */
+    public Map fixParameters(Map mData, String[] aParams) {
+        for (int i = 0; i < aParams.length; i++) {
+            Object v = mData.get( aParams[i] );
+            if (v == null)
+                mData.put( aParams[i], "" );
+            else
+                mData.put( aParams[i], ConvertObject.toString( v ) );
+        }
+        return mData;
+    }
+}

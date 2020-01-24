@@ -1,0 +1,976 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.8.0.final using JasperReports Library version 6.8.0-2ed8dfabb690ff337a5797129f2cd92902b0c87b  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="resumenVentaCierre" pageWidth="612" pageHeight="792" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="bd8409c8-f6b7-4c0f-9a02-e412450ffc1b">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<parameter name="FECHAHORA_EMISION" class="java.lang.String"/>
+	<parameter name="VYL_CAMPANA" class="java.lang.String"/>
+	<parameter name="VYL_CBR" class="java.lang.String"/>
+	<parameter name="VYL_COMPRADOR_DOMICILIO" class="java.lang.String"/>
+	<parameter name="VYL_COMPRADOR_EMAIL" class="java.lang.String"/>
+	<parameter name="VYL_COMPRADOR_ESTADO_CIVIL" class="java.lang.String"/>
+	<parameter name="VYL_COMPRADOR_ID" class="java.lang.String"/>
+	<parameter name="VYL_COMPRADOR_NACIONALIDAD" class="java.lang.String"/>
+	<parameter name="VYL_COMPRADOR_NOMBRE" class="java.lang.String"/>
+	<parameter name="VYL_COMPRADOR_PROFESION" class="java.lang.String"/>
+	<parameter name="VYL_COMPRADOR_RUT" class="java.lang.String"/>
+	<parameter name="VYL_COMPRADOR_TELEFONO" class="java.lang.String"/>
+	<parameter name="VYL_EMPRESA_ID" class="java.lang.String"/>
+	<parameter name="VYL_EMPRESA_NOMBRE" class="java.lang.String"/>
+	<parameter name="VYL_EMPRESA_RUT" class="java.lang.String"/>
+	<parameter name="VYL_EMPRESA_REPRESENTANTE" class="java.lang.String"/>
+	<parameter name="VYL_EMPRESA_REPRESENTANTE_RUT" class="java.lang.String"/>
+	<parameter name="VYL_EMPRESA_DIRECCION" class="java.lang.String"/>
+	<parameter name="VYL_EMPRESA_ESTADO_CIVIL" class="java.lang.String"/>
+	<parameter name="VYL_ESCRITURA" class="java.lang.String"/>
+	<parameter name="VYL_ESCRITURA_NOTARIO" class="java.lang.String"/>
+	<parameter name="VYL_FECHA_CIERRE" class="java.lang.String"/>
+	<parameter name="VYL_FINANCIAMIENTO_CUOTAS" class="java.lang.String"/>
+	<parameter name="VYL_FINANCIAMIENTO_GASTO_CONTRATO" class="java.lang.String"/>
+	<parameter name="VYL_FINANCIAMIENTO_GASTO_NOTARIAL" class="java.lang.String"/>
+	<parameter name="VYL_FINANCIAMIENTO_INTERESES" class="java.lang.String"/>
+	<parameter name="VYL_FINANCIAMIENTO_PIE" class="java.lang.String"/>
+	<parameter name="VYL_FINANCIAMIENTO_VTO" class="java.lang.String"/>
+	<parameter name="VYL_ID" class="java.lang.String"/>
+	<parameter name="VYL_INSTRUCCIONES_NOTARIO" class="java.lang.String"/>
+	<parameter name="VYL_LOTEO" class="java.lang.String"/>
+	<parameter name="VYL_MODALIDAD_OBSERVACIONES" class="java.lang.String"/>
+	<parameter name="VYL_MODALIDAD_PAGO" class="java.lang.String"/>
+	<parameter name="VYL_MODALIDAD_VENTA" class="java.lang.String"/>
+	<parameter name="VYL_OBSERVACIONES_GASTOS" class="java.lang.String"/>
+	<parameter name="VYL_OBSERVACIONES_CONTRATO" class="java.lang.String"/>
+	<parameter name="VYL_OBSERVACIONES_VENDEDOR" class="java.lang.String"/>
+	<parameter name="VYL_OBSERVACIONES_RESERVA" class="java.lang.String"/>
+	<parameter name="VYL_OBSERVACIONES_CIERRE" class="java.lang.String"/>
+	<parameter name="VYL_PARCELA" class="java.lang.String"/>
+	<parameter name="VYL_RESERVA" class="java.lang.String"/>
+	<parameter name="VYL_ROL" class="java.lang.String"/>
+	<parameter name="VYL_VALOR" class="java.lang.String"/>
+	<parameter name="VYL_VALOR_CUOTA" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="52" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="350" height="30" forecolor="#3F51B5" uuid="1e8ca32e-879e-4e4c-8e9c-443f237be013"/>
+				<textElement>
+					<font size="24"/>
+				</textElement>
+				<text><![CDATA[Lakus]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="320" y="2" width="260" height="20" uuid="88eeb119-85cd-4277-a690-ec850a1a2da7"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA["Fecha Emisión : " + $P{FECHAHORA_EMISION}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="637" splitType="Stretch">
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="36" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="c05b0145-1768-4ea2-98e0-152d2457e3f9">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="105" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="ed619099-0b5f-485d-957f-53a3d3d1e0e3">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement key="" mode="Opaque" x="0" y="1" width="580" height="20" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="c17ccd7c-bdc3-4743-9b21-714572bffc04"/>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="1" width="310" height="20" forecolor="#FFFFFF" backcolor="#222222" uuid="f4f5d2cc-cde9-4e40-a969-da1795cedbae">
+					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[CIERRE DE VENTA]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="20" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="a651fa78-dfc8-4bf6-a9e0-19483ae2afa1"/>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="20" width="100" height="16" uuid="599826d8-f529-4d94-b5df-9be4671fd2aa"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Fecha]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="20" width="190" height="16" uuid="3e2c0b60-c21c-43eb-84fa-8a9308ae3326"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_FECHA_CIERRE}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="290" y="20" width="100" height="16" uuid="42e1c885-57f5-47dc-bb04-b12c328209d8">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Parcela Nº]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="390" y="20" width="190" height="16" uuid="a50ee973-9f5f-4307-823f-d7f642aa2791"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_PARCELA}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="290" y="36" width="100" height="16" uuid="149fcc9a-9fa2-43fe-978b-bead6e9774bf">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Rol]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="390" y="36" width="190" height="16" uuid="2bb1d6e6-6058-41a2-93d7-429190b521c8">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_ROL}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="36" width="100" height="16" uuid="3be31799-0582-4d77-a7c6-392866ab9488">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Loteo]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="36" width="190" height="16" uuid="f4687541-4472-4695-8c15-c5800f4d7838">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_LOTEO}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement key="" mode="Opaque" x="0" y="70" width="580" height="20" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="852600b9-fd1f-471d-85d6-750ddec40ffd"/>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="70" width="310" height="20" forecolor="#FFFFFF" backcolor="#222222" uuid="ab8e88ca-977d-47b4-b303-e11a6a300f64">
+					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[DATOS DEL VENDEDOR]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="89" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="b7310045-54a1-4e50-a48a-fb3da9b0b0e2">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="89" width="100" height="16" uuid="290c4c10-7bd1-400a-a132-191ecef16673">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Nombre]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="89" width="190" height="16" uuid="7fb60008-0bdc-4cf4-86c9-f18d5964deb9">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_EMPRESA_NOMBRE}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="290" y="89" width="100" height="16" uuid="0044489e-f0e1-4c21-a26f-8bac60feebcb">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[RUT]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="390" y="89" width="190" height="16" uuid="ee182b41-b93c-4c54-bae3-330a1a423bd3">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_EMPRESA_RUT}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="290" y="105" width="100" height="16" uuid="b9e9c78d-f687-4229-b533-c0cdc1bd70b5">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[RUT]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="390" y="105" width="190" height="16" uuid="0d8cc95a-3fb3-47df-a556-82ddb1a811ef">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_EMPRESA_REPRESENTANTE_RUT}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="105" width="100" height="16" uuid="18634295-b8fd-468b-9a65-4ec6a23668e8">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Representante]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="105" width="190" height="16" uuid="642746b9-64e8-4e38-9173-efa6d606a891">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_EMPRESA_REPRESENTANTE}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="121" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="d59f3a3c-aa28-4fbd-9f73-5902ccfc0a9f">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="121" width="100" height="16" uuid="e14cd3b6-d803-49b6-8de3-0e12ea465d4b">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Observaciones]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="121" width="480" height="16" uuid="9db0af70-ad03-4494-8a6c-8d5f875c2c9d">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_OBSERVACIONES_VENDEDOR}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement key="" mode="Opaque" x="0" y="154" width="580" height="20" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="81276f6b-9a2f-47f8-bb80-c618d09ceccd"/>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="154" width="310" height="20" forecolor="#FFFFFF" backcolor="#222222" uuid="1c6df273-9dac-49cd-b698-ef297efefc29">
+					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[DATOS DEL COMPRADOR]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="190" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="5f2c6a22-e72c-4ad0-ab24-e367bf16615d">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="174" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="7f74076e-b53c-4df0-a0c9-7604c6ff7e01">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="174" width="100" height="16" uuid="abd3c7b3-29ac-49f5-a1da-6559c829596f">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Nombre]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="174" width="190" height="16" uuid="5468b03e-8e33-4d43-9098-6ecc6d317f5a">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_COMPRADOR_NOMBRE}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="290" y="174" width="100" height="16" uuid="d6777482-3827-40e0-831f-3a5bcc14cb37">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[RUT]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="390" y="174" width="190" height="16" uuid="8fa90ba7-e9a7-403c-b125-1833a0a977ec">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_COMPRADOR_RUT}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="290" y="190" width="100" height="16" uuid="7d356ad3-a901-42b8-9c02-1cd773991291">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Nacionalidad]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="390" y="190" width="190" height="16" uuid="56cbb617-b272-4c0d-b2dc-83e09bb041a0">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_COMPRADOR_NACIONALIDAD}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="190" width="100" height="16" uuid="ec0c7e35-e1f7-48c7-af99-c8bb6bac7c9d">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Teléfono]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="190" width="190" height="16" uuid="2fb05a91-5389-4503-9c06-272e30418507">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_COMPRADOR_TELEFONO}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="222" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="a096b0f7-f6b4-4bcb-8c7d-65b3462988ea">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="206" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="f7d4ba50-32bc-4b79-b128-4cfced4f4665">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="206" width="100" height="16" uuid="975d0a4a-add3-4ff1-abe1-88a86dd8d31d">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Email]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="206" width="190" height="16" uuid="c5c3e774-767c-4d4c-bcde-e627dc2eacd4">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_COMPRADOR_EMAIL}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="290" y="206" width="100" height="16" uuid="cd3e2077-4861-49c4-9ac2-b2b6048a29a3">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Profesión]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="390" y="206" width="190" height="16" uuid="811ccde1-3e26-44af-ae96-07dade5587b9">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_COMPRADOR_PROFESION}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="290" y="222" width="100" height="16" uuid="cddf9b91-066b-4d1f-a349-59072c143778">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Estado Civil]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="390" y="222" width="190" height="16" uuid="547b1803-e03f-4b67-b8e8-b6a883555841">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_COMPRADOR_ESTADO_CIVIL}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="222" width="100" height="16" uuid="4ad71e58-f895-40d2-b6cc-5df21fbe84dc">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Dirección]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="222" width="190" height="16" uuid="149f8631-2c15-4957-b93c-f6fd20048870">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_COMPRADOR_DOMICILIO}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="290" y="21" width="1" height="31" forecolor="#3F51B5" uuid="c53a1cf2-36cb-46a5-a26b-61f74397b883"/>
+			</line>
+			<line>
+				<reportElement x="290" y="90" width="1" height="31" forecolor="#3F51B5" uuid="61127b7e-7973-4422-9613-3e5cd5facb6b"/>
+			</line>
+			<line>
+				<reportElement x="290" y="174" width="1" height="64" forecolor="#3F51B5" uuid="d2d6721d-81a6-4533-8855-9979ae252660"/>
+			</line>
+			<rectangle>
+				<reportElement key="" mode="Opaque" x="0" y="255" width="580" height="20" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="2c98571c-70c6-49f6-ae11-6e5e51414fb5"/>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="255" width="310" height="20" forecolor="#FFFFFF" backcolor="#222222" uuid="68767626-ede3-4c2e-afd6-8c4f0e7e6d37">
+					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[MODALIDAD DE CONTRATO DE COMPRAVENTA]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="274" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="5ceb74fe-9efd-4a78-8e87-11cbbc81d869">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="274" width="100" height="16" uuid="ddb343b3-2a9b-4d43-95c8-6c29d036c99d">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Escritura]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="274" width="190" height="16" uuid="89a4590c-a682-49cb-b1a4-b6be23f5d0e6">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_ESCRITURA}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="290" y="274" width="100" height="16" uuid="e7385c7d-37d0-4f6e-8821-0af82162b0f6">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Instrucciones]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="390" y="274" width="190" height="16" uuid="36297f12-a10d-4eac-8dcf-6a1a2f030276">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_INSTRUCCIONES_NOTARIO}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="290" width="580" height="40" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="5fc31ec2-7d09-41d3-82f5-7e1e53ecaad6">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="290" width="100" height="16" uuid="0372249c-9c30-4d65-9955-5f2aac825cf2">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Observaciones]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="290" width="480" height="40" uuid="6bc1fb49-5ac5-48a7-b251-6964c5188c56">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.spacingBefore" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Top" markup="html">
+					<font fontName="SansSerif" size="8"/>
+					<paragraph spacingBefore="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_OBSERVACIONES_CONTRATO}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="290" y="275" width="1" height="15" forecolor="#3F51B5" uuid="e6e26bd1-fcf3-4a93-a861-a8233c659004"/>
+			</line>
+			<rectangle>
+				<reportElement key="" mode="Opaque" x="0" y="348" width="580" height="20" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="f34a679c-d15d-4140-bd62-80f807a66ab6"/>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="348" width="310" height="20" forecolor="#FFFFFF" backcolor="#222222" uuid="8444fd01-7034-4c79-b0cf-0e933d1a4a76">
+					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[VALORES Y FORMA DE PAGO]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="367" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="e20809d1-9971-4dcc-bbd5-7eb680e77705">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="367" width="130" height="16" uuid="315e8e0e-232f-4c7e-910f-eed4d573227d">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Modalidad de Venta]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="130" y="367" width="160" height="16" uuid="aabc78cc-dfa6-4c09-a7d4-f5c8656ed96e">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_MODALIDAD_VENTA}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="446" width="580" height="40" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="dc4c460f-4ae4-498e-91d1-5000b56cb8b3">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="445" width="100" height="16" uuid="bea77d21-1b95-4690-89a6-bcdf5171ac98">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Importante]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="130" y="446" width="450" height="40" uuid="d197930c-c137-4d86-b2bc-5fe5be4a771b">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.spacingBefore" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Top" markup="html">
+					<font fontName="SansSerif" size="8"/>
+					<paragraph spacingBefore="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_OBSERVACIONES_CIERRE}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="383" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="51ac74a3-6cd2-4375-af56-10b2af5ce6c0">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="383" width="130" height="16" uuid="f6c42358-16a1-4ec4-8432-880e478dde86">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Valor del Predio]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="130" y="383" width="160" height="16" uuid="413da73f-a70b-4c34-907c-4bd05505a7f1">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_ESCRITURA}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="300" y="383" width="278" height="16" uuid="5e2079c4-60ab-457f-8772-d2820bc2059e">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_CAMPANA}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="399" width="580" height="31" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="952cf944-d7ea-4098-af3f-38a710a5b412">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="399" width="130" height="16" uuid="9da33e18-35a9-4111-946b-086f4d8b2458">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Reserva]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="130" y="399" width="160" height="16" uuid="c3eeb9de-ea98-49ee-a8db-a83f9fce44f5">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_RESERVA}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="300" y="399" width="278" height="30" uuid="3b97f2cf-dd20-48ce-9d10-775765fa909a">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.spacingBefore" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Top" markup="rtf">
+					<font fontName="SansSerif" size="8"/>
+					<paragraph spacingBefore="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_OBSERVACIONES_RESERVA}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="291" y="368" width="1" height="77" forecolor="#3F51B5" uuid="4706a22b-6b96-4f7b-901a-58e293939830"/>
+			</line>
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="430" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="ac032ead-9aed-4ad0-bcc3-c7b073f80717">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="430" width="130" height="16" uuid="80f2d0ff-f7f8-406f-9f70-4ae3e374b742">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Modalidad de Pago]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="130" y="430" width="160" height="16" uuid="49a4ce75-da72-48f8-9200-2358ed5c7737">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_MODALIDAD_PAGO}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement key="" mode="Opaque" x="0" y="502" width="580" height="20" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="da8b0ca6-f3d0-4809-bb43-30c96056f234"/>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="502" width="310" height="20" forecolor="#FFFFFF" backcolor="#222222" uuid="e3e950da-6415-42f2-a512-8fbd4d1fd1e6">
+					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[GASTOS OPERACIÓN]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="538" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="9c531ce3-496f-4fdf-b173-a901707e6eaf">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="522" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="202aa04d-94f1-461b-b2bf-de2579469072">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="522" width="100" height="16" uuid="ef2c82b2-71cb-4672-ad4f-01b3fe53afc9">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Escritura]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="522" width="190" height="16" uuid="a83f4c12-292f-4504-b40b-89afa4b3c358">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_ESCRITURA}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="538" width="100" height="16" uuid="aa411e6d-9ce7-48be-8a29-96119e0e573c">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Instrucciones Notario]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="538" width="190" height="16" uuid="1ed43e48-837b-45bf-8681-688991b13633">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_INSTRUCCIONES_NOTARIO}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="570" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="b5b59c5b-ab74-4a80-a99f-aaad47dba6ab">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="554" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="d7e82c20-a588-4081-87fa-ee399c977ccc">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="554" width="100" height="16" uuid="9f7ee786-3d24-4368-afb9-70cb43110e51">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Notario]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="554" width="190" height="16" uuid="0f5942cc-26fc-4940-bf3b-c8fd5398ef97">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_ESCRITURA_NOTARIO}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="570" width="100" height="16" uuid="3a31f6f9-8741-4cff-8296-26483987b710">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[CBR]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="570" width="190" height="16" uuid="dbf55b07-dedf-49c4-90a5-d5350c1e6e96">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_CBR}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="586" width="580" height="40" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="308ddfdc-ae38-4ae3-8382-bcea89b6adb4">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="586" width="100" height="16" uuid="094033ea-cec8-46d3-bea5-e805a58e2d7f">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Observaciones]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="586" width="480" height="40" uuid="3628d7fd-2f2d-418b-bbd2-16af562499bd">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.spacingBefore" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Top" markup="html">
+					<font fontName="SansSerif" size="8"/>
+					<paragraph spacingBefore="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_OBSERVACIONES_GASTOS}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

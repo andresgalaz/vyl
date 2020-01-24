@@ -7,5 +7,9 @@ diff $JAVA_SRC/vyl/db/Comprador.java		db/compradorClase.bsh
 diff $JAVA_SRC/vyl/db/Empresa.java			db/empresaClase.bsh 
 diff $JAVA_SRC/vyl/db/Leasing.java			db/leasingClase.bsh 
 diff $JAVA_SRC/vyl/db/Loteo.java			db/loteoClase.bsh 
+
+diff $JAVA_SRC/vyl/report/Formulario.java	report/formularioClase.bsh 
+
+diff $JAVA_SRC/util/JasperUtil.java			util/jasperUtilClase.bsh
 diff $JAVA_SRC/util/JsonDataUtil.java		util/jsonDataUtilClase.bsh
 diff $JAVA_SRC/util/Rut.java				util/rutClase.bsh 

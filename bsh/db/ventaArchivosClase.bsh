@@ -16,6 +16,8 @@ import prg.glz.FrameworkException;
 import prg.util.cnv.ConvertException;
 import prg.util.cnv.ConvertJSON;
 import prg.util.cnv.ConvertMap;
+import prg.util.cnv.ConvertNumber;
+import prg.util.cnv.ConvertString;
 import prg.util.db.AbstractDataDB;
 import prg.util.db.hlp.ConexionHelper;
 import util.JsonDataUtil;
@@ -92,6 +94,8 @@ public class VentaArchivos {
             throw new FrameworkException( cMsg );
         }
         Map mArchivos = getById( pVenta );
+        if (mArchivos == null)
+            return "No existe pVenta = " + pVenta;
         // Actualiza MAP
         mArchivos.put( cTitulo, cBSH );
         update( pVenta, mArchivos );
@@ -121,12 +125,18 @@ public class VentaArchivos {
             }
             pVenta = u.getInt( frmData, "VYL_ID", 0 );
         }
-        if (pVenta == 0) {
+        if (ConvertNumber.isCero( pVenta )) {
             String cMsg;
-            traza.add( cMsg = "No está VYL_ID en json_data.DATOS.formIngreso" );
+            if (this.request == null)
+                cMsg = "No está VYL_ID en json_data.DATOS.formIngreso";
+            else
+                cMsg = "No está prm_pVenta en request";
+            traza.add( "VentaArchivos.elimina:" + cMsg );
             throw new FrameworkException( cMsg );
         }
         Map mArchivos = getById( pVenta );
+        if (mArchivos == null)
+            return "No existe pVenta = " + pVenta;
         // Actualiza MAP
         mArchivos.remove( cTitulo );
         update( pVenta, mArchivos );
@@ -145,11 +155,13 @@ public class VentaArchivos {
         Map mArchivos = getById( pVenta );
         // Convierte mArchivos a List con field: cTitulo, cBsh
         List lResp = new ArrayList();
-        for (Object llave : mArchivos.keySet()) {
-            Map mReg = new HashMap();
-            mReg.put( "TITULO", llave );
-            mReg.put( "BSH", mArchivos.get( llave ) );
-            lResp.add( mReg );
+        if (mArchivos != null) {
+            for (Object llave : mArchivos.keySet()) {
+                Map mReg = new HashMap();
+                mReg.put( "TITULO", llave );
+                mReg.put( "BSH", mArchivos.get( llave ) );
+                lResp.add( mReg );
+            }
         }
         return lResp;
     }
@@ -169,8 +181,12 @@ public class VentaArchivos {
             ps = this.cnxHlp.getConnection().prepareStatement( cSql );
             ps.setInt( 1, pVenta );
             rs = ps.executeQuery();
-            if (rs.next())
-                mArchivos = ConvertMap.fromJsonString( rs.getString( 1 ) );
+            if (rs.next()) {
+                String cJson = rs.getString( 1 );
+                if (ConvertString.isEmpty( cJson ))
+                    cJson = "{}";
+                mArchivos = ConvertMap.fromJsonString( cJson );
+            }
             rs.close();
             ps.close();
 
@@ -181,8 +197,8 @@ public class VentaArchivos {
             throw new FrameworkException( "Al leer tabla tVenta\n" + ConvertException.stackTrace2string( e ) );
         }
 
-        if (mArchivos == null)
-            mArchivos = new HashMap();
+        //        if (mArchivos == null)
+        //            mArchivos = new HashMap();
         return mArchivos;
     }
 
