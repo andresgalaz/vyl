@@ -96,7 +96,8 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 		var me = this,
 			vm = me.getViewModel(),
 			refs = me.getReferences(),
-			view = me.getView();
+			view = me.getView(),
+			stArchivos = vm.getStore('stArchivos');
 
 		me.formularioReiniciar();
 
@@ -132,6 +133,12 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 
 				if (formData.VYL_MODALIDAD_VENTA == 'financiamiento') {
 					refs.ctnFinanciamiento.setHidden(false);
+				
+				stArchivos.load({
+					params: {
+						prm_pVenta: formData.VYL_ID
+					}
+				});
 					
 				} else {
 					refs.ctnFinanciamiento.setHidden(true);
@@ -293,9 +300,17 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 	onConsultaActivate: function() {
 		var me = this,
 			vm = me.getViewModel(),
+			view = me.getView(),
 			stFormulariosIngresados = vm.getStore('stFormulariosIngresados');
 		
-		stFormulariosIngresados.load();
+		view.mask('Cargando Listado');
+
+		stFormulariosIngresados.load({
+			callback: function(records, operation, success) {
+				if (success)
+					view.unmask();
+			}
+		});
 	},
 
 	onConsultaRowDblClick: function(grid, record, element, rowIndex, e, eOpts) {

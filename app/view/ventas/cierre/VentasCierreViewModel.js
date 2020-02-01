@@ -54,27 +54,37 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
                     
                 return Ext.Number.roundToPrecision(total/cuotas, 2);
             }
+        },
+        getVentaId: function(get) {
+            var pVenta = get('formularioId') == 0 ? null : get('formularioId');
+
+            return pVenta;
         }
     },
 
     stores: {
         stArchivos: {
-            idProperty: 'ARCHIVO_ID',
+            idProperty: 'TITULO',
 
             fields: [
-                { name: 'ARCHIVO_ID', type: 'int' },
-                { name: 'ARCHIVO_NOMBRE', type: 'string' },
-                { name: 'ARCHIVO_DESCRIPCION', type: 'string' },
-                { name: 'ARCHIVO_FECHA', type: 'date', dateFormat: 'Y-m-d'},
+                { name: 'BSH', type: 'string' },
+                { name: 'TITULO', type: 'string' },
             ],
 
-            data: [
-                { ARCHIVO_ID: 0, ARCHIVO_NOMBRE: 'Prueba', ARCHIVO_DESCRIPCION: 'Archivo de prueba 1', ARCHIVO_FECHA: '2020-01-20' },
-                { ARCHIVO_ID: 1, ARCHIVO_NOMBRE: 'Prueba', ARCHIVO_DESCRIPCION: 'Archivo de prueba 2', ARCHIVO_FECHA: '2020-01-20' },
-                { ARCHIVO_ID: 2, ARCHIVO_NOMBRE: 'Prueba', ARCHIVO_DESCRIPCION: 'Archivo de prueba 3', ARCHIVO_FECHA: '2020-01-20' },
-                { ARCHIVO_ID: 3, ARCHIVO_NOMBRE: 'Prueba', ARCHIVO_DESCRIPCION: 'Archivo de prueba 4', ARCHIVO_FECHA: '2020-01-20' },
-                { ARCHIVO_ID: 4, ARCHIVO_NOMBRE: 'Prueba', ARCHIVO_DESCRIPCION: 'Archivo de prueba 5', ARCHIVO_FECHA: '2020-01-20' }
-            ]
+            proxy: {
+                url : '../do/vyl/bsh/ventaArchivosLista.bsh',
+                type : 'ajax',
+                reader : {
+                    type : 'json',
+                    rootProperty : 'response',
+                    successProperty : 'success'
+                },
+                extraParams: {
+                    prm_dataSource: 'vylDS'
+                }
+            },
+
+            autoLoad: false
         },
 
         stEmpresas: {

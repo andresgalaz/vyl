@@ -95,6 +95,15 @@ public class Formulario {
         // Completa MAP con los datos de la venta
         Map mData = new Venta( this.cnxHlp, this.traza ).getById( pVenta, 0 );
         mData.put( "FECHAHORA_EMISION", ConvertTimestamp.toString( new Date() ) );
+        try {
+            Map mDireccion = (Map) mData.get( "VYL_COMPRADOR_DOMICILIO" );
+            if (mDireccion != null) {
+                String cDireccion = u.getString( mDireccion, "direccion" );
+                mData.put( "VYL_COMPRADOR_DOMICILIO", cDireccion );
+            }
+        } catch (Exception e) {
+        }
+        
         // Genera PDF
         MultiPageJasper oMulti = new MultiPageJasper( dirTpl );
         ju.fixParameters( mData, paramsPdf );

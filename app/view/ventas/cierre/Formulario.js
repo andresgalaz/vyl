@@ -183,6 +183,7 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                         },
                                         {
                                             fieldLabel: 'Nombre y Apellido',
+                                            reference: 'txfCompradorAyN',
                                             name: 'VYL_COMPRADOR_NOMBRE',
                                             flex: 2
                                         },
@@ -605,42 +606,49 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                 },
                 {
                     xtype: 'fieldset',
-                    title: 'Archivos Generados',
+                    title: 'Archivos Disponibles',
                     collapsible: true,
                     items: [
                         {
                             xtype: 'dataview',
                             cls: 'archivos-dataview',
-                            emptyText: 'No hay archivos generados',
+                            emptyText: 'No hay archivos disponibles',
                             bind: {
                                 store: '{stArchivos}',
+                                data: {
+                                    pVenta: '{formularioId}'
+                                }
                             },
                             itemSelector: 'div.thumb-wrap',
                             tpl: Ext.create('Ext.XTemplate',
                                 '<tpl for=".">',
                                     '<div class="thumb-wrap">',
-                                        '<a class="thumb" href="{[this.getUrl(values.ARCHIVO_ID)]}" download="{ARCHIVO_NOMBRE}">',
+                                        '<a class="thumb" href="{[this.getUrl(values.BSH)]}" download="{[this.getNombre(values.TITULO)]}">',
                                             '<div class="thumb-icon"></div>',
                                             '<div class="thumb-title-container">',
-                                                '<div class="thumb-title">{ARCHIVO_DESCRIPCION}</div>',
-                                                '<div class="thumb-title-small">Fecha creacion: {ARCHIVO_FECHA:date("d/m/Y")}</div>',
+                                                '<div class="thumb-title">{TITULO}</div>',
                                             '</div>',
                                             '<div class="thumb-download"></div>',
                                         '</a>',
                                     '</div>',
                                 '</tpl>', 
                                 {
-                                    getUrl: function(archivoId) {
-                                        // Llamada al bsh que genere el PDF del lado del servidor
-                                        return '../do/vyl/bsh/';
+                                    getUrl: function(url) {
+                                        var data = this.owner.getData();
+
+                                        return '../do/' + url + '?prm_dataSource=vylDS&prm_pVenta=' + data.pVenta;
+                                    },
+
+                                    getNombre: function(archivoTp) {
+                                        return archivoTp;
                                     }
                                 },
                             ),
                             flex: 1
-                        },
+                        }
                     ]
                 }
-            ],
+            ]
         });
 
         this.callParent(arguments);
