@@ -329,13 +329,22 @@ public class Venta {
                 "       v.dCierre  as FECHA_VENTA     , lo.cNombre          as LOTEO        ,\n" +
                 "       v.nParcela as PARCELA         , v.cRol              as ROL_PROPIEDAD,\n" +
                 "       c.cNombre  as COMPRADOR_NOMBRE, c.cRut              as COMPRADOR_RUT,\n" +
-                "       et.CTITULO as WKF_ETAPA       , ev.CUSUARIOASIGNADO as WKF_USUARIO,\n" +
-                "       ev.PEVENTO as WKF_EVENTO \n" +
-                "FROM tVenta v \n" +
-                "LEFT JOIN tLoteo               lo ON lo.pLoteo    = v.cLoteo \n" +
-                "LEFT JOIN tComprador           c  ON c.pComprador = v.fComprador \n" +
-                "LEFT JOIN xformgen4.wkf_evento ev ON ev.PEVENTO   = v.fEvento AND ev.BACTIVA = '1' \n" +
-                "LEFT JOIN xformgen4.wkf_etapa  et ON et.PETAPA    = ev.FETAPA \n";
+                "       et.cTitulo as WKF_ETAPA       , ev.cUsuarioAsignado as WKF_USUARIO  ,\n" +
+                "       ev.pEvento as WKF_EVENTO      , v.nValor            as VALOR_PREDIO ,\n" +
+                "       v.nReserva as MONTO_RESERVA   , v.nPie              as PIE_INICIAL  ,\n" +
+                "       v.nCuotas  as CANTIDAD_CUOTAS , v.pVenta            as ID_VENTA     ,\n" +
+                "       CASE WHEN v.bLeasing THEN 'Financiado' ELSE 'Contado' END as MODALIDAD_VENTA,\n" +
+                // Resumen de Cuotas de Leasing
+                "       CASE WHEN lr.nCuotasAtrasadas > 0 THEN 1 ELSE 0 END as LEASING_ATRASADO ,\n" +
+                "       lr.nCuotasPagadas   as CUOTAS_PAGADAS   ,\n" +
+                "       lr.nCuotasAtrasadas as CUOTAS_ATRASADAS ,\n" +
+                "       lr.dUltimoPago      as FECHA_ULTIMO_PAGO \n" +
+                " FROM tVenta v \n" +
+                " LEFT JOIN tLoteo               lo ON lo.pLoteo    = v.cLoteo \n" +
+                " LEFT JOIN tComprador           c  ON c.pComprador = v.fComprador \n" +
+                " LEFT JOIN vLeasingResumen      lr ON lr.pVenta    = v.pVenta \n" +
+                " LEFT JOIN xformgen4.wkf_evento ev ON ev.PEVENTO   = v.fEvento AND ev.BACTIVA = '1' \n" +
+                " LEFT JOIN xformgen4.wkf_etapa  et ON et.PETAPA    = ev.FETAPA \n";
         try {
             PreparedStatement ps = this.cnxHlp.getConnection().prepareStatement( cSql );
             ResultSet rs = ps.executeQuery();

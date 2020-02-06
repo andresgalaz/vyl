@@ -16,10 +16,10 @@ Ext.define('vyl.view.ventas.cierre.Consulta', {
         {
             ptype: 'rowexpander',
             rowBodyTpl : new Ext.XTemplate(
-                '<p><b>Rol:</b> {}</p>',
-                '<p><b>Modalidad de Venta:</b> {}</p>',
-                '<p><b>Cuotas Pagadas:</b> {} - <b>Adeudadas:</b> {}</p>',
-                '<p><b>Ultimo Pago:</b> {}</p>'
+                '<p><b>Rol:</b> {ROL_PROPIEDAD}</p>',
+                '<p><b>Modalidad de Venta:</b> {MODALIDAD_VENTA}</p>',
+                '<p><b>Cuotas Pagadas:</b> {CUOTAS_PAGADAS} - <b>Atrasadas:</b> {CUOTAS_ATRASADAS}</p>',
+                '<p><b>Ultimo Pago:</b> {FECHA_ULTIMO_PAGO}</p>'
             )
         },
         {
@@ -59,8 +59,8 @@ Ext.define('vyl.view.ventas.cierre.Consulta', {
     columns: [
         {
             // text: 'Atraso',
-            dataIndex: '',
-            width: 30, // Mantener fijo
+            dataIndex: 'LEASING_ATRASADO',
+            width: 38, // Mantener fijo
             renderer: function(value, metaData) {
                 if (value == 1) {
                     metaData.tdCls = 'icono-urgente';
@@ -81,7 +81,7 @@ Ext.define('vyl.view.ventas.cierre.Consulta', {
         {
             text: "Fecha Vta.",
             dataIndex: 'FECHA_VENTA',
-            width: 130,
+            width: 100,
             formatter: 'date("d/m/Y")',
             filter: {
                 type: 'date',
@@ -109,7 +109,7 @@ Ext.define('vyl.view.ventas.cierre.Consulta', {
         {
             text: "Parcela",
             dataIndex: 'PARCELA',
-            width: 130
+            width: 70
         },
         {
             text: "Comprador",
@@ -124,18 +124,18 @@ Ext.define('vyl.view.ventas.cierre.Consulta', {
         },
         {
             text: "Monto",
-            dataIndex: '',
-            width: 200
+            dataIndex: 'VALOR_PREDIO',
+            width: 90
         },
         {
             text: "Pie",
-            dataIndex: '',
-            width: 200
+            dataIndex: 'PIE_INICIAL',
+            width: 90
         },
         {
-            text: "Saldo",
-            dataIndex: '',
-            width: 200
+            text: "Reserva",
+            dataIndex: 'MONTO_RESERVA',
+            width: 90
         },
         {
             text: "Estado",
@@ -148,7 +148,7 @@ Ext.define('vyl.view.ventas.cierre.Consulta', {
         {
             xtype: 'actioncolumn',
             align: 'center',
-            width: 50,
+            width: 40,
             items: [
                 {
                     iconCls: 'x-fa fa-file-text-o',
