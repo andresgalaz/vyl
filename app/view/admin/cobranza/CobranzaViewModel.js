@@ -3,9 +3,6 @@ Ext.define('vyl.view.admin.cobranza.CobranzaViewModel', {
     alias: 'viewmodel.cobranza',
 
     stores: {
-        stArchivosCobranzasProcesados: {
-        },
-
         stCobranza: {
         },
 

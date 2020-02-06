@@ -87,8 +87,6 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
             autoLoad: false
         },
 
-
-
         stEmpresas: {
             idProperty: 'EMPRESA_ID',
 

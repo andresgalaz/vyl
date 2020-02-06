@@ -12,20 +12,7 @@ Ext.define('vyl.view.ventas.cierre.Consulta', {
         type: 'ventasciere'
     },
     
-    plugins: [
-        {
-            ptype: 'rowexpander',
-            rowBodyTpl : new Ext.XTemplate(
-                '<p><b>Rol:</b> {}</p>',
-                '<p><b>Modalidad de Venta:</b> {}</p>',
-                '<p><b>Cuotas Pagadas:</b> {} - <b>Adeudadas:</b> {}</p>',
-                '<p><b>Ultimo Pago:</b> {}</p>'
-            )
-        },
-        {
-            ptype: 'gridfilters',
-        }
-    ],
+    plugins: 'gridfilters',
 
     bind: {
         store: '{stFormulariosIngresadosLocal}'
@@ -34,8 +21,6 @@ Ext.define('vyl.view.ventas.cierre.Consulta', {
     width: '100%',
     scrollable: true,
     margin: '10 20 10 20',
-
-    cls: 'consulta-venta',
     
     emptyText: 'No existen formularios ingresados con este filtro',
     viewConfig: {
@@ -53,58 +38,20 @@ Ext.define('vyl.view.ventas.cierre.Consulta', {
 
     listeners: {
         activate: 'onConsultaActivate',
-        rowdblclick: 'onConsultaRowDblClick',
+        rowdblclick: 'onConsultaRowDblClick'
     },
 
     columns: [
-        {
-            // text: 'Atraso',
-            dataIndex: '',
-            width: 30, // Mantener fijo
-            renderer: function(value, metaData) {
-                if (value == 1) {
-                    metaData.tdCls = 'icono-urgente';
-                } 
-                // if (value >= 0 && value < 20) {
-                //     metaData.tdCls = 'icono-baja';
-                // } else if (value >= 20 && value < 40) {
-                //     metaData.tdCls = 'icono-media';
-                // } else if (value >= 40 && value < 60) {
-                //     metaData.tdCls = 'icono-alta';
-                // } else if (value > 60) {
-                //     metaData.tdCls = 'icono-urgente';
-                // }
-
-                return;
-            }
-        },
         {
             text: "Fecha Vta.",
             dataIndex: 'FECHA_VENTA',
             width: 130,
             formatter: 'date("d/m/Y")',
-            filter: {
-                type: 'date',
-                fields: {
-                    lt: {
-                        text: 'Antes de...'
-                    },
-                    gt: {
-                        text: 'Despues de...'
-                    },
-                    eq: {
-                        text: 'Fecha Exacta'
-                    }
-                }
-            }
         },
         {
             text: "Loteo",
             dataIndex: 'LOTEO',
-            flex: 1,
-            filter: {
-                type: 'list',
-            }
+            flex: 1
         },
         {
             text: "Parcela",
@@ -112,38 +59,19 @@ Ext.define('vyl.view.ventas.cierre.Consulta', {
             width: 130
         },
         {
+            text: "Rol",
+            dataIndex: 'ROL_PROPIEDAD',
+            width: 130
+        },
+        {
             text: "Comprador",
             dataIndex: 'COMPRADOR_NOMBRE',
-            flex: 2,
-            filter: {
-                type: 'string',
-                itemDefaults: {
-                    emptyText: 'Ingrese Nombre y Apellido...'
-                }
-            }
-        },
-        {
-            text: "Monto",
-            dataIndex: '',
-            width: 200
-        },
-        {
-            text: "Pie",
-            dataIndex: '',
-            width: 200
-        },
-        {
-            text: "Saldo",
-            dataIndex: '',
-            width: 200
+            flex: 2
         },
         {
             text: "Estado",
             dataIndex: 'WKF_ETAPA',
-            width: 130,
-            filter: {
-                type: 'list',
-            }
+            width: 130
         },
         {
             xtype: 'actioncolumn',

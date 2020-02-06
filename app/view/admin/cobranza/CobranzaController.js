@@ -93,21 +93,7 @@ Ext.define('vyl.view.admin.cobranza.CobranzaController', {
     },
 
     onArchivoPagosVer: function() {
-        var me = this,
-            wnd = Ext.create({
-                xtype: 'wndarchivos',
-                reference: 'archivosWnd'
-            }).show();
-    },
 
-    onArchivosWndBeforeRender: function() {    
-    },
-
-    onArchivosWndCerrar: function() {
-        var me = this,
-            wnd = me.getView();
-        
-        wnd.destroy();
     },
 
     onConsultaActivate: function() {

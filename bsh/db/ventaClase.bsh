@@ -15,7 +15,6 @@ import javax.servlet.http.HttpServletRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import prg.glz.FrameworkException;
-import prg.glz.wkf.util.JsonDataUtil;
 import prg.util.cnv.ConvertBoolean;
 import prg.util.cnv.ConvertDate;
 import prg.util.cnv.ConvertException;
@@ -26,6 +25,7 @@ import prg.util.cnv.ConvertNumber;
 import prg.util.cnv.ConvertTimestamp;
 import prg.util.db.AbstractDataDB;
 import prg.util.db.hlp.ConexionHelper;
+import util.JsonDataUtil;
 
 /**
  * Denominar BSH:
