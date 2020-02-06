@@ -4,7 +4,9 @@ Ext.define('vyl.view.admin.cobranza.Consulta', {
     
     requires: [
         'vyl.view.admin.cobranza.CobranzaViewModel',
-        'vyl.view.admin.cobranza.CobranzaController'
+        'vyl.view.admin.cobranza.CobranzaController',
+        
+        'vyl.view.admin.cobranza.ArchivosWnd'
     ],
 
     controller: 'cobranza',

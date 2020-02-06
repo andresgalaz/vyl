@@ -134,11 +134,11 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 				if (formData.VYL_MODALIDAD_VENTA == 'financiamiento') {
 					refs.ctnFinanciamiento.setHidden(false);
 				
-				stArchivos.load({
-					params: {
-						prm_pVenta: formData.VYL_ID
-					}
-				});
+					stArchivos.load({
+						params: {
+							prm_pVenta: formData.VYL_ID
+						}
+					});
 					
 				} else {
 					refs.ctnFinanciamiento.setHidden(true);

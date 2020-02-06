@@ -636,13 +636,13 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                     getUrl: function(url) {
                                         var data = this.owner.getData();
 
-                                        return '../do/' + url + '?prm_dataSource=vylDS&prm_pVenta=' + data.pVenta;
+                                        return data.pVenta > 0 ? '../do/' + url + '?prm_dataSource=vylDS&prm_pVenta=' + data.pVenta : null;
                                     },
 
                                     getNombre: function(archivoTp) {
                                         return archivoTp;
                                     }
-                                },
+                                }
                             ),
                             flex: 1
                         }
