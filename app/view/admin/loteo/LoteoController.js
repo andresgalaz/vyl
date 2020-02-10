@@ -103,19 +103,18 @@ Ext.define('vyl.view.admin.loteo.LoteoController', {
             success: function (response, opts) {
                 var rta = JSON.parse(response.responseText);
 
-                if (rta.success) {
+                if (rta.success) 
                 	if(grid && rowIndex) grid.getStore().removeAt(rowIndex);
-                } else {
-                    Ext.Msg.show({
-                        title: me.msgTitle,
-                        message: response.responseText,
-                        buttons: Ext.Msg.OK,
-                        icon: Ext.Msg.ERROR
-                    });
-                }
+
+                Ext.Msg.show({
+                    title: me.msgTitle,
+                    message: rta.message ? rta.message : rta.response,
+                    buttons: Ext.Msg.OK,
+                    icon: Ext.Msg.INFO
+                });
             },
             failure: function (response, opts) {
-                console.error('[resolverTarea] Error en llamada : ' + response.status);
+                console.error('[eliminarLoteo] Error en llamada : ' + response.status);
                 Ext.Msg.show({
                     title: me.msgTitle,
                     message: response.responseText,
@@ -255,6 +254,8 @@ Ext.define('vyl.view.admin.loteo.LoteoController', {
     onLoteoCargar: function(loteoId) {
         var me = this,
             refs = me.getReferences();
+        
+        if( loteoId == undefined ) return;
 
         if (loteoId == 0) {
             // Loteo nuevo, proviene de Formulario.js
@@ -262,7 +263,6 @@ Ext.define('vyl.view.admin.loteo.LoteoController', {
         } else {
             me.cargarLoteo(loteoId);
         }
-     
         refs.tabPrincipal.setActiveTab(1);
     },
 

@@ -733,7 +733,7 @@
 				<textElement verticalAlignment="Middle">
 					<font fontName="SansSerif" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{VYL_ESCRITURA}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{VYL_VALOR}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="300" y="383" width="278" height="16" uuid="5e2079c4-60ab-457f-8772-d2820bc2059e">

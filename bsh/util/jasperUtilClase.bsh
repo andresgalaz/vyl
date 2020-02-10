@@ -1,7 +1,10 @@
 package util;
 
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.Map;
 
+import prg.glz.wkf.util.JsonDataUtil;
 import prg.util.cnv.ConvertObject;
 
 /*
@@ -14,6 +17,7 @@ import prg.util.cnv.ConvertObject;
  *
  */
 public class JasperUtil {
+    private NumberFormat nf = NumberFormat.getInstance( new Locale( "es", "ES" ) );
 
     /**
      * Corrige el contenido de mData, convirtiendo todas los parametros incluidos
@@ -33,4 +37,26 @@ public class JasperUtil {
         }
         return mData;
     }
+
+    /**
+     * Da formato numérico a montos, con separador de miles y signo
+     * @param mData
+     * @param cKey
+     * @param cSigno
+     */
+    public void fmtNumber(Map mData, String cKey, String cSigno) {
+        if (mData.containsKey( cKey )) {
+            Double v = JsonDataUtil.getDouble( mData, cKey );
+            if (v != null) {
+                if (cSigno == null)
+                    mData.put( cKey, nf.format( v ) );
+                else
+                    mData.put( cKey, cSigno + " " + nf.format( v ) );
+
+                return;
+            }
+        }
+        mData.put( cKey, " " );
+    }
+
 }

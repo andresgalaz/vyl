@@ -80,6 +80,7 @@ public class Formulario {
     }
 
     public void genera() throws FrameworkException {
+        traza.add( "genera(): inicio" );
         Integer pVenta = u.getInt( request, "prm_pVenta", 0 );
         if (ConvertNumber.isCero( pVenta )) {
             String cMsg = "No está prm_pVenta en request";
@@ -93,6 +94,14 @@ public class Formulario {
 
         // Completa MAP con los datos de la venta
         Map mData = new Venta( this.cnxHlp, this.traza ).getById( pVenta, 0 );
+        boolean isLeasing = u.getBoolean( mData, "VYL_IS_LEASING" );
+        ju.fmtNumber( mData, "VYL_VALOR", "$" );
+        ju.fmtNumber( mData, "VYL_RESERVA", "$" );
+        ju.fmtNumber( mData, "VYL_ESCRITURA", "$" );
+        ju.fmtNumber( mData, "VYL_INSTRUCCIONES_NOTARIO", "$" );
+        ju.fmtNumber( mData, "VYL_ESCRITURA_NOTARIO", "$" );
+        ju.fmtNumber( mData, "VYL_CBR", "$" );
+
         mData.put( "FECHAHORA_EMISION", ConvertTimestamp.toString( new Date() ) );
         try {
             Map mDireccion = (Map) mData.get( "VYL_COMPRADOR_DOMICILIO" );
@@ -102,14 +111,14 @@ public class Formulario {
             }
         } catch (Exception e) {
         }
-        
         // Genera PDF
         MultiPageJasper oMulti = new MultiPageJasper( dirTpl );
         ju.fixParameters( mData, paramsPdf );
         traza.add( "Formulario.genera->mData" + ConvertMap.toString( mData ) );
 
         try {
-            oMulti.addJRxml( "formularioVentaCierre_directo.jrxml", mData );
+            String cJasperTpl = "formularioVentaCierre" + (isLeasing ? "Leasing" : "") + ".jrxml";
+            oMulti.addJRxml( cJasperTpl, mData );
         } catch (Exception e) {
             traza.add( "ERROR:" + ConvertException.stackTrace2string( e ) );
         }

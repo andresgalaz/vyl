@@ -4,7 +4,8 @@ Ext.define('vyl.ux.form.Rutfield', {
 	xtype : 'rut',
 
 	config : {
-		obligatorio : false
+		obligatorio : false,
+		enableKeyEvents : true
 	},
 
 	placeholder : 'xx.xxx.xxx-x',
@@ -28,7 +29,7 @@ Ext.define('vyl.ux.form.Rutfield', {
 			return this.validate();
 		}
 	},
-
+	
 	validate : function() {
 		var me = this, valid = false;
 
@@ -59,7 +60,6 @@ Ext.define('vyl.ux.form.Rutfield', {
 					for (; numRut; numRut = Math.floor(numRut / 10))
 						suma = (suma + numRut % 10 * (9 - dig++ % 6)) % 11;
 					var dvCalc = (suma ? suma - 1 : 'K');
-					console.log('dvCalc ' + dvCalc);
 					// Compara el DV calculado con el ingresado
 					valid = (dv == dvCalc);
 				}

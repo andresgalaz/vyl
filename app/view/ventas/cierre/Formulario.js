@@ -225,7 +225,8 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                     },
                                     items: [
                                         {
-                                            xtype: 'numberfield',
+                                            // xtype: 'numberfield',
+                                            xtype: 'textfield',
                                             allowThousandSeparator: false,
                                             fieldLabel: 'Fono',
                                             name: 'VYL_COMPRADOR_TELEFONO',
