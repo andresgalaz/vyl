@@ -25,7 +25,6 @@ import prg.util.db.hlp.ConexionHelper;
  * 
  * BSH de llamada para lista de loteos:
  * 
- * call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
  * call.include('vyl/bsh/db/loteoClase.bsh')
  * // Opciones
  * // Listado de nombres de Loteo ( LOTEO_ID y LOTEO_NOMBRE )
@@ -49,13 +48,11 @@ public class Loteo {
         this.request = request;
         this.cnxHlp = connectionHelper;
         this.traza = traza;
-        // this.db = this.cnxHlp.getDataDb();
     }
 
     public Loteo(ConexionHelper connectionHelper, List traza) throws FrameworkException {
         this.cnxHlp = connectionHelper;
         this.traza = traza;
-        // this.db = this.cnxHlp.getDataDb();
     }
 
     /**
@@ -126,6 +123,53 @@ public class Loteo {
             throw new FrameworkException( "Al insertar en la tabla tLoteo\n" + ConvertException.stackTrace2string( e ) );
         }
         return pLoteo.toString();
+    }
+
+    /**
+     * Elimina loteos
+     * 
+     * @return
+     * @throws FrameworkException 
+     */
+    public String delete() throws FrameworkException {
+        Integer pLoteo = u.getInt( request, "prm_pLoteo", 0 );
+        if (pLoteo <= 0)
+            throw new FrameworkException( "Falta parámetro pLoteo" );
+
+        Map mRegAct = getByFiltro( pLoteo, null, null );
+
+        if (mRegAct == null)
+            throw new FrameworkException( "No existe loteo:" + pLoteo );
+        String cNombre = u.getString( mRegAct, "LOTEO_NOMBRE" );
+
+        try {
+
+            // Si el loteo existe, se verifica que no existan ventas asociadas        
+            String cSql = "SELECT 'x' from tVenta WHERE cLoteo = '" + pLoteo + "' OR cLoteo = '" + cNombre + "'\n";
+            Statement st = this.cnxHlp.getConnection().createStatement();
+            ResultSet rs = st.executeQuery( cSql );
+            boolean bHayVentas = rs.next();
+            rs.close();
+            st.close();
+            if (bHayVentas)
+                throw new FrameworkException( "No se puede borrar loteo si hay ventas asociadas" );
+        } catch (SQLException e) {
+            traza.add( "Loteo.delete->SQLException->message=" + e.getMessage() );
+            throw new FrameworkException( "Al buscar ventas asociadas\n" + ConvertException.stackTrace2string( e ) );
+        }
+
+        // Elimina
+        String cSql = "DELETE FROM tLoteo WHERE pLoteo = ? \n";
+        try {
+            PreparedStatement psDel = this.cnxHlp.getConnection().prepareStatement( cSql );
+            psDel.setInt( 1, pLoteo );
+            psDel.execute();
+            psDel.close();
+        } catch (SQLException e) {
+            traza.add( "Loteo.delete->SQLException->message=" + e.getMessage() );
+            throw new FrameworkException( "Al eliminar de la tabla tLoteo\n" + ConvertException.stackTrace2string( e ) );
+        }
+        return "Registro eliminado correctamente";
     }
 
     /**

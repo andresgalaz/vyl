@@ -1,4 +1,3 @@
-$call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
 $call.include('vyl/bsh/db/leasingClase.bsh')
 // Trae los datos de las cuotas leasing, todos los PRM son opcionales
 // prm_alias, prm_pVenta, prm_pCuota, prm_estado : ['PAGADA','PENDIENTE','ATRASADA']

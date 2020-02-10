@@ -28,7 +28,6 @@ import prg.util.db.hlp.ConexionHelper;
  * 
  * BSH de llamada para actualizar:
  * 
- * call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
  * call.include('vyl/bsh/db/ventaArchivosClase.bsh')
  * // Inserta se llama desde funcion de WKF
  * new VentaArchivos(connectionHelper, connectionHelperAlt, wkfData, traza).inserta("Escritura","vyl/bsh/print/escritura.bsh");

@@ -87,6 +87,45 @@ Ext.define('vyl.view.admin.loteo.LoteoController', {
         }
     },
 
+    eliminarLoteo: function (loteo_id, grid, rowIndex) {
+        var me = this;
+
+        if ( loteo_id == null || ! loteo_id > 0) 
+        	return;
+        
+        Ext.Ajax.request({
+            url: '../do/vyl/bsh/loteoDelete.bsh',
+            params: {
+                prm_dataSource: 'vylDS',
+                prm_pLoteo: loteo_id
+            },
+
+            success: function (response, opts) {
+                var rta = JSON.parse(response.responseText);
+
+                if (rta.success) {
+                	if(grid && rowIndex) grid.getStore().removeAt(rowIndex);
+                } else {
+                    Ext.Msg.show({
+                        title: me.msgTitle,
+                        message: response.responseText,
+                        buttons: Ext.Msg.OK,
+                        icon: Ext.Msg.ERROR
+                    });
+                }
+            },
+            failure: function (response, opts) {
+                console.error('[resolverTarea] Error en llamada : ' + response.status);
+                Ext.Msg.show({
+                    title: me.msgTitle,
+                    message: response.responseText,
+                    buttons: Ext.Msg.OK,
+                    icon: Ext.Msg.ERROR
+                });
+            }
+        });
+    },
+
     salir: function () {
         var me = this;
 
@@ -194,6 +233,21 @@ Ext.define('vyl.view.admin.loteo.LoteoController', {
         me.cargarLoteo(rec.data.LOTEO_ID);
     },
 
+    onEliminarRegistro: function (grid, rowIndex, colIndex) {
+        var me = this,
+            rec = grid.getStore().getAt(rowIndex);
+
+		Ext.Msg.show({
+			title : me.msgTitle,
+			message : '¿Esta seguro de borrar Loteo?',
+			buttons : Ext.Msg.YESNO,
+			icon : Ext.Msg.QUESTION,
+			fn : function(btn) {
+				if (btn === 'yes') me.eliminarLoteo(rec.data.LOTEO_ID, grid, rowIndex);
+			}
+		});
+    },
+
     onDblClickGrillaLista: function (grid, record, item, rowIndex, eOpts) {
         this.onCargarRegistro(grid, rowIndex);
     },
@@ -220,7 +274,7 @@ Ext.define('vyl.view.admin.loteo.LoteoController', {
         stListaLoteoLocal.getProxy().setData(st.getRange());
         stListaLoteoLocal.load();
     },
-
+    
     onRefrescar: function () {
         this.actualizar();
     }

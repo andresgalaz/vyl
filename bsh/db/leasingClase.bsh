@@ -27,7 +27,6 @@ import prg.util.db.hlp.ConexionHelper;
  * 
  * BSH de llamada para lista de leasings:
  * 
- * call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
  * call.include('vyl/bsh/db/leasingClase.bsh')
  * // Opciones
  * // Listado de cuatos por ID de la Venta ( LEASING_VENTA_ID  )

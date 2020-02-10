@@ -1,5 +1,4 @@
 $call.include('vyl/bsh/util/rutClase.bsh')
-$call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
 $call.include('vyl/bsh/db/empresaClase.bsh')
 $call.include('vyl/bsh/db/compradorClase.bsh')
 $call.include('vyl/bsh/db/ventaClase.bsh')

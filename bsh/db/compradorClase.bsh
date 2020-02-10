@@ -25,7 +25,6 @@ import util.Rut;
  * BSH de llamada para actualizar:
  * 
  * call.include('vyl/bsh/util/Rut.bsh')
- * call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
  * call.include('vyl/bsh/db/compradorClase.bsh')
  * // Actualiza los datos de la empresa desde eñ reuqest
  * new Comprador(request, connectionHelper).insUpd();

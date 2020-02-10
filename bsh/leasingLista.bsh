@@ -1,4 +1,3 @@
-$call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
 $call.include('vyl/bsh/db/leasingClase.bsh')
 traza.add("new Leasing");
 // Parámetros por request: prm_alias, prm_pVenta, prm_estado : ['PAGADA','PENDIENTE','ATRASADA']

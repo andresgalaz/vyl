@@ -24,7 +24,6 @@ import vyl.db.Venta;
  * 
  * BSH de llamada:
  * 
- * call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
  * call.include('vyl/bsh/print/formularioClase.bsh')
  * new Formulario(request, response, connectionHelper).solicitudCambio();
  *

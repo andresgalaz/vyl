@@ -22,7 +22,6 @@ import prg.util.db.hlp.ConexionHelper;
  * 
  * BSH de llamada para lista de empresas:
  * 
- * call.include('vyl/bsh/util/jsonDataUtilClase.bsh')
  * call.include('vyl/bsh/db/empresaClase.bsh')
  * // Lista todas las empresas
  * new Empresa(request, connectionHelper).lista();

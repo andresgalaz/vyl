@@ -125,22 +125,31 @@ Ext.define('vyl.view.ventas.cierre.Consulta', {
         {
             text: "Monto",
             dataIndex: 'VALOR_PREDIO',
+            xtype: 'numbercolumn',
+            format: '999,999,999',
+            align: 'right',
             width: 90
         },
         {
             text: "Pie",
             dataIndex: 'PIE_INICIAL',
+            xtype: 'numbercolumn',
+            format: '999,999,999',
+            align: 'right',
             width: 90
         },
         {
             text: "Reserva",
             dataIndex: 'MONTO_RESERVA',
+            xtype: 'numbercolumn',
+            format: '999,999,999',
+            align: 'right',
             width: 90
         },
         {
             text: "Estado",
             dataIndex: 'WKF_ETAPA',
-            width: 130,
+            width: 300,
             filter: {
                 type: 'list',
             }
