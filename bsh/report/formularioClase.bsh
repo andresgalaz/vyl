@@ -95,6 +95,19 @@ public class Formulario {
         // Completa MAP con los datos de la venta
         Map mData = new Venta( this.cnxHlp, this.traza ).getById( pVenta, 0 );
         boolean isLeasing = u.getBoolean( mData, "VYL_IS_LEASING" );
+        if (isLeasing) {
+            Double nValor = u.getDouble( mData, "VYL_VALOR" );
+            Double nReserva = u.getDouble( mData, "VYL_RESERVA" );
+            Double nPie = u.getDouble( mData, "VYL_FINANCIAMIENTO_PIE" );
+            if (nValor != null || nPie != null) {
+                if (nReserva == null)
+                    nReserva = 0.0;
+                mData.put( "VYL_FINANCIAMIENTO_MONTO", nValor - nPie - nReserva );
+            }
+            ju.fmtNumber( mData, "VYL_FINANCIAMIENTO_PIE", "$" );
+            ju.fmtNumber( mData, "VYL_FINANCIAMIENTO_MONTO", "$" );
+        }
+
         ju.fmtNumber( mData, "VYL_VALOR", "$" );
         ju.fmtNumber( mData, "VYL_RESERVA", "$" );
         ju.fmtNumber( mData, "VYL_ESCRITURA", "$" );

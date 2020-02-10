@@ -30,6 +30,7 @@
 	<parameter name="VYL_FINANCIAMIENTO_INTERESES" class="java.lang.String"/>
 	<parameter name="VYL_FINANCIAMIENTO_PIE" class="java.lang.String"/>
 	<parameter name="VYL_FINANCIAMIENTO_VTO" class="java.lang.String"/>
+	<parameter name="VYL_FINANCIAMIENTO_MONTO" class="java.lang.String"/>
 	<parameter name="VYL_ID" class="java.lang.String"/>
 	<parameter name="VYL_INSTRUCCIONES_NOTARIO" class="java.lang.String"/>
 	<parameter name="VYL_LOTEO" class="java.lang.String"/>
@@ -53,20 +54,20 @@
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="52" splitType="Stretch">
+		<band height="56" splitType="Stretch">
 			<textField>
 				<reportElement x="320" y="2" width="260" height="20" uuid="88eeb119-85cd-4277-a690-ec850a1a2da7"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA["Fecha Emisión : " + $P{FECHAHORA_EMISION}]]></textFieldExpression>
 			</textField>
 			<image>
-				<reportElement x="0" y="0" width="200" height="40" uuid="6ecf7ffd-7c8b-46f5-8365-03adf97a4aa6"/>
+				<reportElement x="0" y="0" width="200" height="40" uuid="79738080-c6e8-4f8d-bf18-76edf9b0493d"/>
 				<imageExpression><![CDATA["https://app.parcelasenchiloe.cl/wapp/vyl/resources/images/logo96.png"]]></imageExpression>
 			</image>
 		</band>
 	</title>
 	<detail>
-		<band height="637" splitType="Stretch">
+		<band height="661" splitType="Stretch">
 			<rectangle>
 				<reportElement key="" mode="Transparent" x="0" y="36" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="c05b0145-1768-4ea2-98e0-152d2457e3f9">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -677,7 +678,7 @@
 				<textFieldExpression><![CDATA[$P{VYL_MODALIDAD_VENTA}]]></textFieldExpression>
 			</textField>
 			<rectangle>
-				<reportElement key="" mode="Transparent" x="0" y="446" width="580" height="40" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="dc4c460f-4ae4-498e-91d1-5000b56cb8b3">
+				<reportElement key="" mode="Transparent" x="0" y="478" width="580" height="40" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="dc4c460f-4ae4-498e-91d1-5000b56cb8b3">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<graphicElement>
@@ -685,7 +686,7 @@
 				</graphicElement>
 			</rectangle>
 			<staticText>
-				<reportElement x="0" y="445" width="100" height="16" uuid="bea77d21-1b95-4690-89a6-bcdf5171ac98">
+				<reportElement x="0" y="479" width="100" height="16" uuid="bea77d21-1b95-4690-89a6-bcdf5171ac98">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Middle">
@@ -695,7 +696,7 @@
 				<text><![CDATA[Importante]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="130" y="446" width="450" height="40" uuid="d197930c-c137-4d86-b2bc-5fe5be4a771b">
+				<reportElement x="130" y="478" width="450" height="40" uuid="d197930c-c137-4d86-b2bc-5fe5be4a771b">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.spacingBefore" value="px"/>
 				</reportElement>
@@ -730,7 +731,7 @@
 				<textElement verticalAlignment="Middle">
 					<font fontName="SansSerif" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{VYL_VALOR}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{VYL_ESCRITURA}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="300" y="383" width="278" height="16" uuid="5e2079c4-60ab-457f-8772-d2820bc2059e">
@@ -780,7 +781,7 @@
 				<textFieldExpression><![CDATA[$P{VYL_OBSERVACIONES_RESERVA}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="291" y="368" width="1" height="77" forecolor="#3F51B5" uuid="4706a22b-6b96-4f7b-901a-58e293939830"/>
+				<reportElement x="291" y="368" width="1" height="109" forecolor="#3F51B5" uuid="4706a22b-6b96-4f7b-901a-58e293939830"/>
 			</line>
 			<rectangle>
 				<reportElement key="" mode="Transparent" x="0" y="430" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="ac032ead-9aed-4ad0-bcc3-c7b073f80717">
@@ -798,7 +799,7 @@
 					<font size="8" isBold="true"/>
 					<paragraph leftIndent="10"/>
 				</textElement>
-				<text><![CDATA[Modalidad de Pago]]></text>
+				<text><![CDATA[Pie de Contado]]></text>
 			</staticText>
 			<textField>
 				<reportElement x="130" y="430" width="160" height="16" uuid="49a4ce75-da72-48f8-9200-2358ed5c7737">
@@ -807,16 +808,16 @@
 				<textElement verticalAlignment="Middle">
 					<font fontName="SansSerif" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{VYL_MODALIDAD_PAGO}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{VYL_FINANCIAMIENTO_PIE}]]></textFieldExpression>
 			</textField>
 			<rectangle>
-				<reportElement key="" mode="Opaque" x="0" y="502" width="580" height="20" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="da8b0ca6-f3d0-4809-bb43-30c96056f234"/>
+				<reportElement key="" mode="Opaque" x="0" y="532" width="580" height="20" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="da8b0ca6-f3d0-4809-bb43-30c96056f234"/>
 				<graphicElement>
 					<pen lineColor="#3F51B5"/>
 				</graphicElement>
 			</rectangle>
 			<staticText>
-				<reportElement x="0" y="502" width="310" height="20" forecolor="#FFFFFF" backcolor="#222222" uuid="e3e950da-6415-42f2-a512-8fbd4d1fd1e6">
+				<reportElement x="0" y="532" width="310" height="20" forecolor="#FFFFFF" backcolor="#222222" uuid="e3e950da-6415-42f2-a512-8fbd4d1fd1e6">
 					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Middle">
@@ -826,7 +827,7 @@
 				<text><![CDATA[GASTOS OPERACIÓN]]></text>
 			</staticText>
 			<rectangle>
-				<reportElement key="" mode="Transparent" x="0" y="538" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="9c531ce3-496f-4fdf-b173-a901707e6eaf">
+				<reportElement key="" mode="Transparent" x="0" y="568" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="9c531ce3-496f-4fdf-b173-a901707e6eaf">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
@@ -835,7 +836,7 @@
 				</graphicElement>
 			</rectangle>
 			<rectangle>
-				<reportElement key="" mode="Transparent" x="0" y="522" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="202aa04d-94f1-461b-b2bf-de2579469072">
+				<reportElement key="" mode="Transparent" x="0" y="552" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="202aa04d-94f1-461b-b2bf-de2579469072">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<graphicElement>
@@ -843,7 +844,7 @@
 				</graphicElement>
 			</rectangle>
 			<staticText>
-				<reportElement x="0" y="522" width="100" height="16" uuid="ef2c82b2-71cb-4672-ad4f-01b3fe53afc9">
+				<reportElement x="0" y="552" width="100" height="16" uuid="ef2c82b2-71cb-4672-ad4f-01b3fe53afc9">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Middle">
@@ -853,7 +854,7 @@
 				<text><![CDATA[Escritura]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="100" y="522" width="190" height="16" uuid="a83f4c12-292f-4504-b40b-89afa4b3c358">
+				<reportElement x="100" y="552" width="190" height="16" uuid="a83f4c12-292f-4504-b40b-89afa4b3c358">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Middle">
@@ -862,7 +863,7 @@
 				<textFieldExpression><![CDATA[$P{VYL_ESCRITURA}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="0" y="538" width="100" height="16" uuid="aa411e6d-9ce7-48be-8a29-96119e0e573c">
+				<reportElement x="0" y="568" width="100" height="16" uuid="aa411e6d-9ce7-48be-8a29-96119e0e573c">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
@@ -873,7 +874,7 @@
 				<text><![CDATA[Instrucciones Notario]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="100" y="538" width="190" height="16" uuid="1ed43e48-837b-45bf-8681-688991b13633">
+				<reportElement x="100" y="568" width="190" height="16" uuid="1ed43e48-837b-45bf-8681-688991b13633">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
@@ -883,7 +884,7 @@
 				<textFieldExpression><![CDATA[$P{VYL_INSTRUCCIONES_NOTARIO}]]></textFieldExpression>
 			</textField>
 			<rectangle>
-				<reportElement key="" mode="Transparent" x="0" y="570" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="b5b59c5b-ab74-4a80-a99f-aaad47dba6ab">
+				<reportElement key="" mode="Transparent" x="0" y="600" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="b5b59c5b-ab74-4a80-a99f-aaad47dba6ab">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
@@ -892,7 +893,7 @@
 				</graphicElement>
 			</rectangle>
 			<rectangle>
-				<reportElement key="" mode="Transparent" x="0" y="554" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="d7e82c20-a588-4081-87fa-ee399c977ccc">
+				<reportElement key="" mode="Transparent" x="0" y="584" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="d7e82c20-a588-4081-87fa-ee399c977ccc">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<graphicElement>
@@ -900,7 +901,7 @@
 				</graphicElement>
 			</rectangle>
 			<staticText>
-				<reportElement x="0" y="554" width="100" height="16" uuid="9f7ee786-3d24-4368-afb9-70cb43110e51">
+				<reportElement x="0" y="584" width="100" height="16" uuid="9f7ee786-3d24-4368-afb9-70cb43110e51">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Middle">
@@ -910,7 +911,7 @@
 				<text><![CDATA[Notario]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="100" y="554" width="190" height="16" uuid="0f5942cc-26fc-4940-bf3b-c8fd5398ef97">
+				<reportElement x="100" y="584" width="190" height="16" uuid="0f5942cc-26fc-4940-bf3b-c8fd5398ef97">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Middle">
@@ -919,7 +920,7 @@
 				<textFieldExpression><![CDATA[$P{VYL_ESCRITURA_NOTARIO}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="0" y="570" width="100" height="16" uuid="3a31f6f9-8741-4cff-8296-26483987b710">
+				<reportElement x="0" y="600" width="100" height="16" uuid="3a31f6f9-8741-4cff-8296-26483987b710">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
@@ -930,7 +931,7 @@
 				<text><![CDATA[CBR]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="100" y="570" width="190" height="16" uuid="dbf55b07-dedf-49c4-90a5-d5350c1e6e96">
+				<reportElement x="100" y="600" width="190" height="16" uuid="dbf55b07-dedf-49c4-90a5-d5350c1e6e96">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
@@ -940,7 +941,7 @@
 				<textFieldExpression><![CDATA[$P{VYL_CBR}]]></textFieldExpression>
 			</textField>
 			<rectangle>
-				<reportElement key="" mode="Transparent" x="0" y="586" width="580" height="40" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="308ddfdc-ae38-4ae3-8382-bcea89b6adb4">
+				<reportElement key="" mode="Transparent" x="0" y="616" width="580" height="40" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="308ddfdc-ae38-4ae3-8382-bcea89b6adb4">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<graphicElement>
@@ -948,7 +949,7 @@
 				</graphicElement>
 			</rectangle>
 			<staticText>
-				<reportElement x="0" y="586" width="100" height="16" uuid="094033ea-cec8-46d3-bea5-e805a58e2d7f">
+				<reportElement x="0" y="616" width="100" height="16" uuid="094033ea-cec8-46d3-bea5-e805a58e2d7f">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Middle">
@@ -958,7 +959,7 @@
 				<text><![CDATA[Observaciones]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="100" y="586" width="480" height="40" uuid="3628d7fd-2f2d-418b-bbd2-16af562499bd">
+				<reportElement x="100" y="616" width="480" height="40" uuid="3628d7fd-2f2d-418b-bbd2-16af562499bd">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.spacingBefore" value="px"/>
 				</reportElement>
@@ -967,6 +968,69 @@
 					<paragraph spacingBefore="3"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{VYL_OBSERVACIONES_GASTOS}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="446" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="52d2fdb5-54d2-47f7-9aa9-18b4f0d29dfe">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="446" width="130" height="16" uuid="c7b85460-182a-4a83-8f82-d5a0ea48c181">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Monto a Financiar]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="130" y="446" width="160" height="16" uuid="05fc7a3e-9b59-4975-932d-c779077d3848">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_FINANCIAMIENTO_PIE}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement key="" mode="Transparent" x="0" y="462" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="153efe35-8401-4ec5-9f52-9726b61362fd">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#3F51B5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="462" width="130" height="16" uuid="0ae7cb3c-38db-4172-a9c4-5b178909848b">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Valor Cuota]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="130" y="462" width="160" height="16" uuid="cadc5be6-c0a8-4451-a21f-44301da03196">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_VALOR_CUOTA}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="300" y="462" width="278" height="16" uuid="26a0c97a-a5c1-4556-9dce-4d6455c14d2e">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{VYL_FINANCIAMIENTO_VTO}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
