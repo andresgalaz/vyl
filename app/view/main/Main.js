@@ -41,7 +41,7 @@ Ext.define('vyl.view.main.Main', {
                     xtype: 'component',
                     reference: 'haLogo',
                     cls: 'ha-logo',
-                    html: '<div class="main-logo"><img src="resources/images/logo96.png" style="height:30px;"><b style="position: relative; left: -100px; top: 12px;">Ventas y Leasing<b></div>',
+                    html: '<div class="main-logo"><img src="resources/images/logo.png" style="width:70%; height:70%;"><b style="position:absolute; left:50px; top:50px;">Ventas y Leasing<b></div>',
                     width: 250 
                 },
                 {
