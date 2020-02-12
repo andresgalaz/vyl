@@ -1,6 +1,5 @@
 package vyl.report;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -106,6 +105,7 @@ public class Formulario {
             }
             ju.fmtNumber( mData, "VYL_FINANCIAMIENTO_PIE", "$" );
             ju.fmtNumber( mData, "VYL_FINANCIAMIENTO_MONTO", "$" );
+            ju.fmtNumber( mData, "VYL_VALOR_CUOTA", "$" );
         }
 
         ju.fmtNumber( mData, "VYL_VALOR", "$" );
@@ -115,7 +115,7 @@ public class Formulario {
         ju.fmtNumber( mData, "VYL_ESCRITURA_NOTARIO", "$" );
         ju.fmtNumber( mData, "VYL_CBR", "$" );
 
-        mData.put( "FECHAHORA_EMISION", ConvertTimestamp.toString( new Date() ) );
+        mData.put( "FECHAHORA_EMISION", ConvertTimestamp.toString( new java.util.Date() ) );
         try {
             Map mDireccion = (Map) mData.get( "VYL_COMPRADOR_DOMICILIO" );
             if (mDireccion != null) {
@@ -133,9 +133,13 @@ public class Formulario {
             String cJasperTpl = "formularioVentaCierre" + (isLeasing ? "Leasing" : "") + ".jrxml";
             oMulti.addJRxml( cJasperTpl, mData );
         } catch (Exception e) {
-            traza.add( "ERROR:" + ConvertException.stackTrace2string( e ) );
+            traza.add( "ERROR addJRxml:" + ConvertException.stackTrace2string( e ) );
         }
+        try {
         oMulti.enviaReportPDF( response, cNombreBajada );
+        } catch (Exception e) {
+            traza.add( "ERROR generar:" + ConvertException.stackTrace2string( e ) );
+        }
     }
 
 }

@@ -1,9 +1,9 @@
+$call.include('vyl/bsh/report/formularioClase.bsh')
 $call.include('vyl/bsh/util/rutClase.bsh')
 $call.include('vyl/bsh/util/jasperUtilClase.bsh')
 $call.include('vyl/bsh/db/empresaClase.bsh')
 $call.include('vyl/bsh/db/compradorClase.bsh')
 $call.include('vyl/bsh/db/ventaClase.bsh')
-$call.include('vyl/bsh/report/formularioClase.bsh')
 // Genera PDF "Formulario Resumen"
-traza.add("new Formulario");
+traza.add("new Formulario 2.0");
 new Formulario(request, response, connectionHelper, traza).genera();

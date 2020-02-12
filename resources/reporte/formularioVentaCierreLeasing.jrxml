@@ -731,7 +731,7 @@
 				<textElement verticalAlignment="Middle">
 					<font fontName="SansSerif" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{VYL_ESCRITURA}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{VYL_VALOR}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="300" y="383" width="278" height="16" uuid="5e2079c4-60ab-457f-8772-d2820bc2059e">
@@ -781,7 +781,7 @@
 				<textFieldExpression><![CDATA[$P{VYL_OBSERVACIONES_RESERVA}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="291" y="368" width="1" height="109" forecolor="#3F51B5" uuid="4706a22b-6b96-4f7b-901a-58e293939830"/>
+				<reportElement x="291" y="367" width="1" height="111" forecolor="#3F51B5" uuid="4706a22b-6b96-4f7b-901a-58e293939830"/>
 			</line>
 			<rectangle>
 				<reportElement key="" mode="Transparent" x="0" y="430" width="580" height="16" forecolor="#FFFFFF" backcolor="#3F51B5" uuid="ac032ead-9aed-4ad0-bcc3-c7b073f80717">
@@ -1024,7 +1024,7 @@
 				<textFieldExpression><![CDATA[$P{VYL_VALOR_CUOTA}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="300" y="462" width="278" height="16" uuid="26a0c97a-a5c1-4556-9dce-4d6455c14d2e">
+				<reportElement x="410" y="462" width="168" height="16" uuid="26a0c97a-a5c1-4556-9dce-4d6455c14d2e">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Middle">
@@ -1032,6 +1032,16 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$P{VYL_FINANCIAMIENTO_VTO}]]></textFieldExpression>
 			</textField>
+			<staticText>
+				<reportElement x="292" y="462" width="118" height="16" uuid="7fc9052d-c601-478b-bc66-51fc6cfa7611">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<text><![CDATA[Fecha Primera Cuota]]></text>
+			</staticText>
 		</band>
 	</detail>
 </jasperReport>

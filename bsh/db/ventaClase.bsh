@@ -1,11 +1,11 @@
 package vyl.db;
 
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -152,7 +152,7 @@ public class Venta {
             psUpd = this.cnxHlp.getConnection().prepareStatement( cSql, Statement.RETURN_GENERATED_KEYS );
             int nIdx = 1;
             cnxHlp.setInt( psUpd, nIdx++, fEvento );
-            psUpd.setDate( nIdx++, dCierre );
+            cnxHlp.setDate( psUpd, nIdx++, dCierre );
             cnxHlp.setInt( psUpd, nIdx++, nParcela );
             psUpd.setString( nIdx++, cLoteo );
 
