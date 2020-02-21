@@ -335,9 +335,13 @@ public class Venta {
                 "       CASE WHEN v.bLeasing THEN 'Financiado' ELSE 'Contado' END as MODALIDAD_VENTA,\n" +
                 // Resumen de Cuotas de Leasing
                 "       CASE WHEN lr.nCuotasAtrasadas > 0 THEN 1 ELSE 0 END as LEASING_ATRASADO ,\n" +
-                "       lr.nCuotasPagadas   as CUOTAS_PAGADAS   ,\n" +
-                "       lr.nCuotasAtrasadas as CUOTAS_ATRASADAS ,\n" +
-                "       lr.dUltimoPago      as FECHA_ULTIMO_PAGO \n" +
+                "       lr.nCuotasPagadas   as CUOTAS_PAGADAS        ,\n" +
+                "       lr.nMontoPagado     as MONTO_PAGADO          ,\n" +
+                "       lr.nCuotasAtrasadas as CUOTAS_ATRASADAS      ,\n" +
+                "       lr.nMontoAtrasado   as MONTO_ATRASADO        ,\n" +
+                "       lr.nMontoRestante   as MONTO_RESTANTE        ,\n" +
+                "       lr.dPrimeraCuota    as FECHA_PRIMERA_CUOTA   ,\n" +
+                "       lr.dUltimoPago      as FECHA_ULTIMO_PAGO      \n" +
                 " FROM tVenta v \n" +
                 " LEFT JOIN tLoteo               lo ON lo.pLoteo    = v.cLoteo \n" +
                 " LEFT JOIN tComprador           c  ON c.pComprador = v.fComprador \n" +

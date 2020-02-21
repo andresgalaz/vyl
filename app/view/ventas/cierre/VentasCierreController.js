@@ -96,6 +96,7 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 		var me = this,
 			vm = me.getViewModel(),
 			refs = me.getReferences(),
+			flsArchivos = refs.flsArchivos,
 			view = me.getView(),
 			stArchivos = vm.getStore('stArchivos');
 
@@ -137,6 +138,11 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 					stArchivos.load({
 						params: {
 							prm_pVenta: formData.VYL_ID
+						},
+						callback: function(records, operation, success) {
+							if (success) {
+								records.length > 0 ? flsArchivos.setCollapsed(false) : flsArchivos.setCollapsed(true);
+							}
 						}
 					});
 					
@@ -171,6 +177,7 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 
 		refs.ctnFinanciamiento.setHidden(true);
 		refs.ctnFinanciamientoGastos.setHidden(true);
+		refs.flsArchivos.setCollapsed(true);
 	},
 	
 	salir: function() {
@@ -324,7 +331,6 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 			console.warn('[onConsultaRowDblClick] Evento invalido ' + eventoId, record);
 		}
 	},
-
 
 	onConsultarFormulario: function(view, rowIdx, colIdx, item, e, record, row) {
 		var me = this,

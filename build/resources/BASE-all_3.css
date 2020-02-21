@@ -5221,11 +5221,18 @@
 }
 /* C:/workspace/sencha/webDesap4/desa/PE/app/view/main/Main.scss:103 */
 .ha-logo-micro .main-logo img {
-    margin-left: 2px;
+    /* margin-left: 2px;
     margin-right: 0px;
     margin-top: 20px;
     position: static;
-    height: 35px;
+    height: 35px; */
+
+    /*
+    Autor: AGALAZ
+    Fue necesario dado que el LOGO de LAKUS es mas ancho que alto y queda deformado 
+    cuando el menú se esconde
+    */
+    display: none;
 }
 /* C:/workspace/sencha/webDesap4/desa/PE/app/view/main/Main.scss:112 */
 .pe-main-headerbar {

@@ -608,6 +608,7 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                 {
                     xtype: 'fieldset',
                     title: 'Archivos Disponibles',
+                    reference: 'flsArchivos',
                     collapsible: true,
                     items: [
                         {

@@ -10,6 +10,10 @@ Ext.define('vyl.view.main.Main', {
 
         'vyl.view.login.Login',
 
+        // MENU TAREAS
+        'vyl.view.tareas.dashboard.Dashboard',
+        'vyl.view.tareas.asignacion.Asignacion',
+
         // MENU VENTAS
         'vyl.view.ventas.cierre.Formulario',
         'vyl.view.ventas.cierre.Consulta',
@@ -57,6 +61,7 @@ Ext.define('vyl.view.main.Main', {
                     reference: 'btnMensajes',
                     ui: 'header',
                     handler: 'onMensajes',
+                    disabled: true,
                     tooltip: 'Mensajes Recibidos'
                 },'-',
                 {

@@ -15,7 +15,7 @@ Ext.application({
 
     // The name of the initial view to create.
     mainView: 'vyl.view.main.Main',
-    defaultToken : 'ventas-cierre-consulta',
+    defaultToken : 'tareas-dashboard',
 
     launch: function () {
         var app = this,
