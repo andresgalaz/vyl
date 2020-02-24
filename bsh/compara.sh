@@ -12,3 +12,4 @@ diff $JAVA_SRC/vyl/report/Formulario.java	report/formularioClase.bsh
 
 diff $JAVA_SRC/util/JasperUtil.java			util/jasperUtilClase.bsh
 diff $JAVA_SRC/util/Rut.java				util/rutClase.bsh 
+diff $JAVA_SRC/prg/glz/wkf/RolFuncion.java	wkf/rolFuncionClase.bsh 

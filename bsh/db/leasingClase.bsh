@@ -105,6 +105,43 @@ public class Leasing {
         return generaCuotas( pVenta, nCuotas, nMonto, dInicio );
     }
 
+    /*
+    public String procesaPagos() throws FrameworkException {
+        String cIdArchivo = u.getString( request, "prm_idArchivo" );
+        if (ConvertString.isEmpty( cIdArchivo ))
+            throw new FrameworkException( "Falta parámetro prm_idArchivo" );
+        File fPagos = new File(cIdArchivo);
+        if (! fPagos.exists() || ! fPagos.isFile() || ! fPagos.canRead())
+            throw new FrameworkException( "No se puede acceder al archivo " + cIdArchivo );
+        
+        String SEPARATOR=";";
+        String QUOTE="\"";
+        
+        BufferedReader br = null;
+        try {
+           
+           br =new BufferedReader(new FileReader(fPagos));
+           String line = br.readLine();
+           while (null!=line) {
+              String [] fields = line.split(SEPARATOR);
+              System.out.println(Arrays.toString(fields));
+              
+              fields = removeTrailingQuotes(fields);
+              System.out.println(Arrays.toString(fields));
+              
+              line = br.readLine();
+           }
+           
+        } catch (Exception e) {
+           ...
+        } finally {
+           if (null!=br) {
+              br.close();
+           }
+        }
+    }
+    */
+    
     public boolean hayCuotasGeneradas(Integer pVenta) throws FrameworkException {
         if (ConvertNumber.isCero( pVenta ))
             throw new FrameworkException( "pVenta debe ser mayor a cero" );

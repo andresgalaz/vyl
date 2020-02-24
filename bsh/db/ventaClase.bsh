@@ -238,6 +238,31 @@ public class Venta {
         return getById( pVenta, fEvento );
     }
 
+    /**
+     * 
+     * Se espera el parámetro:
+     * @param request prm_fEvento
+     * 
+     * @return
+     * @throws FrameworkException
+     */
+    public Map getByEvento() throws FrameworkException {
+        Map mResp = new HashMap();
+        if (this.request == null) {
+            mResp.put( "message", "No hay request" );
+            return mResp;
+        }
+        Integer fEvento = u.getInt( this.request, "prm_fEvento" );
+        if (this.request != null) {
+            mResp.put( "message", "Falta parámetro prm_fEvento" );
+            return mResp;
+        }
+        List lEvento = listaByFiltro( fEvento );
+        if (lEvento.size() == 0)
+            return mResp;
+        return (Map) lEvento.get( 0 );
+    }
+
     public Map getById(Integer pVenta, Integer fEvento) throws FrameworkException {
         traza.add( "Venta.getById->(pVenta,fEevento)=(" + pVenta + "," + fEvento + ")" );
         Map mData = null;
@@ -302,10 +327,10 @@ public class Venta {
 
             Integer fEmpresa = rs.getInt( "fEmpresa" );
             Integer fComprador = rs.getInt( "fComprador" );
-            
+
             rs.close();
             ps.close();
-            
+
             mData.putAll( new Comprador( this.cnxHlp ).getByFilter( fComprador, null, "VYL" ) );
             mData.putAll( new Empresa( this.cnxHlp ).getById( fEmpresa, "VYL" ) );
 
@@ -318,12 +343,23 @@ public class Venta {
     }
 
     /**
-     * Lista todas las empresas. No espera parámetros
+     * No requiere parámetros porque lista todas las ventas.
      * 
      * @return
      * @throws FrameworkException
      */
     public List lista() throws FrameworkException {
+        return listaByFiltro( null );
+    }
+
+    /**
+     * Lista todas las ventas.
+     * 
+     * @param nEvento: opcional
+     * @return
+     * @throws FrameworkException
+     */
+    private List listaByFiltro(Integer nEvento) throws FrameworkException {
         String cSql = "SELECT DISTINCT " +
                 "       v.dCierre  as FECHA_VENTA     , lo.cNombre          as LOTEO        ,\n" +
                 "       v.nParcela as PARCELA         , v.cRol              as ROL_PROPIEDAD,\n" +
@@ -343,6 +379,7 @@ public class Venta {
                 "       lr.dPrimeraCuota    as FECHA_PRIMERA_CUOTA   ,\n" +
                 "       lr.dUltimoPago      as FECHA_ULTIMO_PAGO      \n" +
                 " FROM tVenta v \n" +
+                (nEvento == null ? "" : "v.fEvento = ?") +
                 " LEFT JOIN tLoteo               lo ON lo.pLoteo    = v.cLoteo \n" +
                 " LEFT JOIN tComprador           c  ON c.pComprador = v.fComprador \n" +
                 " LEFT JOIN vLeasingResumen      lr ON lr.pVenta    = v.pVenta \n" +
@@ -350,6 +387,9 @@ public class Venta {
                 " LEFT JOIN xformgen4.wkf_etapa  et ON et.PETAPA    = ev.FETAPA \n";
         try {
             PreparedStatement ps = this.cnxHlp.getConnection().prepareStatement( cSql );
+            int nIdx = 1;
+            if (nEvento != null)
+                ps.setInt( nIdx++, nEvento );
             ResultSet rs = ps.executeQuery();
             List lis = ConvertList.fromResultSet( rs );
             rs.close();
