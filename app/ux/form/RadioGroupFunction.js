@@ -23,8 +23,10 @@ Ext.define('vyl.ux.form.RadioGroupFunction', {
 
         if (fnBD) {
             Ext.Ajax.request({
-                url: '../do/jsonCall',
-    
+                url: GLOBAL.HOST+'/do/jsonCall',
+                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+
+
                 params: {
                     prm_funcion : fnBD
                 },

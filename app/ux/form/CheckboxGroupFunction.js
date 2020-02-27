@@ -25,7 +25,8 @@ Ext.define('vyl.ux.form.CheckboxGroupFunction', {
 
         if (me.params.prm_funcion) {
             Ext.Ajax.request({
-                url: '../do/jsonCall',
+                url: GLOBAL.HOST+'/do/jsonCall',
+                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
     
                 params: me.params,
            

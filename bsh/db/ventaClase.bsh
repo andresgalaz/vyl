@@ -253,7 +253,7 @@ public class Venta {
             return mResp;
         }
         Integer fEvento = u.getInt( this.request, "prm_fEvento" );
-        if (this.request != null) {
+        if (ConvertNumber.isCero( fEvento )) {
             mResp.put( "message", "Falta parámetro prm_fEvento" );
             return mResp;
         }

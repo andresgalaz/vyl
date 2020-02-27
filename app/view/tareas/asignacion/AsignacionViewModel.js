@@ -4,95 +4,135 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionViewModel', {
 
     stores: {
         stRoles: { 
-            idProperty: 'COD',
+            idProperty: 'pRol',
             fields: [
-                { name: 'ID', type: 'int' },
-                { name: 'COD', type: 'string' },
-                { name: 'ROL', type: 'string' }
+                { name: 'pRol', type: 'int' },
+                { name: 'cRol', type: 'string' },
+                { name: 'cRolTitulo', type: 'string' },
+                { name: 'fSistema', type: 'int' }
             ],
-
             autoLoad: true,
-            // proxy: {
-            //     type : 'jsoncall',
-            //     extraParams : {       
-            //         // TODO: Implementar funcion     
-            //         // prm_funcion : 'pe.js_pe_tareas.operConsultaRoles'
-            //     }
-            // }
+            proxy: {
+                type : 'ajax',
+                reader : {
+                    type : 'json',
+                    rootProperty : 'response',
+                    successProperty : 'success'
+                },
+                url : GLOBAL.HOST+'/do/vyl/bsh/wkfListaRol.bsh',
+                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                method : 'POST'
+            }
         },
+
         stUsrAsignados: {
             fields: [
-                { name: 'USUARIO', type: 'string' },
-                { name: 'NOMBRE', type: 'string' },
-                { name: 'ROL', type: 'string' },
-                { name: 'CANT_TAREAS', type: 'int' },
-                { name: 'TOTAL_TAREAS', type: 'int' },
+                { name: 'pUsuario', type: 'string' },
+                { name: 'cUsuarioNombre', type: 'string' },
+                { name: 'cUsuario', type: 'string' },
+                { name: 'cRolTitulo', type: 'string' },
+                { name: 'nCantidadTareas', type: 'int' },
+                { name: 'nTotalTareas', type: 'int' },
+                { name: 'pRol', type: 'int' }
             ],
             autoLoad: false,
-            // proxy: {
-            //     type : 'jsoncall',
-            //     extraParams : {            
-            //         // TODO: Implementar funcion
-            //         // prm_funcion : 'pe.js_pe_tareas.operConsultaUsuariosRol'
-            //     }
-            // }
+            proxy: {
+                type : 'ajax',
+                reader : {
+                    type : 'json',
+                    rootProperty : 'response',
+                    successProperty : 'success'
+                },
+                url : GLOBAL.HOST+'/do/vyl/bsh/wkfListaRolUsuarios.bsh',
+                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                method : 'POST'
+            }
         },
+
         stUsuarios: {
+            idProperty: 'pUsuario',
             fields: [
-                { type: 'string', name: 'NOMBRE' },
-                { type: 'string', name: 'USUARIO' },
-                { type: 'int', name: 'ID' },
-                { type: 'int', name: 'ID_USR_PADRE' }
+                { name: 'cUsuario', type: 'string' },
+                { name: 'cUsuarioNombre', type: 'string' },
+                { name: 'pUsuario', type: 'int' },
+                { name: 'fSistema', type: 'int' }
             ],
             autoLoad: false,
-            // proxy: {
-            //     type : 'jsoncall',
-            //     extraParams : {       
-            //         // TODO: Implementar funcion     
-            //         // prm_funcion : 'pe.js_pe_tareas.operConsultaUsuarios'
-            //     }
-            // }
+            proxy: {
+                type : 'ajax',
+                reader : {
+                    type : 'json',
+                    rootProperty : 'response',
+                    successProperty : 'success'
+                },
+                url : GLOBAL.HOST+'/do/vyl/bsh/wkfListaUsuariosJerarquia.bsh',
+                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                method : 'POST',
+                extraParams :{
+                    prm_fSistema: 3
+                }
+            }
         },
-        stUsrDetalle: {
+
+        stRolUsuarios: {
             fields: [
-                'USUARIO',
-                'ROL',
-                'CANT_TAREAS',
-                'NOMBRE'
+                { name: 'pRol', type: 'int' },
+                { name: 'cRol', type: 'string' },
+                { name: 'cRolTitulo', type: 'string' },
+                { name: 'nCantidadTareas', type: 'int' },
+                { name: 'nTotalTareas', type: 'int' },
+                { name: 'pUsuario', type: 'int' },
+                { name: 'cUsuario', type: 'string' },
+                { name: 'cUsuarioNombre', type: 'string' },
             ],
             autoLoad: true,
 
-            // proxy: {
-            //     type : 'jsoncall',
-            //     extraParams : {            
-            //         // TODO: Implementar funcion
-            //         // prm_funcion : 'pe.js_pe_tareas.operConsultaUsuariosRol'
-            //     }
-            // },
+            proxy: {
+                type : 'ajax',
+                reader : {
+                    type : 'json',
+                    rootProperty : 'response',
+                    successProperty : 'success'
+                },
+                url : GLOBAL.HOST+'/do/vyl/bsh/wkfListaRolUsuarios.bsh',
+                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                method : 'POST',
+                extraParams :{
+                }
+            },
 
-            groupField: 'NOMBRE',
-            sorters: ['ROL','NOMBRE']
+            groupField: 'cUsuarioNombre',
+            sorters: ['cRolTitulo','cRol']
         },
+        
         stRolDetalle: {
             fields: [
-                'ROL',
-                'TAREA',
-                'HS_ESTIMADAS',
-                'CIRCUITO',
-                'CANT_USRS_ASIGNADOS'
+                { name: 'cRol', type: 'string' },
+                { name: 'cRolTitulo', type: 'string' },
+                { name: 'cEtapa', type: 'string' },
+                { name: 'cEtapaTitulo', type: 'string' },
+                { name: 'nDuracionMinutos', type: 'int' },
+                { name: 'nDuracionHoras', type: 'int' },
+                { name: 'cFlujo', type: 'string' },
+                { name: 'cFlujoTitulo', type: 'string' },
+                { name: 'nUsuariosAsignados', type: 'int' },
             ],
             autoLoad: true,
 
-            // proxy: {
-            //     type : 'jsoncall',
-            //     extraParams : {       
-            //         // TODO: Implementar funcion     
-            //         // prm_funcion : 'pe.js_pe_tareas.operConsultaRolDetalles'
-            //     }
-            // },
+            proxy: {
+                type : 'ajax',
+                reader : {
+                    type : 'json',
+                    rootProperty : 'response',
+                    successProperty : 'success'
+                },
+                url : GLOBAL.HOST+'/do/vyl/bsh/wkfListaRolDetalle.bsh',
+                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                method : 'POST',
+            },
 
-            groupField: 'ROL',
-            sorters: ['TAREA','CIRCUITO','ROL']
+            groupField: 'cRolTitulo',
+            sorters: ['cEtapaTitulo','cFlujoTitulo','cRol']
         }   
     },
 });

@@ -20,37 +20,26 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionController', {
             view = me.getView(),
             refs = view.getReferences(),
             form = view.down('#frmAsignacionRolUsrs'),
-            datos = form.getValues(),
-            x2Js = new X2JS(),
-            strXml, xmlData;
-        
-        // if (DEBUG) console.log('onGrabar', datos);
+            datos = form.getValues();
 
-        xmlData = x2Js.json2xml_str(datos);
-
-        if (xmlData) {
-         
-            strXml = '<datos>' + xmlData + '</datos>';
-
-            view.mask();
+        if (datos) {
+            view.mask('Grabando datos');
             
+            // TODO: Implementar funcion
             Ext.Ajax.request({
-                url: '../do/jsonCall',
-
-                // TODO: Implementar funcion
-                params: {
-                    prm_funcion : 'PE.JS_PE_TAREAS.operGrabarRolUsuario',
-                    prm_xml : strXml
+                url: '',
+                extraParams: {
+                    prm_data : datos
                 },
         
                 success: function(response, opts) {
                     var rta = JSON.parse(response.responseText);
 
                     if(rta.success) {
-                        var stUsrDetalle = me.getViewModel().getStore('stUsrDetalle'),
+                        var stRolUsuarios = me.getViewModel().getStore('stRolUsuarios'),
                             stRolDetalle = me.getViewModel().getStore('stRolDetalle');
                         
-                        stUsrDetalle.load();
+                        stRolUsuarios.load();
                         stRolDetalle.load();
 
                         form.reset();
@@ -122,32 +111,30 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionController', {
 
             // Carga en el tagFld de usuarios los que ya estaban asignados
             Ext.Ajax.request({
-                url: '../do/jsonCall',
-    
-                // TODO: Implementar funcion
-                params: {
-                    prm_funcion : 'PE.JS_PE_TAREAS.operConsultaUsuariosRol',
-                    prm_rol : reg
+                url: GLOBAL.HOST+'/do/vyl/bsh/wkfListaRolUsuarios.bsh',
+                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                extraParams: {
+                    prm_cRol : reg
                 },
            
                 success: function(response, opts) {
                     var rta = JSON.parse(response.responseText);
     
-                    if(rta.success) {
-                        if (rta.count > 0) {
+                    if (rta.success) {
+                        if (rta.response.length > 0) {
                             var arrUsr = [];
-                            rta.records.forEach(function(usr){
-                                arrUsr.push(usr.USUARIO);
+                            rta.response.forEach(function(usr){
+                                arrUsr.push(usr.pUsuario);
                             });
 
                             refs.tagUsrRol.setValue(arrUsr);
                         }
                     } else
-                        console.warn(rta.message);
+                        console.warn('[onSelectRol] Error inesperado en wkfListaRolUsuarios.bsh');
     
                 },
                 failure: function(response, opts) {
-                    console.error('[onSelectRol] Error en llamada PE.JS_PE_TAREAS.operConsultaUsuariosRol: ' + response.status);
+                    console.error('[onSelectRol] Error en llamada wkfListaRolUsuarios: ' + response.status);
                     Ext.Msg.show({
                         title: 'Asignación Rol / Usuario',
                         message: response.responseText,

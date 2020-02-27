@@ -16,11 +16,13 @@ Ext.define('vyl.view.tareas.dashboard.DashboardViewModel', {
                 { name: 'cFlujoTitulo', type: 'string' },
                 { name: 'nAtraso', type: 'float' },
                 { name: 'cAtraso', type: 'string' },
+                { name: 'cUrl', type: 'string' },
             ],
 
             proxy: {
                 type : 'wkfcall',
-                url : '../do/wkfListaEventos',
+                url : GLOBAL.HOST+'/do/wkfListaEventos',
+                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
                 extraParams: {
                     prm_pFlujo: 3
                 }
@@ -57,6 +59,7 @@ Ext.define('vyl.view.tareas.dashboard.DashboardViewModel', {
                 { name: 'cFlujoTitulo', type: 'string' },
                 { name: 'nAtraso', type: 'float' },
                 { name: 'cAtraso', type: 'string' },
+                { name: 'cUrl', type: 'string' },
             ],
 
             remoteFilter: true,

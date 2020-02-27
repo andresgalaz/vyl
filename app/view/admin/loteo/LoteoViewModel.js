@@ -30,7 +30,8 @@ Ext.define('vyl.view.admin.loteo.LoteoViewModel', {
             fields: ['LOTEO_ID', 'LOTEO_NOMBRE', 'LOTEO_DESCRIPCION', 'LOTEO_DESLINDE'],
             autoLoad: false,
             proxy: {
-                url: '../do/vyl/bsh/loteoNombres.bsh',
+                url: GLOBAL.HOST+'/do/vyl/bsh/loteoNombres.bsh',
+                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
                 type : 'ajax',
                 reader : {
                     type : 'json',

@@ -23,8 +23,14 @@ Ext.application({
             cnxCtrl = app.getController('Conexion');
 
         Ext.Ajax.request({
-            url: '../do/estadoSesion',
+            url: GLOBAL.HOST+'/do/estadoSesion',
+            cors:true,
             method: 'POST',
+            headers: {
+                'Access-Control-Allow-Origin': "*",
+                'Access-Control-Allow-Methods': "GET,POST,OPTIONS",
+                'Access-Control-Allow-Headers': "Content-Type,x-prototype-version,x-requested-with"
+            },
             success: function (rSesion) {
                 var sesion = Ext.decode(rSesion.responseText),
                     oUsr = {};

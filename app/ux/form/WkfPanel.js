@@ -11,7 +11,8 @@ Ext.define('vyl.ux.form.WkfPanel', {
         buttonNuevo: true
     },
 
-    url: '../do/jsonCall',
+    url: GLOBAL.HOST+'/do/jsonCall',
+    cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
     frame: false,
     scrollable: false,
     bodyPadding: 5,
@@ -74,7 +75,8 @@ Ext.define('vyl.ux.form.WkfPanel', {
 
         if (flujo) {
             Ext.Ajax.request({
-                url : '../do/wkfAccionesInicio',
+                url : GLOBAL.HOST+'/do/wkfAccionesInicio',
+                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
                 method : 'POST',
                 params : {
                     prm_cFlujo : flujo
@@ -120,7 +122,8 @@ Ext.define('vyl.ux.form.WkfPanel', {
         if (flujo) {
             // Crea un evento para poder cargar la botonera
             Ext.Ajax.request({
-                url : '../do/wkfCreaEvento',
+                url : GLOBAL.HOST+'/do/wkfCreaEvento',
+                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
                 method : 'POST',
                 params : {
                     prm_dataSource : cxnCtrl.getDefaultDS(), 
@@ -174,7 +177,8 @@ Ext.define('vyl.ux.form.WkfPanel', {
 
         if (pEvento > 0) {
             Ext.Ajax.request({
-                url : '../do/wkfLeeEvento',
+                url : GLOBAL.HOST+'/do/wkfLeeEvento',
+                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
                 method : 'POST',
                 params : {
                     prm_dataSource : cxnCtrl.getDefaultDS(), 

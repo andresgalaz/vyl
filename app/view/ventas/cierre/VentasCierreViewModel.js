@@ -72,7 +72,8 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
             ],
 
             proxy: {
-                url : '../do/vyl/bsh/ventaArchivosLista.bsh',
+                url : GLOBAL.HOST+'/do/vyl/bsh/ventaArchivosLista.bsh',
+                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
                 type : 'ajax',
                 reader : {
                     type : 'json',
@@ -101,7 +102,8 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
             ],
 
             proxy: {
-                url : '../do/vyl/bsh/lisEmpresa.bsh',
+                url : GLOBAL.HOST+'/do/vyl/bsh/lisEmpresa.bsh',
+                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
                 type : 'ajax',
                 reader : {
                     type : 'json',
@@ -141,7 +143,8 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
             ],
 
             proxy: {
-                url: '../do/vyl/bsh/lisVenta.bsh',
+                url: GLOBAL.HOST+'/do/vyl/bsh/lisVenta.bsh',
+                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
                 type : 'ajax',
                 reader : {
                     type : 'json',
@@ -206,7 +209,8 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
             ],
 
             proxy: {
-                url : '../do/vyl/bsh/loteoNombres.bsh',
+                url : GLOBAL.HOST+'/do/vyl/bsh/loteoNombres.bsh',
+                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
                 type : 'ajax',
                 reader : {
                     type : 'json',

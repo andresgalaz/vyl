@@ -6,14 +6,14 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionRolUsuarios', {
     
     height: 320,
     title: 'Asignacion de Usuarios por Rol',
-    url: '../do/jsonCall',
+    url: GLOBAL.HOST+'/do/jsonCall',
+    cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
     // bodyPadding: 15,
 
     fieldDefaults: {
         labelAlign: 'top',
         labelWidth: 90,
         margin: '0 0 5 6'
-        // msgTarget: Ext.supports.Touch ? 'side' : 'qtip'
     },
 
     bbar: {
@@ -67,8 +67,8 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionRolUsuarios', {
                     fieldLabel: 'Rol',
                     editable: false,
                     allowBlank: false,
-                    displayField: 'ROL',
-                    valueField: 'COD',
+                    displayField: 'cRolTitulo',
+                    valueField: 'cRol',
                     bind: {
                         store: '{stRoles}'
                     },
@@ -85,8 +85,8 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionRolUsuarios', {
                     bind: {
                         store: '{stUsuarios}'
                     },
-                    displayField: 'NOMBRE',
-                    valueField: 'USUARIO',
+                    displayField: 'cUsuarioNombre',
+                    valueField: 'pUsuario',
                     filterPickList: true,
                     queryMode: 'local',
                     publishes: 'value',

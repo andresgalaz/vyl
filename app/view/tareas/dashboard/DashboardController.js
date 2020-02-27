@@ -172,8 +172,9 @@ Ext.define('vyl.view.tareas.dashboard.DashboardController', {
             node = mainController.getActiveNode(),
             tpAcceso = node.data.cTpAcceso,
             st = me.getViewModel().getStore('stTareasPendientes'),
-            row = [], 
-            tarea;
+            row = [],
+            token = '',
+            tarea = {};
         
         if (pEvento && pSecuencia) {
             var data;
@@ -202,52 +203,15 @@ Ext.define('vyl.view.tareas.dashboard.DashboardController', {
 
             } else {
                 // Obtiene el token para redireccionar al modulo que resuelva la tarea
+                if (tarea.pEvento > 0 && tarea.cUrl) {
+                    token = tarea.cUrl + '/' + tarea.pEvento;
+
+                    me.redirectTo(token);
                 
-                // TODO: Modificar funcion
-                Ext.Ajax.request({
-                    url: '../do/jsonCall',
-                    params: {
-                        prm_funcion : 'PE.JS_PE_TAREAS.getToken',
-                        prm_pevento : tarea.pEvento,
-                        prm_psecuencia : tarea.pSecuencia
-                    },
-            
-                    success: function(response, opts) {
-                        var rta = JSON.parse(response.responseText),
-                            token;
-
-                        if(rta.success) {
-                            // if (DEBUG) console.log('[onResolverTarea] rta', rta);
-                            token = rta.RETURN;
-
-                            if (token) {
-                                // Direcciona al modulo
-                                me.redirectTo(token);
-                            
-                            } else {
-                                console.error('[resolverTarea] No existe token para el pEvento: ' + tarea.pEvento + ', pSecuencia: ' + tarea.pSecuencia);
-                                // NO TIENE TOKEN => No puede direccionar al modulo para resolver la tarea
-                            }
-                        } else {
-                            console.error(rta.message);
-                            Ext.Msg.show({
-                                title: 'Dashboard Tareas',
-                                message: response.responseText,
-                                buttons: Ext.Msg.OK,
-                                icon: Ext.Msg.ERROR
-                            });
-                        }
-                    },
-                    failure: function(response, opts) {
-                        console.error('[resolverTarea] Error en llamada : ' + response.status);
-                        Ext.Msg.show({
-                            title: 'Dashboard Tareas',
-                            message: response.responseText,
-                            buttons: Ext.Msg.OK,
-                            icon: Ext.Msg.ERROR
-                        });
-                    }
-                });
+                } else {
+                    console.error('[resolverTarea] No se puede resolver token', tarea);
+                    // NO TIENE TOKEN => No puede direccionar al modulo para resolver la tarea
+                }
             }
 
             // Recarga grilla tareas pendientes
@@ -266,7 +230,8 @@ Ext.define('vyl.view.tareas.dashboard.DashboardController', {
         var me = this;
 
         Ext.Ajax.request({
-            url : '../do/jsonCall',
+            url : GLOBAL.HOST+'/do/jsonCall',
+            cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
             method : 'POST',
             params : {
                 prm_funcion : 'PE.JS_PE_MENSAJERIA.operConsultaMensajesNuevosCant',
@@ -332,16 +297,17 @@ Ext.define('vyl.view.tareas.dashboard.DashboardController', {
     onGrillaPendientesExpand: function (rowNode, record, expandRow, eOpts) {
         var detailData = Ext.DomQuery.select("div.detailData", expandRow),
             evento_id = record.get('pEvento'),
+            cxnCtrl = Ext.getApplication().getController('Conexion'), 
             html = "";
 
         if (detailData) {
-            // TODO: Modificar funcion
             Ext.Ajax.request({
-                url : '../do/jsonCall',
+                url : GLOBAL.HOST+'/do/vyl/bsh/ventaByEvento.bsh',
+                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
                 method : 'POST',
                 params : {
-                    prm_funcion : 'PE.JS_PE_TAREAS.operConsultaTarea',
-                    prm_evento: evento_id
+                    prm_dataSource: cxnCtrl.getDefaultDS(),
+                    prm_fEvento: evento_id
                 },
     
                 success : function(response, opts) {

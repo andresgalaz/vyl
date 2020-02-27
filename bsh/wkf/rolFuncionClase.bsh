@@ -51,9 +51,10 @@ public class RolFuncion {
                 + db.convertColumn( "rolFn.cNombre", "cRol" ) + ", \n"
                 + db.convertColumn( "rolFn.cTitulo", "cRolTitulo" ) + ", \n"
                 + db.convertColumn( "flujo.fSistema" ) + " \n"
-                + " FROM wkf_rolFuncion rolFn"
+                + " FROM wkf_rolFuncion rolFn \n"
                 + "      INNER JOIN wkf_etapa etapa ON etapa.fRolFuncion = rolFn.pRol \n"
-                + "      INNER JOIN wkf_flujo flujo ON flujo.pFlujo = etapa.fFlujo \n";
+                + "      INNER JOIN wkf_flujo flujo ON flujo.pFlujo = etapa.fFlujo \n"
+                + "      GROUP BY pRol, cRol, cRolTitulo, fSistema \n";
         traza.add(cSql);
         PreparedStatement ps = this.cnxHlp.getConnection().prepareStatement( cSql );
         ResultSet rs = ps.executeQuery();

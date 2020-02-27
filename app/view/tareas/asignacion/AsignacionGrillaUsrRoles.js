@@ -11,17 +11,17 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionGrillaUsrRoles', {
     scrollable: 'y',
     // height: 320,
 
-    bind: '{stUsrDetalle}',
+    bind: '{stRolUsuarios}',
 
     columns: [
         {
             text: 'Rol',
-            dataIndex: 'ROL',
+            dataIndex: 'cRolTitulo',
             flex: 1
         },
         {
             text: 'Cant. Tareas',
-            dataIndex: 'CANT_TAREAS',
+            dataIndex: 'nCantidadTareas',
             flex: 1
         }
     ],
@@ -30,7 +30,7 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionGrillaUsrRoles', {
         {
             ftype: 'grouping',
             startCollapsed: true,
-            groupHeaderTpl: '{columnName}: <b>{renderedGroupValue}</b> (Total {[values.children[0].data["TOTAL_TAREAS"]]} {[values.children[0].data["TOTAL_TAREAS"] == 1 ? "Tarea Asignada" : "Tareas Asignadas"]})'
+            groupHeaderTpl: 'Usuario: <b>{renderedGroupValue}</b> (Total {[values.children[0].data["nCantidadTareas"]]} {[values.children[0].data["nCantidadTareas"] == 1 ? "Tarea Asignada" : "Tareas Asignadas"]})'
         }
     ],
 });

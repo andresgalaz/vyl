@@ -16,7 +16,10 @@ Ext.define('vyl.view.login.AuthenticationController', {
         view.mask('Ingresando');
 
         form.submit({
-            url : '../do/login',
+            url : GLOBAL.HOST+'/do/login',
+            cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+            withCredentials: false,
+            useDefaultXhrHeader: false,
             waitMsg : 'Conectando ... ',
             method : 'POST',
             success : function(frm, resp) {

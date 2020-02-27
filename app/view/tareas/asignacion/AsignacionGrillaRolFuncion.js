@@ -6,7 +6,6 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionGrillaRolFuncion', {
         'Ext.grid.feature.Grouping'
     ],
 
-    // cls: 'asignacion-grilla',
     title: 'Tareas por Rol',
     scrollable: 'y',
 
@@ -15,17 +14,17 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionGrillaRolFuncion', {
     columns: [
         {
             text: 'Tarea',
-            dataIndex: 'TAREA',
+            dataIndex: 'cEtapaTitulo',
             flex: 1
         },
         {
             text: 'Hs. Estimadas',
-            dataIndex: 'HS_ESTIMADAS',
+            dataIndex: 'nDuracionHoras',
             width: 100
         },
         {
-            text: 'Circuito',
-            dataIndex: 'CIRCUITO',
+            text: 'Flujo',
+            dataIndex: 'cFlujoTitulo',
             flex: 1
         }
     ],
@@ -34,7 +33,7 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionGrillaRolFuncion', {
         {
             ftype: 'grouping',
             startCollapsed: true,
-            groupHeaderTpl: '{columnName}: <b>{renderedGroupValue}</b> ({[values.children[0].data["CANT_USRS_ASIGNADOS"]]} {[values.children[0].data["CANT_USRS_ASIGNADOS"] == 1 ? "Usuario Asignado" : "Usuarios Asignados"]})'
+            groupHeaderTpl: 'Rol: <b>{renderedGroupValue}</b> ({[values.children[0].data["nUsuariosAsignados"]]} {[values.children[0].data["nUsuariosAsignados"] == 1 ? "Usuario Asignado" : "Usuarios Asignados"]})'
         }
     ],
 });
