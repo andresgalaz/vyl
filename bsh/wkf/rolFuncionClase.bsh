@@ -4,11 +4,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
 import prg.glz.FrameworkException;
+import prg.glz.wkf.util.JsonDataUtil;
 import prg.util.cnv.ConvertList;
+import prg.util.cnv.ConvertNumber;
+import prg.util.cnv.ConvertString;
 import prg.util.db.AbstractDataDB;
 import prg.util.db.hlp.ConexionHelper;
 
@@ -30,20 +34,27 @@ public class RolFuncion {
     private HttpServletRequest request;
     private ConexionHelper     cnxHlp;
     private AbstractDataDB     db;
+    private JsonDataUtil       u = new JsonDataUtil();
+    private List traza;
 
-    public RolFuncion(HttpServletRequest request, ConexionHelper connectionHelper) throws FrameworkException {
+    public RolFuncion(HttpServletRequest request, ConexionHelper connectionHelper, List traza) throws FrameworkException {
         this.request = request;
         this.cnxHlp = connectionHelper;
         this.db = this.cnxHlp.getDataDb();
+        this.traza = traza;
     }
 
-    public List lista() throws SQLException, FrameworkException {
+    public List listaRol() throws SQLException, FrameworkException {
         // Lee los datos del fuljo y los deja en mReg
         String cSql = "SELECT "
-                + db.convertColumn( "pRol", "ID_ROL" ) + ",\n"
-                + db.convertColumn( "CNOMBRE", "ROL" ) + ", \n"
-                + db.convertColumn( "CTITULO", "DESCRIPCION" ) + " \n"
-                + " FROM wkf_rolFuncion \n";
+                + db.convertColumn( "rolFn.pRol" ) + ",\n"
+                + db.convertColumn( "rolFn.cNombre", "cRol" ) + ", \n"
+                + db.convertColumn( "rolFn.cTitulo", "cRolTitulo" ) + ", \n"
+                + db.convertColumn( "flujo.fSistema" ) + " \n"
+                + " FROM wkf_rolFuncion rolFn"
+                + "      INNER JOIN wkf_etapa etapa ON etapa.fRolFuncion = rolFn.pRol \n"
+                + "      INNER JOIN wkf_flujo flujo ON flujo.pFlujo = etapa.fFlujo \n";
+        traza.add(cSql);
         PreparedStatement ps = this.cnxHlp.getConnection().prepareStatement( cSql );
         ResultSet rs = ps.executeQuery();
         List lista = ConvertList.fromResultSet( rs );
@@ -53,4 +64,133 @@ public class RolFuncion {
         return lista;
     }
 
+    public List listaDetalle() throws SQLException, FrameworkException {
+        Integer pFlujo = u.getInt( request, "prm_pFlujo" );
+        String cFlujo = u.getString( request, "prm_cFlujo" );
+        Integer fSistema = u.getInt( request, "prm_fSistema" );
+
+        String cSql = "SELECT "
+                + db.convertColumn( "rolFn.cNombre", "cRol" ) + ",\n"
+                + db.convertColumn( "rolFn.cTitulo", "cRolTitulo" ) + ",\n"
+                + db.convertColumn( "etapa.cNombre", "cEtapa" ) + ",\n"
+                + db.convertColumn( "etapa.cTitulo", "cEtapaTitulo" ) + ",\n"
+                + db.convertColumn( "flujo.cNombre", "cFlujo" ) + ",\n"
+                + db.convertColumn( "flujo.cTitulo", "cFlujoTitulo" ) + ",\n"
+                + db.convertColumn( "etapa.nDuracion", "nDuracionMinutos" ) + ",\n"
+                + db.convertColumn( "round(etapa.nDuracion/60, 1)", "nDuracionHoras" ) + ",\n"
+                + db.convertColumn( "(select count(*) from wkf_rolUsuario rolUsr where rolUsr.prol = rolFn.prol)", "nUsuariosAsignados" ) + "\n"
+                + "  FROM wkf_etapa etapa \n"
+                + "       INNER JOIN wkf_rolFuncion rolFn ON rolFn.pRol   = etapa.fRolFuncion \n"
+                + "       INNER JOIN wkf_flujo      flujo ON flujo.pFlujo = etapa.fFlujo \n"
+                + " WHERE etapa.fRolFuncion IS NOT NULL \n"
+                + (fSistema == null ? "" : " AND flujo.fSistema = ? ")
+                + (pFlujo == null ? "" : " AND flujo.pFlujo = ? ")
+                + (cFlujo == null ? "" : " AND flujo.cNombre = ? ");
+        traza.add(cSql);
+
+        PreparedStatement ps = this.cnxHlp.getConnection().prepareStatement( cSql );
+        int nIdx = 1;
+        if (fSistema != null)
+            ps.setInt( nIdx++, fSistema );
+        if (pFlujo != null)
+            ps.setInt( nIdx++, pFlujo );
+        if (cFlujo != null)
+            ps.setString( nIdx++, cFlujo );
+        ResultSet rs = ps.executeQuery();
+        List lista = ConvertList.fromResultSet( rs );
+        rs.close();
+        ps.close();
+
+        return lista;
+    }
+
+    public List listaUsuarios() throws SQLException, FrameworkException {
+        Integer pRol = u.getInt( request, "prm_pRol" );
+        String cRol = u.getString( request, "prm_cRol" );
+        Integer fSistema = u.getInt( request, "prm_fSistema" );
+
+        String cSql = "SELECT "
+                + db.convertColumn( "usr.pUsuario" ) + ",\n"
+                + db.convertColumn( "usr.cUsuario" ) + ",\n"
+                + db.convertColumn( "usr.cNombre", "cUsuarioNombre" ) + ",\n"
+                + db.convertColumn( "rolFn.pRol" ) + ",\n"
+                + db.convertColumn( "rolFn.cNombre", "cRol" ) + ",\n"
+                + db.convertColumn( "rolFn.cTitulo", "cRolTitulo" ) + ",\n"
+                + db.convertColumn( "etCount.nCantidadTareas" ) + ",\n"
+                + db.convertColumn( "rolUsrCount.nTotalTareas" ) + "\n"
+                + "  FROM ( SELECT  vEt.fRolFuncion, COUNT(*) nCantidadTareas \n"
+                + "           FROM wkf_etapa vEt \n"
+                + "          GROUP BY vEt.fRolFuncion) etCount \n"
+                + "       INNER JOIN ( SELECT vRolUsr.pRol, vRolUsr.pUsuario, COUNT(*) nTotalTareas \n"
+                + "                      FROM wkf_rolUsuario vRolUsr \n"
+                + "                     GROUP BY vRolUsr.pRol, vRolUsr.pUsuario ) rolUsrCount ON rolUsrCount.pRol = etCount.fRolFuncion \n"
+                + "       INNER JOIN wkf_rolFuncion rolFn ON rolFn.pRol = etCount.fRolFuncion \n"
+                + "       INNER JOIN tUsuario usr ON usr.pUsuario = rolUsrCount.pUsuario \n"
+                + "       INNER JOIN wkf_etapa etapa ON etapa.fRolFuncion = etCount.fRolFuncion \n"
+                + "       INNER JOIN wkf_flujo flujo ON flujo.pFlujo = etapa.fFlujo \n"
+                + " WHERE rolFn.bVigente = 1 \n"
+                + (fSistema == null ? "" : " AND flujo.fSistema = ? ")
+                + (pRol == null ? "" : " AND rolFn.pRol = ? ")
+                + (cRol == null ? "" : " AND rolFn.cNombre = ? ");
+        traza.add(cSql);
+
+        PreparedStatement ps = this.cnxHlp.getConnection().prepareStatement( cSql );
+        int nIdx = 1;
+        if (fSistema != null)
+            ps.setInt( nIdx++, fSistema );
+        if (pRol != null)
+            ps.setInt( nIdx++, pRol );
+        if (cRol != null)
+            ps.setString( nIdx++, cRol );
+        ResultSet rs = ps.executeQuery();
+        List lista = ConvertList.fromResultSet( rs );
+        for (Object ob : lista) {
+            Map reg = (Map) ob;
+            if (reg.containsKey( "cUsuarioNombre" ))
+                reg.put( "cUsuarioNombre", ConvertString.initCap( (String) reg.get( "cUsuarioNombre" ) ) );
+        }
+        rs.close();
+        ps.close();
+
+        return lista;
+    }
+
+    public List listaUsuariosJerarquia() throws SQLException, FrameworkException {
+        Integer fUsuarioPadre = u.getInt( request, "prm_fUsuarioPadre" );
+        Integer fSistema = u.getInt( request, "prm_fSistema" );
+
+        if (ConvertNumber.isCero( fUsuarioPadre ))
+            fUsuarioPadre = null;
+
+        String cSql = "SELECT "
+                + db.convertColumn( "usr.pUsuario" ) + ",\n"
+                + db.convertColumn( "usr.cUsuario" ) + ",\n"
+                + db.convertColumn( "usr.cNombre", "cUsuarioNombre" ) + ",\n"
+                + db.convertColumn( "recurso.fSistema" ) + ",\n"
+                + db.convertColumn( "jerarquia.fUsuarioPadre" ) + " \n"
+                + "  FROM tUsuarioPerfil usrPerfil \n"
+                + "       INNER JOIN      tUsuario          usr        ON usr.pUsuario = usrPerfil.pUsuario \n"
+                + "       INNER JOIN      tPermiso          permiso    ON permiso.fPerfil = usrPerfil.pPerfil \n"
+                + "       INNER JOIN      tRecurso          recurso    ON recurso.pRecurso = permiso.fRecurso \n"
+                + "       LEFT OUTER JOIN wkf_jerarqMiembro jerarquia  ON jerarquia.fUsuario = usr.pUsuario \n"
+                + " WHERE permiso.fTpAcceso <> 99 \n"
+                + (fSistema == null ? "" : " AND recurso.fSistema = ? ")
+                + (fUsuarioPadre == null ? "" : " AND jerarquia.fUsuarioPadre = ? ")
+                + " GROUP BY usr.cNombre, usr.cUsuario, usr.pUsuario, jerarquia.fUsuarioPadre, recurso.fSistema \n"
+                + " ORDER BY usr.cNombre \n";
+        traza.add(cSql);
+
+        PreparedStatement ps = this.cnxHlp.getConnection().prepareStatement( cSql );
+        int nIdx = 1;
+        if (fSistema != null)
+            ps.setInt( nIdx++, fSistema );
+        if (fUsuarioPadre != null)
+            ps.setInt( nIdx++, fUsuarioPadre );
+        ResultSet rs = ps.executeQuery();
+        List lista = ConvertList.fromResultSet( rs );
+        rs.close();
+        ps.close();
+
+        return lista;
+    }
 }

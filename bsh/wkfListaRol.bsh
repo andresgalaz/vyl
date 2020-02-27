@@ -1,2 +1,2 @@
 $call.include('vyl/bsh/wkf/rolFuncionClase.bsh')
-new RolFuncion(request, connectionHelper).lista();
+new RolFuncion(request, connectionHelper, traza).listaRol();
