@@ -27,9 +27,9 @@ Ext.define('vyl.view.main.MainViewModel', {
             },
 
             proxy: {
-                // url : GLOBAL.HOST+'/do/vyl/bsh/main/menuGet.bsh',
-                url : GLOBAL.HOST+'/do/menuFull',
-                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                // url : GLOBAL_HOST+'/do/vyl/bsh/main/menuGet.bsh',
+                url : GLOBAL_HOST+'/do/menuFull',
+                cors: true, withCredentials: true, useDefaultXhrHeader: false,
                 method : 'GET', 
                 type : 'ajax',
                 reader : {

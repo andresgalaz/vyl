@@ -19,16 +19,16 @@ Ext.define('vyl.view.admin.cobranza.CobranzaController', {
         fld.setRawValue(file);
 
         refs.frmPanoramicaAdjuntar.submit({
-            url: GLOBAL.HOST+'/do/subirArchivo',
-            cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+            url: GLOBAL_HOST+'/do/subirArchivo',
+            cors: true, withCredentials: true, useDefaultXhrHeader: false,
             success : function(form, action) {
                 var obj = action.result;
 
                 if (obj.success) {
                     //Graba url de la panoramica
                     Ext.Ajax.request({
-                        url : GLOBAL.HOST+'/do/jsonCall',
-                        cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                        url : GLOBAL_HOST+'/do/jsonCall',
+                        cors: true, withCredentials: true, useDefaultXhrHeader: false,
                         method : 'POST',
                         params : {
                             prm_funcion : 'odonto.js_odontograma.grabarPanoramicaUrl',

@@ -3,8 +3,8 @@ Ext.define('vyl.ux.form.Panel', {
     extend: 'Ext.form.Panel',
     xtype: 'uxform',
 
-    url: GLOBAL.HOST+'/do/jsonCall',
-    cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+    url: GLOBAL_HOST+'/do/jsonCall',
+    cors: true, withCredentials: true, useDefaultXhrHeader: false,
 
     fieldDefaults: {
         labelAlign: 'top',

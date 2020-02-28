@@ -25,8 +25,8 @@ Ext.define('vyl.ux.button.Accion', {
             json = JSON.stringify(jsonData);
 
         Ext.Ajax.request({
-            url : GLOBAL.HOST+'/do/wkfAccionEvento',
-            cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+            url : GLOBAL_HOST+'/do/wkfAccionEvento',
+            cors: true, withCredentials: true, useDefaultXhrHeader: false,
             method : 'POST',
             params : {
                 prm_dataSource : cxnCtrl.getDefaultDS(), 

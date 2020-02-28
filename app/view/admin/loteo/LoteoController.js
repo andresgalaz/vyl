@@ -42,8 +42,8 @@ Ext.define('vyl.view.admin.loteo.LoteoController', {
 
         if (loteo_id > 0) {
             Ext.Ajax.request({
-                url: GLOBAL.HOST+'/do/vyl/bsh/loteoGet.bsh',
-                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                url: GLOBAL_HOST+'/do/vyl/bsh/loteoGet.bsh',
+                cors: true, withCredentials: true, useDefaultXhrHeader: false,
                 params: {
                     prm_dataSource: 'vylDS',
                     prm_pLoteo: loteo_id
@@ -95,8 +95,8 @@ Ext.define('vyl.view.admin.loteo.LoteoController', {
         	return;
         
         Ext.Ajax.request({
-            url: GLOBAL.HOST+'/do/vyl/bsh/loteoDelete.bsh',
-            cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+            url: GLOBAL_HOST+'/do/vyl/bsh/loteoDelete.bsh',
+            cors: true, withCredentials: true, useDefaultXhrHeader: false,
             params: {
                 prm_dataSource: 'vylDS',
                 prm_pLoteo: loteo_id
@@ -161,8 +161,8 @@ Ext.define('vyl.view.admin.loteo.LoteoController', {
                     view.mask('Grabando datos');
 
                     Ext.Ajax.request({
-                        url: GLOBAL.HOST+'/do/vyl/bsh/loteoInsUpd.bsh',
-                        cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                        url: GLOBAL_HOST+'/do/vyl/bsh/loteoInsUpd.bsh',
+                        cors: true, withCredentials: true, useDefaultXhrHeader: false,
                         method: 'POST',
                         params: {
                             prm_dataSource: 'vylDS',

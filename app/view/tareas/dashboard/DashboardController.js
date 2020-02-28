@@ -230,8 +230,8 @@ Ext.define('vyl.view.tareas.dashboard.DashboardController', {
         var me = this;
 
         Ext.Ajax.request({
-            url : GLOBAL.HOST+'/do/jsonCall',
-            cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+            url : GLOBAL_HOST+'/do/jsonCall',
+            cors: true, withCredentials: true, useDefaultXhrHeader: false,
             method : 'POST',
             params : {
                 prm_funcion : 'PE.JS_PE_MENSAJERIA.operConsultaMensajesNuevosCant',
@@ -302,8 +302,8 @@ Ext.define('vyl.view.tareas.dashboard.DashboardController', {
 
         if (detailData) {
             Ext.Ajax.request({
-                url : GLOBAL.HOST+'/do/vyl/bsh/ventaByEvento.bsh',
-                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                url : GLOBAL_HOST+'/do/vyl/bsh/ventaByEvento.bsh',
+                cors: true, withCredentials: true, useDefaultXhrHeader: false,
                 method : 'POST',
                 params : {
                     prm_dataSource: cxnCtrl.getDefaultDS(),

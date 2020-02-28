@@ -230,8 +230,8 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 				frmComprador.mask('Buscando comprador');
 
 				Ext.Ajax.request({
-					url: GLOBAL.HOST+'/do/vyl/bsh/getComprador.bsh',
-				    cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+					url: GLOBAL_HOST+'/do/vyl/bsh/getComprador.bsh',
+				    cors: true, withCredentials: true, useDefaultXhrHeader: false,
 					method : 'POST',
 					params: {
 						prm_dataSource: 'vylDS',

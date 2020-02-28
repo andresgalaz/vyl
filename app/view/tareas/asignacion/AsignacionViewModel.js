@@ -19,8 +19,8 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionViewModel', {
                     rootProperty : 'response',
                     successProperty : 'success'
                 },
-                url : GLOBAL.HOST+'/do/vyl/bsh/wkfListaRol.bsh',
-                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                url : GLOBAL_HOST+'/do/vyl/bsh/wkfListaRol.bsh',
+                cors: true, withCredentials: true, useDefaultXhrHeader: false,
                 method : 'POST'
             }
         },
@@ -43,8 +43,8 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionViewModel', {
                     rootProperty : 'response',
                     successProperty : 'success'
                 },
-                url : GLOBAL.HOST+'/do/vyl/bsh/wkfListaRolUsuarios.bsh',
-                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                url : GLOBAL_HOST+'/do/vyl/bsh/wkfListaRolUsuarios.bsh',
+                cors: true, withCredentials: true, useDefaultXhrHeader: false,
                 method : 'POST'
             }
         },
@@ -65,8 +65,8 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionViewModel', {
                     rootProperty : 'response',
                     successProperty : 'success'
                 },
-                url : GLOBAL.HOST+'/do/vyl/bsh/wkfListaUsuariosJerarquia.bsh',
-                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                url : GLOBAL_HOST+'/do/vyl/bsh/wkfListaUsuariosJerarquia.bsh',
+                cors: true, withCredentials: true, useDefaultXhrHeader: false,
                 method : 'POST',
                 extraParams :{
                     prm_fSistema: 3
@@ -94,8 +94,8 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionViewModel', {
                     rootProperty : 'response',
                     successProperty : 'success'
                 },
-                url : GLOBAL.HOST+'/do/vyl/bsh/wkfListaRolUsuarios.bsh',
-                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                url : GLOBAL_HOST+'/do/vyl/bsh/wkfListaRolUsuarios.bsh',
+                cors: true, withCredentials: true, useDefaultXhrHeader: false,
                 method : 'POST',
                 extraParams :{
                 }
@@ -126,8 +126,8 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionViewModel', {
                     rootProperty : 'response',
                     successProperty : 'success'
                 },
-                url : GLOBAL.HOST+'/do/vyl/bsh/wkfListaRolDetalle.bsh',
-                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                url : GLOBAL_HOST+'/do/vyl/bsh/wkfListaRolDetalle.bsh',
+                cors: true, withCredentials: true, useDefaultXhrHeader: false,
                 method : 'POST',
             },
 

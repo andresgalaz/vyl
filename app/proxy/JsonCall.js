@@ -2,8 +2,8 @@ Ext.define('vyl.proxy.JsonCall', {
     extend: 'Ext.data.proxy.Ajax',
     alias: 'proxy.jsoncall',
 
-    url : GLOBAL.HOST+'/do/jsonCall',
-    cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+    url : GLOBAL_HOST+'/do/jsonCall',
+    cors: true, withCredentials: true, useDefaultXhrHeader: false,
     type : 'ajax',
     reader : {
         type : 'json',

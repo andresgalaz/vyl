@@ -111,8 +111,8 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionController', {
 
             // Carga en el tagFld de usuarios los que ya estaban asignados
             Ext.Ajax.request({
-                url: GLOBAL.HOST+'/do/vyl/bsh/wkfListaRolUsuarios.bsh',
-                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                url: GLOBAL_HOST+'/do/vyl/bsh/wkfListaRolUsuarios.bsh',
+                cors: true, withCredentials: true, useDefaultXhrHeader: false,
                 extraParams: {
                     prm_cRol : reg
                 },

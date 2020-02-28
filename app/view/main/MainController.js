@@ -41,8 +41,8 @@ Ext.define('vyl.view.main.MainController', {
             token, newToken;
         
         Ext.Ajax.request({
-            url: GLOBAL.HOST+'/do/estadoSesion',
-            cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+            url: GLOBAL_HOST+'/do/estadoSesion',
+            cors: true, withCredentials: true, useDefaultXhrHeader: false,
             method: 'POST',
             extraParams: {
                 st: stNavigationTree
@@ -332,8 +332,8 @@ Ext.define('vyl.view.main.MainController', {
 
                 // // Modifica el defaultToken en caso que el perfil requiera otro que el dashboard de tareas
                 // Ext.Ajax.request({
-                //     url: GLOBAL.HOST+'/do/vyl/bsh/main/menuPerfiles.bsh',
-                //     cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                //     url: GLOBAL_HOST+'/do/vyl/bsh/main/menuPerfiles.bsh',
+                //     cors: true, withCredentials: true, useDefaultXhrHeader: false,
                 //     method: 'POST',
                 //     params: {
                 //         prm_dataSource: cxnCtrl.getDefaultDS(),
@@ -372,8 +372,8 @@ Ext.define('vyl.view.main.MainController', {
             });
 
         Ext.Ajax.request({
-            url: GLOBAL.HOST+'/do/salir',
-            cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+            url: GLOBAL_HOST+'/do/salir',
+            cors: true, withCredentials: true, useDefaultXhrHeader: false,
             method: 'POST',
             success: function (response, opts) {
                 if (response.status == 200) {

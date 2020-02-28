@@ -72,8 +72,8 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
             ],
 
             proxy: {
-                url : GLOBAL.HOST+'/do/vyl/bsh/ventaArchivosLista.bsh',
-                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                url : GLOBAL_HOST+'/do/vyl/bsh/ventaArchivosLista.bsh',
+                cors: true, withCredentials: true, useDefaultXhrHeader: false,
                 type : 'ajax',
                 reader : {
                     type : 'json',
@@ -102,8 +102,8 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
             ],
 
             proxy: {
-                url : GLOBAL.HOST+'/do/vyl/bsh/lisEmpresa.bsh',
-                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                url : GLOBAL_HOST+'/do/vyl/bsh/lisEmpresa.bsh',
+                cors: true, withCredentials: true, useDefaultXhrHeader: false,
                 type : 'ajax',
                 reader : {
                     type : 'json',
@@ -143,8 +143,8 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
             ],
 
             proxy: {
-                url: GLOBAL.HOST+'/do/vyl/bsh/lisVenta.bsh',
-                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                url: GLOBAL_HOST+'/do/vyl/bsh/lisVenta.bsh',
+                cors: true, withCredentials: true, useDefaultXhrHeader: false,
                 type : 'ajax',
                 reader : {
                     type : 'json',
@@ -209,8 +209,8 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
             ],
 
             proxy: {
-                url : GLOBAL.HOST+'/do/vyl/bsh/loteoNombres.bsh',
-                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                url : GLOBAL_HOST+'/do/vyl/bsh/loteoNombres.bsh',
+                cors: true, withCredentials: true, useDefaultXhrHeader: false,
                 type : 'ajax',
                 reader : {
                     type : 'json',

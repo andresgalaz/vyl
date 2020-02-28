@@ -21,8 +21,8 @@ Ext.define('vyl.view.tareas.dashboard.DashboardViewModel', {
 
             proxy: {
                 type : 'wkfcall',
-                url : GLOBAL.HOST+'/do/wkfListaEventos',
-                cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+                url : GLOBAL_HOST+'/do/wkfListaEventos',
+                cors: true, withCredentials: true, useDefaultXhrHeader: false,
                 extraParams: {
                     prm_pFlujo: 3
                 }

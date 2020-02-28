@@ -6,8 +6,8 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionRolUsuarios', {
     
     height: 320,
     title: 'Asignacion de Usuarios por Rol',
-    url: GLOBAL.HOST+'/do/jsonCall',
-    cors:GLOBAL.CORS, withCredentials: true, useDefaultXhrHeader: false,
+    url: GLOBAL_HOST+'/do/jsonCall',
+    cors: true, withCredentials: true, useDefaultXhrHeader: false,
     // bodyPadding: 15,
 
     fieldDefaults: {
