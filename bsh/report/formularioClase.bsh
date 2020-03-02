@@ -1,6 +1,7 @@
 package vyl.report;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -14,7 +15,7 @@ import prg.util.cnv.ConvertNumber;
 import prg.util.cnv.ConvertTimestamp;
 import prg.util.db.hlp.ConexionHelper;
 import prg.util.rpt.MultiPageJasper;
-import util.JasperUtil;
+import util.ReportUtil;
 import vyl.db.Venta;
 
 /**
@@ -44,7 +45,7 @@ public class Formulario {
     private List                traza;
     // Solo una abreviación
     private JsonDataUtil        u         = new JsonDataUtil();
-    private JasperUtil          ju        = new JasperUtil();
+    private ReportUtil          ru        = new ReportUtil();
 
     // Variables de PDF
     private String[]            paramsPdf = new String[] { "FECHAHORA_EMISION",
@@ -79,6 +80,7 @@ public class Formulario {
     }
 
     public void genera() throws FrameworkException {
+        Locale.setDefault( new Locale( "es", "CL" ) );
         traza.add( "genera(): inicio" );
         Integer pVenta = u.getInt( request, "prm_pVenta", 0 );
         if (ConvertNumber.isCero( pVenta )) {
@@ -103,17 +105,17 @@ public class Formulario {
                     nReserva = 0.0;
                 mData.put( "VYL_FINANCIAMIENTO_MONTO", nValor - nPie - nReserva );
             }
-            ju.fmtNumber( mData, "VYL_FINANCIAMIENTO_PIE", "$" );
-            ju.fmtNumber( mData, "VYL_FINANCIAMIENTO_MONTO", "$" );
-            ju.fmtNumber( mData, "VYL_VALOR_CUOTA", "$" );
+            ru.fmtNumber( mData, "VYL_FINANCIAMIENTO_PIE", "$" );
+            ru.fmtNumber( mData, "VYL_FINANCIAMIENTO_MONTO", "$" );
+            ru.fmtNumber( mData, "VYL_VALOR_CUOTA", "$" );
         }
 
-        ju.fmtNumber( mData, "VYL_VALOR", "$" );
-        ju.fmtNumber( mData, "VYL_RESERVA", "$" );
-        ju.fmtNumber( mData, "VYL_ESCRITURA", "$" );
-        ju.fmtNumber( mData, "VYL_INSTRUCCIONES_NOTARIO", "$" );
-        ju.fmtNumber( mData, "VYL_ESCRITURA_NOTARIO", "$" );
-        ju.fmtNumber( mData, "VYL_CBR", "$" );
+        ru.fmtNumber( mData, "VYL_VALOR", "$" );
+        ru.fmtNumber( mData, "VYL_RESERVA", "$" );
+        ru.fmtNumber( mData, "VYL_ESCRITURA", "$" );
+        ru.fmtNumber( mData, "VYL_INSTRUCCIONES_NOTARIO", "$" );
+        ru.fmtNumber( mData, "VYL_ESCRITURA_NOTARIO", "$" );
+        ru.fmtNumber( mData, "VYL_CBR", "$" );
 
         mData.put( "FECHAHORA_EMISION", ConvertTimestamp.toString( new java.util.Date() ) );
         try {
@@ -126,7 +128,7 @@ public class Formulario {
         }
         // Genera PDF
         MultiPageJasper oMulti = new MultiPageJasper( dirTpl );
-        ju.fixParameters( mData, paramsPdf );
+        ru.fixParameters( mData, paramsPdf );
         traza.add( "Formulario.genera->mData" + ConvertMap.toString( mData ) );
 
         try {
@@ -136,7 +138,7 @@ public class Formulario {
             traza.add( "ERROR addJRxml:" + ConvertException.stackTrace2string( e ) );
         }
         try {
-        oMulti.enviaReportPDF( response, cNombreBajada );
+            oMulti.enviaReportPDF( response, cNombreBajada );
         } catch (Exception e) {
             traza.add( "ERROR generar:" + ConvertException.stackTrace2string( e ) );
         }

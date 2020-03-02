@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -13,7 +14,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.apache.poi.xwpf.usermodel.XWPFRun;
 
 import prg.glz.FrameworkException;
 import prg.glz.wkf.util.JsonDataUtil;
@@ -21,6 +21,7 @@ import prg.util.cnv.ConvertNumber;
 import prg.util.cnv.ConvertRut;
 import prg.util.cnv.ConvertString;
 import prg.util.db.hlp.ConexionHelper;
+import util.ReportUtil;
 import vyl.db.Loteo;
 import vyl.db.Venta;
 
@@ -50,7 +51,8 @@ public class Escritura {
     private ConexionHelper      cnxHlp;
     private List                traza;
     // Solo una abreviación
-    private JsonDataUtil        u = new JsonDataUtil();
+    private JsonDataUtil        u  = new JsonDataUtil();
+    private ReportUtil          ru = new ReportUtil();
 
     /**
      * Para usar de AJAX Request
@@ -68,6 +70,7 @@ public class Escritura {
     }
 
     public void genera() throws FrameworkException {
+        Locale.setDefault( new Locale( "es", "CL" ) );
         traza.add( "genera(): inicio" );
         Integer pVenta = u.getInt( request, "prm_pVenta", 0 );
         if (ConvertNumber.isCero( pVenta )) {
@@ -106,7 +109,7 @@ public class Escritura {
                 cComprador += ", " + c;
 
             // RUT
-            cComprador += ", cedula nacional de identidad número" + ConvertRut.escrito( (String) mData.get( "VYL_COMPRADOR_RUT" ) );
+            cComprador += ", cedula nacional de identidad número " + ConvertRut.escrito( (String) mData.get( "VYL_COMPRADOR_RUT" ) );
 
             // Domicilio
             c = (String) mData.get( "VYL_COMPRADOR_DIRECCION" );
@@ -148,7 +151,7 @@ public class Escritura {
             FileOutputStream out = new FileOutputStream( new File( "Escritura_"+pVenta+".docx" ) );
             xdoc.write( out );
             xdoc.close();
-
+        
             out.close();
         } catch (InvalidFormatException | IOException e) {
             e.printStackTrace();
@@ -162,24 +165,24 @@ public class Escritura {
             FileInputStream fis = new FileInputStream( f );
             XWPFDocument xdoc = new XWPFDocument( OPCPackage.open( fis ) );
             for (XWPFParagraph p : xdoc.getParagraphs()) {
-                replaceInParagraph( p, mData );
+                ru.replaceInParagraph( p, mData );
             }
-            
-            String dirOut = "vyl/resources/reporte/Escritura_"+pVenta+".docx";
+
+            String dirOut = "vyl/resources/reporte/Escritura_" + pVenta + ".docx";
             dirOut = request.getServletContext().getRealPath( dirOut );
             File fInOut = new File( dirOut );
             FileOutputStream out = new FileOutputStream( fInOut );
             xdoc.write( out );
             xdoc.close();
             out.close();
-            
+
             response.setCharacterEncoding( "UTF-8" );
             response.setContentType( "Content-Type: application/msword" );
-            response.setHeader( "Content-Disposition", "attachment;filename=Escritura_"+pVenta+".docx" );
+            response.setHeader( "Content-Disposition", "attachment;filename=Escritura_" + pVenta + ".docx" );
             response.setHeader( "Content-Transfer-Encoding", "binary" );
-            response.setContentLength((int) fInOut.length());
-            FileInputStream in =  new FileInputStream( fInOut );
-            IOUtils.copy(in, response.getOutputStream());
+            response.setContentLength( (int) fInOut.length() );
+            FileInputStream in = new FileInputStream( fInOut );
+            IOUtils.copy( in, response.getOutputStream() );
             in.close();
             fInOut.delete();
             traza.add( "genera(): after write" );
@@ -191,116 +194,4 @@ public class Escritura {
         }
     }
 
-    /**
-     * Replaces placeholders to replacement values in a given paragraph. Expected placeholder format is: ${MY_PLACEHOLDER_NAME}
-     *
-     * @param paragraph                  Paragraph with placeholders.
-     * @param mData Collection of placeholder name keys and replacement values.
-     */
-    public static void replaceInParagraph(
-            XWPFParagraph paragraph,
-            Map mData) {
-
-        final String PLACEHOLDER_PREFIX = "${";
-        final String PLACEHOLDER_POSTFIX = "}";
-
-        String text = paragraph.getText();
-
-        if (!text.contains( PLACEHOLDER_PREFIX )) {
-            return;
-        }
-
-        boolean isReplacementStarted = false;
-        boolean isClosing;
-        StringBuilder placeholderName = new StringBuilder();
-        StringBuilder prePlaceholderText = new StringBuilder();
-        StringBuilder postPlaceholderText = new StringBuilder();
-
-        for (XWPFRun run : paragraph.getRuns()) {
-
-            if (run.getText( 0 ) == null)
-                continue;
-
-            isClosing = run.getText( 0 ).contains( PLACEHOLDER_POSTFIX );
-
-            if (!isReplacementStarted && run.getText( 0 ).contains( PLACEHOLDER_PREFIX )) {
-                // Start replacements:
-                String runText = run.getText( 0 );
-                int prefixIndex = runText.indexOf( PLACEHOLDER_PREFIX );
-                int postfixIndex = runText.indexOf( PLACEHOLDER_POSTFIX );
-
-                String placeholderText = runText.substring(
-                        prefixIndex >= 0 ? prefixIndex : 0,
-                        postfixIndex >= 0 ? postfixIndex + 1 : runText.length() );
-
-                placeholderName.append( placeholderText.replace( PLACEHOLDER_PREFIX, "" ) );
-                prePlaceholderText.append( runText, 0, prefixIndex >= 0 ? prefixIndex : 0 );
-                postPlaceholderText.append( runText.substring( postfixIndex > 0 ? postfixIndex + 1 : runText.length() ) );
-                run.setText( "", 0 );
-                isReplacementStarted = true;
-            }
-
-            if (isReplacementStarted) {
-                // Accumulate placholder parts:
-                String runText = run.getText( 0 );
-                int prefixIndex = runText.indexOf( PLACEHOLDER_PREFIX );
-                int postfixIndex = runText.indexOf( PLACEHOLDER_POSTFIX );
-
-                String placeholderText = runText.substring(
-                        prefixIndex >= 0 ? prefixIndex : 0,
-                        postfixIndex >= 0 ? postfixIndex + 1 : runText.length() );
-
-                if (isReplacementStarted && !isClosing)
-                    placeholderText = runText;
-
-                placeholderName.append( placeholderText.replace( PLACEHOLDER_POSTFIX, "" ) );
-                prePlaceholderText.append( runText.substring( 0, prefixIndex >= 0 ? prefixIndex : 0 ) );
-                postPlaceholderText.append( runText.substring( postfixIndex > 0 ? postfixIndex + 1 : runText.length() ) );
-                run.setText( "", 0 );
-            }
-
-            if (isReplacementStarted && isClosing) {
-                // Finilize replacements:
-                String runText = run.getText( 0 );
-                int prefixIndex = runText.indexOf( PLACEHOLDER_PREFIX );
-                int postfixIndex = runText.indexOf( PLACEHOLDER_POSTFIX );
-                String placeholderText = runText.substring(
-                        prefixIndex >= 0 ? prefixIndex : 0,
-                        postfixIndex >= 0 ? postfixIndex + 1 : runText.length() );
-                placeholderName.append( placeholderText );
-
-                prePlaceholderText.append( runText.substring( 0, prefixIndex >= 0 ? prefixIndex : 0 ) );
-                postPlaceholderText.append( runText.substring( postfixIndex > 0 ? postfixIndex + 1 : runText.length() ) );
-                placeholderName.append( run.getText( 0 ).replace( PLACEHOLDER_POSTFIX, "" ) );
-                boolean endsWithPostfix = placeholderName.lastIndexOf( PLACEHOLDER_POSTFIX ) == placeholderName.length() - PLACEHOLDER_POSTFIX.length();
-
-                if (endsWithPostfix) {
-                    placeholderName.replace(
-                            placeholderName.lastIndexOf( PLACEHOLDER_POSTFIX ),
-                            placeholderName.length(),
-                            "" );
-                }
-
-                String placeholderValue = "";
-                for (Object placeholder : mData.keySet()) {
-                    // Choose placeholder:
-                    String placeholderCore = ((String) placeholder)
-                            .replace( PLACEHOLDER_PREFIX, "" )
-                            .replace( PLACEHOLDER_POSTFIX, "" );
-
-                    placeholderValue = placeholderCore.equals( placeholderName.toString() ) ? (String) mData.get( placeholder ) : "";
-
-                    if (!placeholderValue.isEmpty())
-                        break;
-                }
-
-                run.setText( prePlaceholderText + placeholderValue + postPlaceholderText, 0 );
-
-                isReplacementStarted = false;
-                placeholderName = new StringBuilder();
-                prePlaceholderText = new StringBuilder();
-                postPlaceholderText = new StringBuilder();
-            }
-        }
-    }
 }

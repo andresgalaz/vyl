@@ -33,7 +33,6 @@ import prg.util.db.hlp.ConexionHelper;
  * 
  * BSH de llamada para actualizar:
  * 
- * call.include('vyl/bsh/util/rutClase.bsh')
  * call.include('vyl/bsh/db/ventaComprador.bsh')
  * call.include('vyl/bsh/db/ventaEmpresa.bsh')
  * call.include('vyl/bsh/db/ventaClase.bsh')

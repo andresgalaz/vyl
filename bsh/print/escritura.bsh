@@ -1,4 +1,5 @@
 $call.include('vyl/bsh/report/escrituraClase.bsh')
+$call.include('vyl/bsh/util/reportUtilClase.bsh')
 $call.include('vyl/bsh/db/loteoClase.bsh')
 $call.include('vyl/bsh/db/empresaClase.bsh')
 $call.include('vyl/bsh/db/compradorClase.bsh')

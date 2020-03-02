@@ -1,0 +1,188 @@
+package util;
+
+import java.text.NumberFormat;
+import java.util.Locale;
+import java.util.Map;
+
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
+
+import prg.glz.wkf.util.JsonDataUtil;
+import prg.util.cnv.ConvertObject;
+
+/*
+/*
+ * Denominar BSH: 
+ * 
+ * <systema>/bsh/util/reportUtilClase.bsh
+ * 
+ * @author agalaz
+ *
+ */
+public class ReportUtil {
+    private NumberFormat nf = NumberFormat.getInstance( new Locale( "es", "ES" ) );
+
+    /**
+     * Corrige el contenido de mData, convirtiendo todas los parametros incluidos
+     * en el array arrParams a STRING y NO Nulos. Es util para JASPER que no acepta
+     * la ausencia de parámetros
+     * 
+     * @param mData
+     * @param aParams
+     * @return
+     */
+    public Map fixParameters(Map mData, String[] aParams) {
+        for (int i = 0; i < aParams.length; i++) {
+            Object v = mData.get( aParams[i] );
+            if (v == null)
+                mData.put( aParams[i], "" );
+            else
+                mData.put( aParams[i], ConvertObject.toString( v ) );
+        }
+        return mData;
+    }
+
+    /**
+     * Da formato numérico a montos, con separador de miles y signo
+     * @param mData
+     * @param cKey
+     * @param cSigno
+     */
+    public void fmtNumber(Map mData, String cKey, String cSigno) {
+        if (mData.containsKey( cKey )) {
+            Double v = JsonDataUtil.getDouble( mData, cKey );
+            if (v != null) {
+                if (cSigno == null)
+                    mData.put( cKey, nf.format( v ) );
+                else
+                    mData.put( cKey, cSigno + " " + nf.format( v ) );
+
+                return;
+            }
+        }
+        mData.put( cKey, " " );
+    }
+    public String fmtNumber(Double v, String cSigno) {
+        if (v != null) {
+            if (cSigno == null)
+                return nf.format( v );
+            else
+                return cSigno + " " + nf.format( v );
+        }
+        return "";
+    }
+
+    /**
+     * Replaces placeholders to replacement values in a given paragraph. 
+     * Expected placeholder format is: ${MY_PLACEHOLDER_NAME}
+     *
+     * @param paragraph                  Paragraph with placeholders.
+     * @param mData Collection of placeholder name keys and replacement values.
+     */
+    public static void replaceInParagraph(
+            XWPFParagraph paragraph,
+            Map mData) {
+
+        final String PLACEHOLDER_PREFIX = "${";
+        final String PLACEHOLDER_POSTFIX = "}";
+
+        String text = paragraph.getText();
+
+        if (!text.contains( PLACEHOLDER_PREFIX )) {
+            return;
+        }
+
+        boolean isReplacementStarted = false;
+        boolean isClosing;
+        StringBuilder placeholderName = new StringBuilder();
+        StringBuilder prePlaceholderText = new StringBuilder();
+        StringBuilder postPlaceholderText = new StringBuilder();
+
+        for (XWPFRun run : paragraph.getRuns()) {
+
+            if (run.getText( 0 ) == null)
+                continue;
+
+            isClosing = run.getText( 0 ).contains( PLACEHOLDER_POSTFIX );
+
+            if (!isReplacementStarted && run.getText( 0 ).contains( PLACEHOLDER_PREFIX )) {
+                // Start replacements:
+                String runText = run.getText( 0 );
+                int prefixIndex = runText.indexOf( PLACEHOLDER_PREFIX );
+                int postfixIndex = runText.indexOf( PLACEHOLDER_POSTFIX );
+
+                String placeholderText = runText.substring(
+                        prefixIndex >= 0 ? prefixIndex : 0,
+                        postfixIndex >= 0 ? postfixIndex + 1 : runText.length() );
+
+                placeholderName.append( placeholderText.replace( PLACEHOLDER_PREFIX, "" ) );
+                prePlaceholderText.append( runText, 0, prefixIndex >= 0 ? prefixIndex : 0 );
+                postPlaceholderText.append( runText.substring( postfixIndex > 0 ? postfixIndex + 1 : runText.length() ) );
+                run.setText( "", 0 );
+                isReplacementStarted = true;
+            }
+
+            if (isReplacementStarted) {
+                // Accumulate placholder parts:
+                String runText = run.getText( 0 );
+                int prefixIndex = runText.indexOf( PLACEHOLDER_PREFIX );
+                int postfixIndex = runText.indexOf( PLACEHOLDER_POSTFIX );
+
+                String placeholderText = runText.substring(
+                        prefixIndex >= 0 ? prefixIndex : 0,
+                        postfixIndex >= 0 ? postfixIndex + 1 : runText.length() );
+
+                if (isReplacementStarted && !isClosing)
+                    placeholderText = runText;
+
+                placeholderName.append( placeholderText.replace( PLACEHOLDER_POSTFIX, "" ) );
+                prePlaceholderText.append( runText.substring( 0, prefixIndex >= 0 ? prefixIndex : 0 ) );
+                postPlaceholderText.append( runText.substring( postfixIndex > 0 ? postfixIndex + 1 : runText.length() ) );
+                run.setText( "", 0 );
+            }
+
+            if (isReplacementStarted && isClosing) {
+                // Finilize replacements:
+                String runText = run.getText( 0 );
+                int prefixIndex = runText.indexOf( PLACEHOLDER_PREFIX );
+                int postfixIndex = runText.indexOf( PLACEHOLDER_POSTFIX );
+                String placeholderText = runText.substring(
+                        prefixIndex >= 0 ? prefixIndex : 0,
+                        postfixIndex >= 0 ? postfixIndex + 1 : runText.length() );
+                placeholderName.append( placeholderText );
+
+                prePlaceholderText.append( runText.substring( 0, prefixIndex >= 0 ? prefixIndex : 0 ) );
+                postPlaceholderText.append( runText.substring( postfixIndex > 0 ? postfixIndex + 1 : runText.length() ) );
+                placeholderName.append( run.getText( 0 ).replace( PLACEHOLDER_POSTFIX, "" ) );
+                boolean endsWithPostfix = placeholderName.lastIndexOf( PLACEHOLDER_POSTFIX ) == placeholderName.length() - PLACEHOLDER_POSTFIX.length();
+
+                if (endsWithPostfix) {
+                    placeholderName.replace(
+                            placeholderName.lastIndexOf( PLACEHOLDER_POSTFIX ),
+                            placeholderName.length(),
+                            "" );
+                }
+
+                String placeholderValue = "";
+                for (Object placeholder : mData.keySet()) {
+                    // Choose placeholder:
+                    String placeholderCore = ((String) placeholder)
+                            .replace( PLACEHOLDER_PREFIX, "" )
+                            .replace( PLACEHOLDER_POSTFIX, "" );
+
+                    placeholderValue = placeholderCore.equals( placeholderName.toString() ) ? (String) mData.get( placeholder ) : "";
+
+                    if (!placeholderValue.isEmpty())
+                        break;
+                }
+
+                run.setText( prePlaceholderText + placeholderValue + postPlaceholderText, 0 );
+
+                isReplacementStarted = false;
+                placeholderName = new StringBuilder();
+                prePlaceholderText = new StringBuilder();
+                postPlaceholderText = new StringBuilder();
+            }
+        }
+    }
+}

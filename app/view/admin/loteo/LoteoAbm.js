@@ -90,6 +90,20 @@ Ext.define('vyl.view.admin.loteo.LoteoAbm', {
                         grow: true,
                         flex: 4
                     }]
+                }, {
+                    xtype: 'container',
+                    layout: 'hbox',
+                    margin: '0 0 5 0',
+                    defaultType: 'textfield',
+                    items: [{
+                        fieldLabel: 'Historia Adquisición',
+                        xtype: 'textarea',
+                        name: 'LOTEO_HISTORIA',
+                        allowBlank: true,
+                        anchor: '100%',
+                        grow: true,
+                        flex: 4
+                    }]
                 }]
             }]
         });

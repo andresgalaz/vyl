@@ -146,6 +146,19 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                     flex: 1
                                 }
                             ]
+                        },
+                        {
+                            xtype: 'container',
+                            layout: 'hbox',
+                            margin: '0 0 5 0',
+                            items: [
+                                {
+                                    xtype: 'textarea',
+                                    fieldLabel: 'Deslinde Loteo',
+                                    name: 'VYL_LOTEO_DESLINDE',
+                                    flex: 1
+                                }
+                            ]
                         }
                     ]
                 },
