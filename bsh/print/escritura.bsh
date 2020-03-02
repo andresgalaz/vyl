@@ -1,1 +1,8 @@
-"en construccion"
+$call.include('vyl/bsh/report/escrituraClase.bsh')
+$call.include('vyl/bsh/db/loteoClase.bsh')
+$call.include('vyl/bsh/db/empresaClase.bsh')
+$call.include('vyl/bsh/db/compradorClase.bsh')
+$call.include('vyl/bsh/db/ventaClase.bsh')
+// Genera MS Word Escritura
+traza.add("new Formulario 2.1");
+new Escritura(request, response, connectionHelper, traza).genera();

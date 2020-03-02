@@ -14,9 +14,9 @@ import prg.glz.wkf.util.JsonDataUtil;
 import prg.util.cnv.ConvertException;
 import prg.util.cnv.ConvertMap;
 import prg.util.cnv.ConvertNumber;
+import prg.util.cnv.ConvertRut;
 import prg.util.cnv.ConvertString;
 import prg.util.db.hlp.ConexionHelper;
-import util.Rut;
 
 /*
  * Denominar BSH:
@@ -96,9 +96,9 @@ public class Comprador {
             cDireccion = cDireccion.substring( 0, 80 );
 
         String cRut = u.getString( frmData, cAlias + "COMPRADOR_RUT" );
-        if (!Rut.valida( cRut ))
+        if (!ConvertRut.valida( cRut ))
             throw new FrameworkException( "Rut del comprador no es válido" + cRut );
-        cRut = Rut.limpia( cRut );
+        cRut = ConvertRut.limpia( cRut );
 
         Map mRegAct = null;
         if (ConvertNumber.isCero( pComprador )) {
@@ -179,7 +179,7 @@ public class Comprador {
         // - Request : prm_cRut
         // - Request : prm_pComprador
         String cAlias = u.getString( this.request, "prm_alias" );
-        String cRut = Rut.limpia( u.getString( this.request, "prm_cRut" ));
+        String cRut = ConvertRut.limpia( u.getString( this.request, "prm_cRut" ) );
         Integer pComprador = u.getInt( this.request, "prm_pComprador" );
         return getByFilter( pComprador, cRut, cAlias );
     }
@@ -224,7 +224,7 @@ public class Comprador {
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 mResp = ConvertMap.fromResultSet( rs );
-                Rut.formateaMap( mResp, cAlias + "COMPRADOR_RUT" );
+                ConvertRut.formateaMap( mResp, cAlias + "COMPRADOR_RUT" );
             } else {
                 mResp = new HashMap();
                 mResp.put( "success", true );
@@ -234,7 +234,7 @@ public class Comprador {
             ps.close();
             return mResp;
 
-        } catch (SQLException e) {        
+        } catch (SQLException e) {
             throw new FrameworkException( "Al leer tComprador" + msgWhere + "\n" + ConvertException.stackTrace2string( e ), e );
         }
     }

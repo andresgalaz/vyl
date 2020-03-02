@@ -71,6 +71,7 @@ public class Loteo {
         String cNombre = u.getString( mData, "LOTEO_NOMBRE" );
         String cDescripcion = u.getString( mData, "LOTEO_DESCRIPCION" );
         String cDeslinde = u.getString( mData, "LOTEO_DESLINDE" );
+        String cHistoria = u.getString( mData, "LOTEO_HISTORIA" );
 
         Map mRegAct = null;
         if (ConvertNumber.isCero( pLoteo )) {
@@ -92,12 +93,12 @@ public class Loteo {
         String cSql;
         if (mRegAct == null) {
             // Inserta
-            cSql = "INSERT INTO tLoteo ( cNombre , cDescripcion, cDeslinde ) \n"
-                    + " VALUES ( ?, ?, ?  )";
+            cSql = "INSERT INTO tLoteo ( cNombre , cDescripcion, cDeslinde, cHistoria ) \n"
+                    + " VALUES ( ?, ?, ?, ?  )";
         } else {
             // Actualiza
             cSql = "UPDATE tLoteo \n"
-                    + " SET cNombre  = ?, cDescripcion = ?, cDeslinde = ? \n"
+                    + " SET cNombre  = ?, cDescripcion = ?, cDeslinde = ?, cHistoria = ? \n"
                     + " WHERE pLoteo = ? \n";
         }
         try {
@@ -106,6 +107,7 @@ public class Loteo {
             cnxHlp.setString( psUpd, nIdx++, cNombre );
             cnxHlp.setString( psUpd, nIdx++, cDescripcion );
             cnxHlp.setString( psUpd, nIdx++, cDeslinde );
+            cnxHlp.setString( psUpd, nIdx++, cHistoria );
             if (mRegAct != null)
                 psUpd.setInt( nIdx++, pLoteo );
             psUpd.execute();
@@ -215,7 +217,7 @@ public class Loteo {
         return getByFiltro( pLoteo, cNombre, cAlias );
     }
 
-    private Map getByFiltro(Integer pLoteo, String cNombre, String cAlias) throws FrameworkException {
+    public Map getByFiltro(Integer pLoteo, String cNombre, String cAlias) throws FrameworkException {
         if (cAlias == null)
             cAlias = "";
         else
@@ -227,7 +229,8 @@ public class Loteo {
                     + "       lo.pLoteo          as " + cAlias + "LOTEO_ID, \n"
                     + "       lo.cNombre         as " + cAlias + "LOTEO_NOMBRE, \n"
                     + "       lo.cDescripcion    as " + cAlias + "LOTEO_DESCRIPCION, \n"
-                    + "       lo.cDeslinde       as " + cAlias + "LOTEO_DESLINDE \n"
+                    + "       lo.cDeslinde       as " + cAlias + "LOTEO_DESLINDE, \n"
+                    + "       lo.cHistoria       as " + cAlias + "LOTEO_HISTORIA \n"
                     + " FROM  tLoteo lo \n "
                     + " WHERE 1 = 1 \n"
                     + (pLoteo != null ? " AND lo.pLoteo  = ? " : "")
