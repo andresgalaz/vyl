@@ -1,4 +1,4 @@
-// v1.0
+// v3.0
 Ext.define('vyl.view.main.Main', {
     extend: 'Ext.container.Viewport',
 
