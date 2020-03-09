@@ -3,7 +3,7 @@ Ext.define('vyl.view.login.Login', {
     xtype: 'login',
 
     requires: [
-        'vyl.view.login.Dialog',
+        'vyl.view.login.Dialog'
     ],
 
     title: 'Compustrom - Lakus Sistema de Venta y Leasing',
@@ -33,7 +33,6 @@ Ext.define('vyl.view.login.Login', {
                     xtype: 'textfield',
                     cls: 'auth-textbox',
                     name: 'CUsuario',
-                    // bind: '{userid}',
                     height: 55,
                     hideLabel: true,
                     allowBlank : false,
@@ -52,7 +51,6 @@ Ext.define('vyl.view.login.Login', {
                     emptyText: 'Password',
                     inputType: 'password',
                     name: 'CPassword',
-                    // bind: '{password}',
                     allowBlank : false,
                     triggers: {
                         glyphed: {
@@ -72,6 +70,10 @@ Ext.define('vyl.view.login.Login', {
                     listeners: {
                         click: 'onLogin'
                     }
+                },
+                {
+                    xtype: 'component',
+                    html: '<a href="#pass_recupera">Recuperar password</a>',
                 }
             ]
         }

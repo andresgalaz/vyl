@@ -332,7 +332,7 @@ Ext.define('vyl.ux.form.DomicilioField', {
             latlng = {},
             input = Ext.getDom(me.getId() + '-inputEl');
         
-        if (val.lat && val.lng) {
+        if (val) {
             latlng = {lat: parseFloat(val.lat), lng: parseFloat(val.lng)};
 
             // Setea los objetos del config

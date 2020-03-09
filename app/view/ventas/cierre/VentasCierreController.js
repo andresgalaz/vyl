@@ -107,7 +107,8 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 		view.setEvento(eventoId);
 		view.leeEvento(function(rta) {
 			// Cargar formulario
-			var formData = rta.dataFormulario ? rta.dataFormulario : null;
+			var formData = rta.dataFormulario ? rta.dataFormulario : null,
+				etapa = rta.dataWkf.etapas[0];
 
 			if (formData) {
 				var registro = Ext.create('vyl.model.Base');
@@ -151,6 +152,25 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 				}
 			}
 
+			if (etapa.cNombre == "ingresado") {
+				var wkfBtnFinalizarLeas = view.query('[name^="finalizar_ingreso_leasing"]')[0],
+					wkfBtnFinalizarCont = view.query('[name^="finalizar_ingreso_contado"]')[0];
+				
+				if (formData.VYL_MODALIDAD_VENTA == 'directa') {
+					if (wkfBtnFinalizarLeas && wkfBtnFinalizarCont) {
+						wkfBtnFinalizarLeas.setHidden(true);
+						wkfBtnFinalizarCont.setHidden(false);
+					}
+				}
+
+				if (formData.VYL_MODALIDAD_VENTA == 'financiamiento') {
+					if (wkfBtnFinalizarLeas && wkfBtnFinalizarCont) {
+						wkfBtnFinalizarLeas.setHidden(false);
+						wkfBtnFinalizarCont.setHidden(true);
+					}
+				}
+			}
+
 			view.unmask();
 		});
 	},
@@ -164,16 +184,6 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 		view.resetForm();
 		view.setEtapaActual('ingresado');
 		view.setTitle('Formulario Cierre de Venta - Nuevo');
-
-		vm.setData({
-			formularioId: 0,
-			rutComprador: '',
-			valorPredio: 0,
-			valorReserva: 0,
-			valorContado: 0,
-			cuotas: 0,
-			interes: 0
-		});
 
 		refs.ctnFinanciamiento.setHidden(true);
 		refs.ctnFinanciamientoGastos.setHidden(true);
@@ -345,14 +355,6 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 		}
 	},
 
-	onCuotasChange: function(fld, event, eOpts) {
-		var me = this,
-			vm = me.getViewModel(),
-			value = fld.getValue();
-		
-		vm.set('cuotas', value);
-	},
-
 	onFormularioActivate: function() {
 		var me = this,
 			vm = me.getViewModel(),
@@ -367,14 +369,6 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 		if (eventoId > 0) {
 			me.formularioLeer(eventoId);
 		}	
-	},
-
-	onInteresChange: function(fld, event, eOpts) {
-		var me = this,
-			vm = me.getViewModel(),
-			value = fld.getValue();
-		
-		vm.set('interes', value);
 	},
 
 	onLoadStFormulariosIngresados: function(st, records, successful, operation, eOpts ) {
@@ -397,63 +391,40 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 			view = me.getView(),
 			modalidadVenta = record.get('COD'),
 			arrFldsFinanciamiento = view.query('[name^="VYL_FINANCIAMIENTO"]'),
-			btnContadoFinalizar = view.query('[name="finalizar"]')[0],
-			btnLeasing = view.query('[name^="leasing"]')[0];
+			wkfBtnFinalizarLeas = view.query('[name^="finalizar_ingreso_leasing"]')[0],
+			wkfBtnFinalizarCont = view.query('[name^="finalizar_ingreso_contado"]')[0];
 
 		if (modalidadVenta == 'financiamiento') {
 			// Leasing
 			refs.ctnFinanciamiento.setHidden(false);
 			refs.ctnFinanciamientoGastos.setHidden(false);
 
-			btnLeasing.setHidden(false);
-			btnContadoFinalizar.setHidden(true);
-
 			arrFldsFinanciamiento.forEach(function(fld) {
 				if (fld.setObligatorio) {
 					fld.setObligatorio(true);
 				}
-			}); 
+			});
+
+			if (wkfBtnFinalizarLeas && wkfBtnFinalizarCont) {
+				wkfBtnFinalizarLeas.setHidden(false);
+				wkfBtnFinalizarCont.setHidden(true);
+			}
 
 		} else {
 			// Contado
 			refs.ctnFinanciamiento.setHidden(true);
 			refs.ctnFinanciamientoGastos.setHidden(true);
 
-			btnLeasing.setHidden(true);
-			btnContadoFinalizar.setHidden(false);
-
 			arrFldsFinanciamiento.forEach(function(fld) {
 				if (fld.setObligatorio) {
 					fld.setObligatorio(false);
 				}
 			});
-		}
-	},
 
-	onValorContadoBlur: function(fld, event, eOpts) {
-		var me = this,
-			valor = fld.getValue();
-		
-		if (valor >= 0) {
-			me.setValorContado(valor);
-		}
-	},
-
-	onValorPredioBlur: function(fld, event, eOpts) {
-		var me = this,
-			valor = fld.getValue();
-		
-		if (valor >= 0) {
-			me.setValorPredio(valor);
-		}
-	},
-
-	onValorReservaBlur: function(fld, event, eOpts) {
-		var me = this,
-			valor = fld.getValue();
-		
-		if (valor >= 0) {
-			me.setValorReserva(valor);
+			if (wkfBtnFinalizarLeas && wkfBtnFinalizarCont) {
+				wkfBtnFinalizarLeas.setHidden(true);
+				wkfBtnFinalizarCont.setHidden(false);
+			}
 		}
 	},
 
@@ -474,13 +445,8 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 				me.formularioGrabar(btn, true);
 				break;
 
-			case 'finalizar':
-			case 'leasing':
-			case 'cotizacion':
-			case 'cotizacion_envio':
-			case 'transferencia_reciba':	
-			case 'transferencia_no_recibida':
-			case 'leasing_finalizar':
+			case 'finalizar_ingreso_leasing':
+			case 'finalizar_ingreso_contado':
 				if (view.isValid()) {
 					me.formularioGrabar(btn, true);
 

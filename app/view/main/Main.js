@@ -8,7 +8,10 @@ Ext.define('vyl.view.main.Main', {
         'vyl.view.main.MainController',
         'vyl.view.main.MainContainerWrap',
 
+        // LOGIN
         'vyl.view.login.Login',
+        'vyl.view.login.CambiarPassword',
+        'vyl.view.login.RecuperarPassword',
 
         // MENU TAREAS
         'vyl.view.tareas.dashboard.Dashboard',

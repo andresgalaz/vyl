@@ -16,7 +16,7 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
     margin: '10 20 10 20',
     title: '',
 
-    flujo: 'VENTA_CIERRE',
+    flujo: 'CIERRE_NEGOCIO',
     etapaActual: 'ingresado',
 
     cls: 'formulario-venta',
@@ -205,6 +205,7 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                             fieldLabel: 'Sexo',
                                             name: 'VYL_COMPRADOR_SEXO',
                                             editable: false,
+                                            allowBlank: true,
                                             displayField: 'SEXO',
                                             valueField: 'COD',
                                             bind: {
@@ -392,8 +393,8 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                     fieldLabel: 'Valor del Predio',
                                     name: 'VYL_VALOR',
                                     obligatorio: true,
-                                    listeners: {
-                                        blur: 'onValorPredioBlur'
+                                    bind: {
+                                        value: '{valorPredio}'
                                     }
                                 },
                                 {
@@ -401,8 +402,8 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                     fieldLabel: 'Reserva',
                                     name: 'VYL_RESERVA',
                                     obligatorio: true,
-                                    listeners: {
-                                        blur: 'onValorReservaBlur'
+                                    bind: {
+                                        value: '{valorReserva}'
                                     }
                                 },
                                 {
@@ -449,8 +450,8 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                 {
                                     fieldLabel: 'Pie de Contado',
                                     name: 'VYL_FINANCIAMIENTO_PIE',
-                                    listeners: {
-                                        blur: 'onValorContadoBlur'
+                                    bind: {
+                                        value: '{valorContado}'
                                     }
                                 },
                                 {
@@ -466,8 +467,8 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                     name: 'VYL_FINANCIAMIENTO_CUOTAS',
                                     minValue: 1,
                                     hideTrigger: false,
-                                    listeners: {
-                                        change: 'onCuotasChange'
+                                    bind: {
+                                        value: '{cuotas}'
                                     },
                                     width: 100
                                 },
@@ -476,10 +477,9 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                     name: 'VYL_FINANCIAMIENTO_INTERESES',
                                     allowDecimals: true,
                                     decimalPrecision: 2,
-                                    listeners: {
-                                        change: 'onInteresChange'
+                                    bind: {
+                                        value: '{interes}'
                                     },
-                                    value: 0,
                                     width: 100
                                 },
                                 {

@@ -9,46 +9,45 @@ Ext.define('vyl.view.admin.cobranza.CobranzaController', {
         me.msgTitle = 'VYL - Cobranza';
     },
 
-    onArchivoPagosChange: function(fld, value, eOpts ) {
-        // TODO
-        var me = this,
-            refs = me.getReferences(),
-            file = value.replace(/(^.*(\\|\/))?/, ""),
-            vm = me.getViewModel();
+    onArchivoCobranzasChange: function(fld, value, eOpts ) {
+        var file = value.replace(/(^.*(\\|\/))?/, "");
         
         fld.setRawValue(file);
+    },
 
-        refs.frmPanoramicaAdjuntar.submit({
+    onArchivoCobranzasProcesar: function(fld, value, eOpts ) {
+        var me = this,
+            refs = me.getReferences(),
+            vm = me.getViewModel()
+            view = me.getView();
+
+        view.mask('Procesando archivo cobranzas');
+
+        refs.frmProcesarArchivo.submit({
             url: GLOBAL_HOST+'/do/subirArchivo',
             cors: true, withCredentials: true, useDefaultXhrHeader: false,
             success : function(form, action) {
                 var obj = action.result;
 
                 if (obj.success) {
-                    //Graba url de la panoramica
                     Ext.Ajax.request({
-                        url : GLOBAL_HOST+'/do/jsonCall',
+                        url : GLOBAL_HOST+'',
                         cors: true, withCredentials: true, useDefaultXhrHeader: false,
                         method : 'POST',
                         params : {
-                            prm_funcion : 'odonto.js_odontograma.grabarPanoramicaUrl',
-                            prm_paciente_id : paciente.PACIENTE_ID, 
-                            prm_url : '../do/leerArchivo?cIdArchivo=' + obj.CIDARCHIVO, 
-                            prm_archivo_id: obj.CIDARCHIVO, 
-                            prm_user : cnxCtrl.getUsuarioId()
                         },
                         
                         success : function(response, opts) {
                             var rta = Ext.decode(response.responseText);
             
                             if (rta.success) {
-                                stRxAdjuntos.reload();
-                                Ext.toast('Archivo adjuntado con éxito', '¡Atención!', 'tl');
+                                Ext.toast('Archivo procesado con éxito', '¡Atención!', 'tl');
+                                view.unmask();
 
                             } else {
-                                console.warn('[odonto.js_odontograma.GrabarAnotacion] Error', rta.message);
+                                console.warn('[] Error', rta.message);
                                 Ext.Msg.show({
-                                    title: 'Ingreso Anotación',
+                                    title: 'Cobranzas',
                                     message: obj.message,
                                     buttons: Ext.Msg.OK,
                                     icon: Ext.Msg.ERROR
@@ -58,9 +57,9 @@ Ext.define('vyl.view.admin.cobranza.CobranzaController', {
                         },
             
                         failure : function(response, opts) {
-                            console.error('[odonto.js_odontograma.GrabarAnotacion] Error', rta.message);
+                            console.error('[] Error', rta.message);
                             Ext.Msg.show({
-                                title: 'Ingreso Anotación',
+                                title: 'Cobranzas',
                                 message: response.statusText,
                                 buttons: Ext.Msg.OK,
                                 icon: Ext.Msg.ERROR
@@ -71,30 +70,30 @@ Ext.define('vyl.view.admin.cobranza.CobranzaController', {
 
                 } else {
                     console.error('Error inesperado: ' + action.response.responseText);
-                
                     Ext.Msg.show({
                         title: me.title,
                         message: action.response.responseText,
                         buttons: Ext.Msg.OK,
                         icon: Ext.Msg.ERROR
                     });
+                    view.unmask();
                 }
             },
 
             failure : function(form, action) {
                 console.error('Falla del lado del servidor: ' + action.response.responseText);
-                
                 Ext.Msg.show({
                     title: me.title,
                     message: action.response.responseText,
                     buttons: Ext.Msg.OK,
                     icon: Ext.Msg.ERROR
-                })
+                });
+                view.unmask();
             }
         });
     },
 
-    onArchivoPagosVer: function() {
+    onArchivoCobranzasVer: function() {
         var me = this,
             wnd = Ext.create({
                 xtype: 'wndarchivos',

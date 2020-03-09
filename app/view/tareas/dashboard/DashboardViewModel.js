@@ -24,7 +24,7 @@ Ext.define('vyl.view.tareas.dashboard.DashboardViewModel', {
                 url : GLOBAL_HOST+'/do/wkfListaEventos',
                 cors: true, withCredentials: true, useDefaultXhrHeader: false,
                 extraParams: {
-                    prm_pFlujo: 3
+                    prm_pFlujo: 4
                 }
             },
 

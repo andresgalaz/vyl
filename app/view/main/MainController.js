@@ -40,6 +40,11 @@ Ext.define('vyl.view.main.MainController', {
             stNavigationTree = vm.getStore('stNavigationTree'),
             token, newToken;
         
+        if (node == 'pass_recupera') {
+            action.resume();
+            return;
+        }
+
         Ext.Ajax.request({
             url: GLOBAL_HOST+'/do/estadoSesion',
             cors: true, withCredentials: true, useDefaultXhrHeader: false,
@@ -65,6 +70,13 @@ Ext.define('vyl.view.main.MainController', {
                         console.log('[beforeRoute] login', pnLogin);
                         pnLogin.show();
                     }
+                    // me.redirectTo('login');
+
+                } else if (rta.bPasswordCaducada) {
+                    // Debe cambiar la password antes de continuar                    
+                    me.onLoginCambioPass();
+                    // me.redirectTo('pass_cambiar');
+
                 } else {
                     // Control de acceso al modulo destino
                     newToken = action.getUrlParams().input;
@@ -112,6 +124,7 @@ Ext.define('vyl.view.main.MainController', {
 
         console.log('[doLogin] login', pnLogin);
         pnLogin.show();
+        // this.redirectTo('login');
     },
 
 
@@ -360,6 +373,23 @@ Ext.define('vyl.view.main.MainController', {
         });
     },
 
+    onLoginCambioPass: function (pnl, opts) {
+        var me = this,
+            pnCambioPass = Ext.create({
+                xtype: 'pass_cambiar',
+                reference: 'wndCambioPass',
+            });
+
+        Ext.Msg.show({
+            title: 'Compustrom - Login',
+            message: 'Su password ha caducado. Ingrese una nueva.',
+            buttons: Ext.Msg.OK,
+            icon: Ext.Msg.WARN
+        });
+
+        // pnCambioPass.show();
+    },
+
     onLogout: function () {
         var me = this,
             refs = me.getReferences(),
@@ -400,6 +430,7 @@ Ext.define('vyl.view.main.MainController', {
 
         var me = this,
             view = me.getView(),
+            refs = me.getReferences(),
             cxnCtrl = Ext.getApplication().getController('Conexion'),
             stNavigationTree = me.getViewModel().getStore('stNavigationTree'),
             activeView;
@@ -430,18 +461,29 @@ Ext.define('vyl.view.main.MainController', {
                                     view.unmask();
                                 });
                             } else {
-                                Ext.Msg.show({
-                                    title: me.titulo,
-                                    message: 'El usuario logeado no tiene permisos para utilizar este sistema',
-                                    buttons: Ext.Msg.OK,
-                                    icon: Ext.Msg.ERROR,
-                                    fn: function (btn) {
-                                        if (btn === 'ok') {
-                                            view.unmask();
-                                            me.onLogout();
+                                if (node == 'pass_recupera') {
+                                    var pnRecuperaPass =  Ext.create({
+                                            xtype: 'pass_recupera',
+                                            reference: 'wndRecuperaPass',
+                                        });
+                                    
+                                    if (refs.wndLogin)
+                                        refs.wndLogin.destroy();
+
+                                } else {
+                                    Ext.Msg.show({
+                                        title: me.titulo,
+                                        message: 'El usuario logeado no tiene permisos para utilizar este sistema',
+                                        buttons: Ext.Msg.OK,
+                                        icon: Ext.Msg.ERROR,
+                                        fn: function (btn) {
+                                            if (btn === 'ok') {
+                                                view.unmask();
+                                                me.onLogout();
+                                            }
                                         }
-                                    }
-                                });
+                                    });
+                                }
                             }
                         }
                     });

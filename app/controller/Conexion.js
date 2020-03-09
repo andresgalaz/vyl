@@ -41,6 +41,18 @@ Ext.define('vyl.controller.Conexion', {
         }
     },
 
+    getCUsuario: function() {
+        var me = this,
+            usr = me.usuario;
+        
+        if (usr) {
+            return usr.cUsuario;
+
+        } else {
+            console.warn('[getCUsuario] No existe usuario');
+        }
+    },
+
     getSistemaId: function() {
         return this.appId;
     },

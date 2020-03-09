@@ -1,5 +1,5 @@
 Ext.define('vyl.view.admin.loteo.Loteo', {
-    extend: 'Ext.container.Container',
+    extend: 'vyl.ux.container.Main',
     xtype: 'admin-loteo',
     requires: [
         'vyl.view.admin.loteo.LoteoController',
@@ -8,11 +8,17 @@ Ext.define('vyl.view.admin.loteo.Loteo', {
         'vyl.view.admin.loteo.LoteoLista',
         'vyl.view.admin.loteo.LoteoAbm'
     ],
-    controller: 'loteo',
-    viewModel: { type: 'loteo' },
-    layout: { type: 'vbox', align: 'stretch' },
-    margin: '10 20 5 20',
     
+    controller: 'loteo',
+    viewModel: { 
+        type: 'loteo' 
+    },
+
+    layout: { 
+        type: 'vbox', 
+        align: 'stretch' 
+    },
+
     listeners: {
         cargadatos: 'onLoteoCargar',  // IMPORTANTE: Se dispara desde el [MainController] onRouteChange, token con parametros
     },
