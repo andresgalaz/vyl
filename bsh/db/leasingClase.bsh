@@ -156,7 +156,16 @@ public class Leasing {
     }
 
     public String generaCuotas(Integer pVenta, Integer nCuotas, Double nMonto, Date dInicio) throws FrameworkException {
+        Map mResp = new HashMap();
         traza.add( "Leasing.generaCuotas->(pVenta, nCuotas, nMonto, dInicio):(" + pVenta + ", " + nCuotas + ", " + nMonto + ", " + dInicio + ")" );
+        
+        if(ConvertNumber.isCero( nCuotas )) 
+            return "No se indicó cantidad de cuotas";
+
+        if(dInicio == null) 
+            return "No se indicó fechas de inicio";
+
+            
 
         String cSql = "INSERT INTO tLeasing ( nMonto, dVencimiento, pVenta, pCuota ) \n"
                 + " VALUES ( ?, ?, ?, ? )";
