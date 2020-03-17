@@ -337,22 +337,22 @@ Ext.define('vyl.ux.form.DomicilioField', {
 
             // Setea los objetos del config
             me.setDireccion(val);
-        }
-        
-        if (latlng.lat && latlng.lng) {
-            geocoder.geocode({'location': latlng}, function(results, status) {
-                if (status === 'OK') {
-                    if (results[0]) {
-                        me.setGeoreferencia(results[0]);
-                        input.value = results[0].formatted_address;
-                        me.validate();
+
+            if (latlng.lat && latlng.lng) {
+                geocoder.geocode({'location': latlng}, function(results, status) {
+                    if (status === 'OK') {
+                        if (results[0]) {
+                            me.setGeoreferencia(results[0]);
+                            input.value = results[0].formatted_address;
+                            me.validate();
+                        } else {
+                            console.warn('[wkfDomicilioField] No se encontro georeferencia');
+                        }
                     } else {
-                        console.warn('[wkfDomicilioField] No se encontro georeferencia');
+                        console.warn('[wkfDomicilioField] Error en geocoder: ' + status);
                     }
-                } else {
-                    console.warn('[wkfDomicilioField] Error en geocoder: ' + status);
-                }
-            });
+                });
+            }
         }
     },
 

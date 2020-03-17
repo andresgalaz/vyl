@@ -248,12 +248,16 @@ public class Venta {
     public Map getByEvento() throws FrameworkException {
         Map mResp = new HashMap();
         if (this.request == null) {
+            mResp.put( "success", false );
             mResp.put( "message", "No hay request" );
+            traza.add( "getByEvento(): No hay request" );
             return mResp;
         }
         Integer fEvento = u.getInt( this.request, "prm_fEvento" );
         if (ConvertNumber.isCero( fEvento )) {
+            mResp.put( "success", false );
             mResp.put( "message", "Falta parámetro prm_fEvento" );
+            traza.add( "getByEvento(): Falta parámetro prm_fEvento" );
             return mResp;
         }
         List lEvento = listaByFiltro( fEvento );
@@ -263,7 +267,6 @@ public class Venta {
     }
 
     public Map getById(Integer pVenta, Integer fEvento) throws FrameworkException {
-        traza.add( "Venta.getById->(pVenta,fEevento)=(" + pVenta + "," + fEvento + ")" );
         Map mData = null;
         String cSql = "SELECT \n"
                 + db.convertColumn( "ve.fEvento" ) + ", \n"
@@ -367,6 +370,7 @@ public class Venta {
                 "       ev.pEvento as WKF_EVENTO      , v.nValor            as VALOR_PREDIO ,\n" +
                 "       v.nReserva as MONTO_RESERVA   , v.nPie              as PIE_INICIAL  ,\n" +
                 "       v.nCuotas  as CANTIDAD_CUOTAS , v.pVenta            as ID_VENTA     ,\n" +
+                "       et.cNombre as WKF_ETAPA_NOMBRE ,\n" +
                 "       CASE WHEN v.bLeasing THEN 'Financiado' ELSE 'Contado' END as MODALIDAD_VENTA,\n" +
                 // Resumen de Cuotas de Leasing
                 "       CASE WHEN lr.nCuotasAtrasadas > 0 THEN 1 ELSE 0 END as LEASING_ATRASADO ,\n" +
@@ -378,12 +382,14 @@ public class Venta {
                 "       lr.dPrimeraCuota    as FECHA_PRIMERA_CUOTA   ,\n" +
                 "       lr.dUltimoPago      as FECHA_ULTIMO_PAGO      \n" +
                 " FROM tVenta v \n" +
-                (nEvento == null ? "" : "v.fEvento = ?") +
                 " LEFT JOIN tLoteo               lo ON lo.pLoteo    = v.cLoteo \n" +
                 " LEFT JOIN tComprador           c  ON c.pComprador = v.fComprador \n" +
                 " LEFT JOIN vLeasingResumen      lr ON lr.pVenta    = v.pVenta \n" +
                 " LEFT JOIN xformgen4.wkf_evento ev ON ev.PEVENTO   = v.fEvento AND ev.BACTIVA = '1' \n" +
-                " LEFT JOIN xformgen4.wkf_etapa  et ON et.PETAPA    = ev.FETAPA \n";
+                " LEFT JOIN xformgen4.wkf_etapa  et ON et.PETAPA    = ev.FETAPA \n" +
+                " WHERE 1 = 1 \n" +
+                (nEvento == null ? "" : " AND v.fEvento = ?");
+
         try {
             PreparedStatement ps = this.cnxHlp.getConnection().prepareStatement( cSql );
             int nIdx = 1;
@@ -395,7 +401,8 @@ public class Venta {
             ps.close();
             return lis;
         } catch (SQLException e) {
-            throw new FrameworkException( "Al listar consulta de ventas", e );
+            traza.add( "listaByFiltro: Error SQL=" + e.getMessage() );
+            throw new FrameworkException( "Error SQL al listar consulta de ventas:" + e.getMessage(), e );
         }
     }
 }

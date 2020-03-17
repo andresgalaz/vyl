@@ -29,7 +29,7 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionController', {
             Ext.Ajax.request({
                 url: '',
                 extraParams: {
-                    prm_data : datos
+                    prm_data : Ext.encode(datos)
                 },
         
                 success: function(response, opts) {
@@ -111,7 +111,8 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionController', {
 
             // Carga en el tagFld de usuarios los que ya estaban asignados
             Ext.Ajax.request({
-                url: GLOBAL_HOST+'/do/vyl/bsh/wkfListaRolUsuarios.bsh',
+                // url: GLOBAL_HOST+'/do/vyl/bsh/wkfListaRolUsuarios.bsh',
+                url: GLOBAL_HOST+'/do/wkfListaRolUsuarios',
                 cors: true, withCredentials: true, useDefaultXhrHeader: false,
                 extraParams: {
                     prm_cRol : reg
@@ -130,7 +131,7 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionController', {
                             refs.tagUsrRol.setValue(arrUsr);
                         }
                     } else
-                        console.warn('[onSelectRol] Error inesperado en wkfListaRolUsuarios.bsh');
+                        console.warn('[onSelectRol] Error inesperado en wkfListaRolUsuarios');
     
                 },
                 failure: function(response, opts) {

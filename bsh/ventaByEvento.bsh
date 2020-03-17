@@ -3,4 +3,5 @@ $call.include('vyl/bsh/db/compradorClase.bsh')
 $call.include('vyl/bsh/db/leasingClase.bsh')
 $call.include('vyl/bsh/db/ventaClase.bsh')
 // se espera prm_fEvento en el request
+traza.add("Inicio");
 new Venta(request, connectionHelper, traza).getByEvento();

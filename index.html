@@ -11,8 +11,8 @@
 	// Indica si activa o no if (DEBUG) console.log
 	var DEBUG = false;
 	// Se requiere cuando se usa sencha cmd
-	var GLOBAL_HOST = 'https://app.compustrom.com/webMy';
-	// var GLOBAL_HOST = '..';
+	// var GLOBAL_HOST = 'https://app.parcelasenchiloe.cl/d';
+	var GLOBAL_HOST = '..';
 </script>
 
 <!-- Carga hojas de estilo -->
@@ -35,16 +35,16 @@ Para MAXI: ver de agregar esto al Estilo, es para que los botones de acción
 <body></body>
 
 <!-- ExtJs 6.5.2 -->
-<script type="text/javascript" src='//app.compustrom.com/cdn/ext-6.5.2/build/ext-all.js'></script>
-<script type="text/javascript" src='//app.compustrom.com/cdn/ext-6.5.2/build/classic/theme-crisp/theme-crisp.js'></script>
-<script type="text/javascript" src='//app.compustrom.com/cdn/ext-6.5.2/build/packages/charts/classic/charts.js'></script>
-<script type="text/javascript" src='//app.compustrom.com/cdn/ext-addons-6.5.2/packages/exporter/build/classic/exporter.js'></script>
-<script type="text/javascript" src='//app.compustrom.com/cdn/ext-addons-6.5.2/packages/calendar/build/classic/calendar.js'></script>
-<script type="text/javascript" src='//app.compustrom.com/cdn/ext-6.5.2/build/classic/locale/locale-es.js'></script>
+<script type="text/javascript" src='../../cdn/ext-6.5.2/build/ext-all.js'></script>
+<script type="text/javascript" src='../../cdn/ext-6.5.2/build/classic/theme-crisp/theme-crisp.js'></script>
+<script type="text/javascript" src='../../cdn/ext-6.5.2/build/packages/charts/classic/charts.js'></script>
+<script type="text/javascript" src='../../cdn/ext-addons-6.5.2/packages/exporter/build/classic/exporter.js'></script>
+<script type="text/javascript" src='../../cdn/ext-addons-6.5.2/packages/calendar/build/classic/calendar.js'></script>
+<script type="text/javascript" src='../../cdn/ext-6.5.2/build/classic/locale/locale-es.js'></script>
 
-<link rel="stylesheet" type="text/css" href="//app.compustrom.com/cdn/ext-6.5.2/build/packages/charts/classic/crisp/resources/charts-all.css">
-<link rel="stylesheet" type="text/css" href="//app.compustrom.com/cdn/ext-addons-6.5.2/packages/exporter/build/classic/resources/exporter-all.css">
-<link rel="stylesheet" type="text/css" href="//app.compustrom.com/cdn/ext-addons-6.5.2/packages/calendar/build/classic/crisp/resources/calendar-all.css">
+<link rel="stylesheet" type="text/css" href="../../cdn/ext-6.5.2/build/packages/charts/classic/crisp/resources/charts-all.css">
+<link rel="stylesheet" type="text/css" href="../../cdn/ext-addons-6.5.2/packages/exporter/build/classic/resources/exporter-all.css">
+<link rel="stylesheet" type="text/css" href="../../cdn/ext-addons-6.5.2/packages/calendar/build/classic/crisp/resources/calendar-all.css">
 
 <!-- Google Maps - vFree: REVER Key -->
 <!-- Tiene un limite de 1.000 solicitudes en 24hs gratuitas, cargando una TC 150.000 sin costo -->
@@ -77,6 +77,7 @@ Para MAXI: ver de agregar esto al Estilo, es para que los botones de acción
 
 <!-- Override -->
 <script type="text/javascript" src='app/override/Numberfield.js'></script>
+<script type="text/javascript" src='app/override/mixin/Bindable.js'></script>
 
 <script type="text/javascript" src='app.js?v0.2'></script>
 <script type="text/javascript" src='app/proxy/JsonCall.js?v0.2'></script>

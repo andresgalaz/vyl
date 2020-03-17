@@ -1,5 +1,0 @@
-$call.include('vyl/bsh/db/ventaArchivosClase.bsh')
-// Este es a modo de ejemplo, en realidad no va a tener
-// un uso muy frecuente
-VentaArchivos va = new VentaArchivos(connectionHelper, connectionHelperAlt, wkfData, traza);
-va.elimina("Escritura");

@@ -112,6 +112,7 @@ public class VentaArchivos {
      * @throws FrameworkException 
      */
     public String elimina(String cTitulo) throws FrameworkException {
+        traza.add( "elimina: Inicio" );
         Integer pVenta = null;
         if (this.request != null) {
             pVenta = u.getInt( request, "prm_pVenta", 0 );
@@ -124,6 +125,7 @@ public class VentaArchivos {
             }
             pVenta = u.getInt( frmData, "VYL_ID", 0 );
         }
+        traza.add( "elimina: pVenta=" + pVenta );
         if (ConvertNumber.isCero( pVenta )) {
             String cMsg;
             if (this.request == null)

@@ -1,0 +1,9 @@
+$call.include('vyl/bsh/db/ventaArchivosClase.bsh')
+// Este es a modo de ejemplo, en realidad no va a tener
+// un uso muy frecuente
+traza.add("Elimina Archivos");
+// Test
+// Map data = ConvertMap.fromJsonString( "{\"request\":{\"json_data\": {\"DATOS\": {\"formIngreso\": {\"VYL_ID\": 13}}}}}" );
+// VentaArchivos va = new VentaArchivos(connectionHelper, connectionHelper, data , traza);
+VentaArchivos va = new VentaArchivos(connectionHelper, connectionHelperAlt, wkfData, traza);
+va.elimina("Formulario Resumen");

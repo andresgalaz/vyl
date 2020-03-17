@@ -16,7 +16,7 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
     margin: '10 20 10 20',
     title: '',
 
-    flujo: 'CIERRE_NEGOCIO',
+    flujo: 'VENTA_CIERRE',
     etapaActual: 'ingresado',
 
     cls: 'formulario-venta',
@@ -96,6 +96,7 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                 {
                                     fieldLabel: 'Rol',
                                     name: 'VYL_ROL',
+                                    allowBlank: true,
                                     flex: 1
                                 },
                             ]
@@ -192,6 +193,9 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                             listeners: {
                                                 blur: 'onClienteBuscar'
                                             },
+                                            // bind: {
+                                            //     rut: '{rutComprador}'
+                                            // },                                        
                                             width: 200
                                         },
                                         {
@@ -243,6 +247,7 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                             xtype: 'textfield',
                                             allowThousandSeparator: false,
                                             fieldLabel: 'Fono',
+                                            inputType: 'tel',
                                             name: 'VYL_COMPRADOR_TELEFONO',
                                             hideTrigger: true,
                                             width: 200
@@ -364,7 +369,6 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                             margin: '0 0 5 0',
                             defaultType: 'uxnumberfield',
                             defaults: {
-                                allowBlank: false,
                                 hideTrigger: true,
                                 allowDecimals: false,
                                 decimalPrecision: 0,
@@ -379,6 +383,7 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                     name: 'VYL_MODALIDAD_VENTA',
                                     hideTrigger: false,
                                     editable: false,
+                                    allowBlank: false,
                                     displayField: 'MODALIDAD',
                                     valueField: 'COD',
                                     bind: {
@@ -439,7 +444,6 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                             hidden: true,
                             defaultType: 'uxnumberfield',
                             defaults: {
-                                allowBlank: false,
                                 hideTrigger: true,
                                 allowDecimals: false,
                                 decimalPrecision: 0,
@@ -451,7 +455,8 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                     fieldLabel: 'Pie de Contado',
                                     name: 'VYL_FINANCIAMIENTO_PIE',
                                     bind: {
-                                        value: '{valorContado}'
+                                        value: '{valorContado}',
+                                        obligatorio: '{visible}'
                                     }
                                 },
                                 {
@@ -459,16 +464,18 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                     readOnly: true,
                                     submitValue: false,
                                     bind: {
-                                        value: '{getFinanciamiento}'
+                                        value: '{getFinanciamiento}',
+                                        obligatorio: '{visible}'
                                     }
                                 },
                                 {
                                     fieldLabel: 'Cuotas',
                                     name: 'VYL_FINANCIAMIENTO_CUOTAS',
-                                    minValue: 1,
+                                    minValue: 0,
                                     hideTrigger: false,
                                     bind: {
-                                        value: '{cuotas}'
+                                        value: '{cuotas}',
+                                        obligatorio: '{visible}'
                                     },
                                     width: 100
                                 },
@@ -478,7 +485,8 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                     allowDecimals: true,
                                     decimalPrecision: 2,
                                     bind: {
-                                        value: '{interes}'
+                                        value: '{interes}',
+                                        obligatorio: '{visible}'
                                     },
                                     width: 100
                                 },
@@ -496,6 +504,9 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                                     fieldLabel: 'Vto. 1er Cuota',
                                     name: 'VYL_FINANCIAMIENTO_VTO',
                                     hideTrigger: false,
+                                    bind: {
+                                        obligatorio: '{visible}'
+                                    },
                                     width: 150
                                 }
                             ]
@@ -539,7 +550,10 @@ Ext.define('vyl.view.ventas.cierre.Formulario', {
                             items: [
                                 {
                                     fieldLabel: 'Contrato Leasing',
-                                    name: 'VYL_FINANCIAMIENTO_GASTO_CONTRATO'
+                                    name: 'VYL_FINANCIAMIENTO_GASTO_CONTRATO',
+                                    bind: {
+
+                                    }
                                 },
                                 {
                                     fieldLabel: 'Gasto Notarial',

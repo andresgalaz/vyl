@@ -8,8 +8,8 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
         valorPredio: 0,
         valorReserva: 0,
         valorContado: 0,
-        cuotas: 0,
-        interes: 0
+        cuotas: null,
+        interes: null
     },
 
     formulas: {
@@ -137,7 +137,8 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
 				{ name: 'ROL_PROPIEDAD', type: 'string' },
 				{ name: 'COMPRADOR_NOMBRE', type: 'string' },
 				{ name: 'COMPRADOR_RUT', type: 'string' },
-				{ name: 'WKF_ETAPA', type: 'string' },
+                { name: 'WKF_ETAPA', type: 'string' },
+                { name: 'WKF_ETAPA_NOMBRE', type: 'string' },
                 { name: 'WKF_USUARIO', type: 'string' },
                 { name: 'WKF_EVENTO', type: 'int' }
             ],
@@ -171,7 +172,8 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
 				{ name: 'ROL_PROPIEDAD', type: 'string' },
 				{ name: 'COMPRADOR_NOMBRE', type: 'string' },
 				{ name: 'COMPRADOR_RUT', type: 'string' },
-				{ name: 'WKF_ETAPA', type: 'string' },
+                { name: 'WKF_ETAPA', type: 'string' },
+                { name: 'WKF_ETAPA_NOMBRE', type: 'string' },
                 { name: 'WKF_USUARIO', type: 'string' },
                 { name: 'WKF_EVENTO', type: 'int' }
             ],
@@ -193,6 +195,12 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {
                 {
                     property: 'LOTEO',
                     direction: 'ASC'
+                }
+            ],
+
+            filters: [
+                function(item) {
+                    return item.WKF_ETAPA_NOMBRE !== 'cancelado';
                 }
             ],
 
