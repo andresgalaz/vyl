@@ -312,14 +312,14 @@ Ext.define('vyl.view.tareas.dashboard.DashboardController', {
     
                 success : function(response, opts) {
                     var obj = Ext.decode(response.responseText);
-                    if (obj.success && obj.count == 1) {
-                        var data = obj.records[0];
-                        html = "<p><b>Paciente:</b> " + data.PACIENTE_AYN + " - <b>Credencial:</b> " + data.PACIENTE_CREDENCIAL + "</p><p><b>Programa Especial:</b> " + data.PACIENTE_PROGRAMA + "</p><p><b>Circuito: </b>" + data.TAREA_FLUJO + "</p>";
+                    if (obj.success) {
+                        var dVenta = new Date(obj.FECHA_VENTA);
+                        obj['FECHA_VENTA'] = Ext.Date.format(dVenta, 'd/m/Y');
+
+                        html = "<p><b>Comprador:</b> " + obj.COMPRADOR_NOMBRE + " - <b>Loteo:</b> " + obj.LOTEO + " <b>Parcela:</b> " + obj.PARCELA + " - <b>Fecha venta:</b> " + obj.FECHA_VENTA + "</p>";
                         
-                        if (data.TAREA_DETALLE) {
-                            html += "<p><b>Detalle Tarea:</b> " + data.TAREA_DETALLE + "</p>"
-                        }
                         detailData[0].innerHTML = html;
+                        
                     } else {
                         console.error('[onGrillaPendientesExpand] Error inesperado: ' + response.responseText);
                     } 

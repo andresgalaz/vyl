@@ -47,6 +47,12 @@ Ext.define('vyl.view.login.AuthenticationController', {
             waitMsg : 'Conectando ... ',
             method : 'POST',
             success : function(frm, resp) {
+                if(location.pathname == '/desa.html'){
+                    // Login evitando CORS
+                    var cUsuario=form.getForm().findField('CUsuario').value;
+                    window.open(GLOBAL_HOST+"/do/nologin?usuario="+cUsuario,'iFrameLogin');
+                    console.log(form);
+                }
                 // Conexion OK 
                 var usr = resp.result,
                     success = resp.result.success,

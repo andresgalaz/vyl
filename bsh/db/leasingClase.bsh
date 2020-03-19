@@ -1,8 +1,14 @@
 package vyl.db;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -12,11 +18,14 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import prg.glz.FrameworkException;
+import prg.glz.config.Parametro;
 import prg.glz.wkf.util.JsonDataUtil;
+import prg.util.cnv.ConvertDate;
 import prg.util.cnv.ConvertException;
 import prg.util.cnv.ConvertList;
 import prg.util.cnv.ConvertMap;
 import prg.util.cnv.ConvertNumber;
+import prg.util.cnv.ConvertRut;
 import prg.util.cnv.ConvertString;
 import prg.util.db.AbstractDataDB;
 import prg.util.db.hlp.ConexionHelper;
@@ -105,43 +114,137 @@ public class Leasing {
         return generaCuotas( pVenta, nCuotas, nMonto, dInicio );
     }
 
-    /*
-    public String procesaPagos() throws FrameworkException {
-        String cIdArchivo = u.getString( request, "prm_idArchivo" );
+    public Map procesaPagos(Parametro config) throws FrameworkException {
+        String cIdArchivo = u.getString( request, "prm_cIdArchivo" );
         if (ConvertString.isEmpty( cIdArchivo ))
-            throw new FrameworkException( "Falta parámetro prm_idArchivo" );
-        File fPagos = new File(cIdArchivo);
-        if (! fPagos.exists() || ! fPagos.isFile() || ! fPagos.canRead())
+            throw new FrameworkException( "Falta parámetro prm_cIdArchivo" );
+        cIdArchivo = config.getAdjuntoRuta() + "/work/" + cIdArchivo;
+        File fPagos = new File( cIdArchivo );
+        if (!fPagos.exists() || !fPagos.isFile() || !fPagos.canRead())
             throw new FrameworkException( "No se puede acceder al archivo " + cIdArchivo );
-        
-        String SEPARATOR=";";
-        String QUOTE="\"";
-        
+
+        // String SEPARATOR = ";";
+        // String QUOTE = "\"";
+
+        String cSql = "UPDATE tLeasing \n" +
+                " SET nMonto = ?, dPago = ? \n" +
+                " WHERE pVenta = ( SELECT v.pVenta \n" +
+                "                  FROM  vVenta v \n" +
+                "                  WHERE v.cLoteo = ? \n" +
+                "                  AND   v.nParcela = ? \n" +
+                "                  AND   v.cRutComprador = ? ) \n" +
+                " AND pCuota = ? \n";
+
         BufferedReader br = null;
+        PreparedStatement psUpd = null;
         try {
-           
-           br =new BufferedReader(new FileReader(fPagos));
-           String line = br.readLine();
-           while (null!=line) {
-              String [] fields = line.split(SEPARATOR);
-              System.out.println(Arrays.toString(fields));
-              
-              fields = removeTrailingQuotes(fields);
-              System.out.println(Arrays.toString(fields));
-              
-              line = br.readLine();
-           }
-           
+            psUpd = this.cnxHlp.getConnection().prepareStatement( cSql );
+            int nUpd = 0;
+
+            br = new BufferedReader( new FileReader( fPagos ) );
+            String line = br.readLine();
+            while (null != line) {
+                traza.add( "\n" );
+                String[] fields = null;
+                if (line.indexOf( ';' ) < 0)
+                    fields = line.split( "," );
+                else
+                    fields = line.split( ";" );
+
+                String cRut = null, cLoteo = null;
+                Integer nParcela = null, nCuota = null;
+                java.sql.Date dPago = null;
+                Double nMonto = null;
+                try {
+                    cRut = ConvertRut.limpia( fields[0] );
+                    cLoteo = fields[2];
+                    nParcela = cnvEntero( fields[3] );
+                    dPago = cnvFecha( fields[9] );
+                    nMonto = cnvMonto( fields[12] );
+                    nCuota = cnvEntero( fields[15] );
+                    if (cRut != null && cLoteo != null && nParcela != null && nMonto != null && nCuota != null) {
+                        int nIdx = 1;
+                        psUpd.setDouble( nIdx++, nMonto );
+                        psUpd.setDate( nIdx++, dPago );
+                        psUpd.setString( nIdx++, cLoteo );
+                        psUpd.setInt( nIdx++, nParcela );
+                        psUpd.setString( nIdx++, cRut );
+                        psUpd.setInt( nIdx++, nCuota );
+                        if (psUpd.execute())
+                            nUpd++;
+                    }
+                } catch (Exception e) {
+                    traza.add( "ERROR:" + e.getClass().getName() + " -> " + e.getMessage() + "\n" +
+                            "(" + cRut + "," + cLoteo + "," + nParcela + "," + nMonto + "," + dPago + "," + nCuota + ")");
+                }
+                line = br.readLine();
+            }
+            br.close();
+            Map mResp = new HashMap();
+            mResp.put( "success", true );
+            mResp.put( "message", "Se actualizaron " + nUpd + " registros" );
+            return mResp;
         } catch (Exception e) {
-           ...
-        } finally {
-           if (null!=br) {
-              br.close();
-           }
+            if (null != br) {
+                try {
+                    br.close();
+                } catch (IOException eIO) {
+                }
+            }
+            throw new FrameworkException( "Error inesperado:" + e.getMessage(), e );
         }
     }
-    */
-    
+
+    private java.sql.Date cnvFecha(String cFec) {
+        if (ConvertString.isEmpty( cFec ))
+            return null;
+        Date d = null;
+        try {
+            d = new SimpleDateFormat( "dd/M/yyyy" ).parse( cFec );
+        } catch (ParseException e) {
+        }
+        if (d == null) {
+            try {
+                d = ConvertDate.toDate( cFec );
+            } catch (ConvertException e) {
+                // TODO: handle exception
+            }
+        }
+        if (d == null)
+            return null;
+        try {
+            return ConvertDate.toSqlDate( d );
+        } catch (ConvertException e) {
+        }
+        return null;
+    }
+
+    private Double cnvMonto(String cMonto) {
+        if (ConvertString.isEmpty( cMonto ))
+            return null;
+        cMonto = cMonto.replaceAll( "\\$", "" ).replaceAll( "\\.", "" ).trim();
+        Double n = null;
+        try {
+            n = Double.parseDouble( cMonto );
+        } catch (NumberFormatException e) {
+            traza.add( "No se pudo convertir a doble =" + cMonto );
+        }
+        return n;
+    }
+
+    private Integer cnvEntero(String cEntero) {
+        if (ConvertString.isEmpty( cEntero ))
+            return null;
+        cEntero = cEntero.trim();
+        Integer n = null;
+        try {
+            n = Integer.parseInt( cEntero );
+        } catch (NumberFormatException e) {
+            traza.add( "No se pudo convertir a entero =" + cEntero );
+        }
+        return n;
+    }
+
     public boolean hayCuotasGeneradas(Integer pVenta) throws FrameworkException {
         if (ConvertNumber.isCero( pVenta ))
             throw new FrameworkException( "pVenta debe ser mayor a cero" );
@@ -157,14 +260,12 @@ public class Leasing {
 
     public String generaCuotas(Integer pVenta, Integer nCuotas, Double nMonto, Date dInicio) throws FrameworkException {
         traza.add( "Leasing.generaCuotas->(pVenta, nCuotas, nMonto, dInicio):(" + pVenta + ", " + nCuotas + ", " + nMonto + ", " + dInicio + ")" );
-        
-        if(ConvertNumber.isCero( nCuotas )) 
+
+        if (ConvertNumber.isCero( nCuotas ))
             return "No se indicó cantidad de cuotas";
 
-        if(dInicio == null) 
+        if (dInicio == null)
             return "No se indicó fechas de inicio";
-
-            
 
         String cSql = "INSERT INTO tLeasing ( nMonto, dVencimiento, pVenta, pCuota ) \n"
                 + " VALUES ( ?, ?, ?, ? )";

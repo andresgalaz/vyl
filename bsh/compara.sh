@@ -18,5 +18,5 @@ diff -q $JAVA_SRC/vyl/report/Instrucciones.java	$PWD/report/instruccionesClase.b
 
 # diff -q $JAVA_SRC/util/JasperUtil.java			$PWD/util/jasperUtilClase.bsh
 # diff -q $JAVA_SRC/util/Rut.java					$PWD/util/rutClase.bsh 
+# diff -q $JAVA_SRC/prg/glz/wkf/RolFuncion.java		$PWD/wkf/rolFuncionClase.bsh 
 diff -q $JAVA_SRC/util/ReportUtil.java				$PWD/util/reportUtilClase.bsh
-diff -q $JAVA_SRC/prg/glz/wkf/RolFuncion.java		$PWD/wkf/rolFuncionClase.bsh 

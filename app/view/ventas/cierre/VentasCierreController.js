@@ -23,6 +23,8 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 		
 		datos = view.getValues();
 
+		view.mask('Grabando Formulario');
+
 		// Modifica nacionalidad
 		if (datos.VYL_COMPRADOR_SEXO && datos.VYL_COMPRADOR_NACIONALIDAD) {
 			var nacSelect = refs.cbNacionalidad.getSelection();
@@ -55,19 +57,22 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 										me.formularioReiniciar();
 									}
 		
+									view.unmask();
 									Ext.Msg.alert(me.titulo, 'Formulario grabado con éxito.');
 								});
 							} else {
 								if (borrarFormulario) {
 									me.formularioReiniciar();
 								}
-	
+								
+								view.unmask();
 								Ext.Msg.alert(me.titulo, 'Formulario grabado con éxito.');
 							}
 
 						} else {
 							console.error('[formularioGrabar] Error inesperado', resp);
 							
+							view.unmask();
 							Ext.Msg.show({
 								title: me.titulo,
 								message: dataOut.message,
@@ -81,6 +86,8 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 
 			} else {
 				// Error evento <> 0, solicitud = 0
+				view.unmask();
+				
 				console.error('[formularioGrabar] Error inesperado: WkfEvento ' + view.getEvento() + ' solicitud = 0');
 				Ext.Msg.show({
 					title: me.titulo,
@@ -108,6 +115,7 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 								me.formularioReiniciar();
 							}
 
+							view.unmask();
 							Ext.Msg.alert(me.titulo, 'Formulario grabado con éxito.');
 						});
 					} else {
@@ -115,12 +123,14 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 							me.formularioReiniciar();
 						}
 
+						view.unmask();
 						Ext.Msg.alert(me.titulo, 'Formulario grabado con éxito.');
 					}
 
 				} else {
 					console.error('[formularioGrabar] Error inesperado', resp);
 					
+					view.unmask();
 					Ext.Msg.show({
 						title: me.titulo,
 						message: dataOut.message,
@@ -153,7 +163,6 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 	},
 
 	formularioLeer: function(eventoId) {
-		// TODO: Agregar datos de rechazo para mostrar mensaje. Habra que modificar la clase Venta.getById
 		var me = this,
 			vm = me.getViewModel(),
 			refs = me.getReferences(),
@@ -212,6 +221,52 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 				}
 			}
 
+			if (etapa.cNombre == "revision_leasing" || etapa.cNombre == "revision_escritura") {
+				Ext.Ajax.request({
+					url: GLOBAL_HOST+'/do/vyl/bsh/ventaMotivoRechazo.bsh',
+				    cors: true, withCredentials: true, useDefaultXhrHeader: false,
+					method : 'POST',
+					params: {
+						prm_pVenta: formData.VYL_ID
+					},
+
+					success : function(response, opts) {
+						var resp = Ext.decode(response.responseText);
+	
+						if (resp.success) {
+							var fecha = new Date(resp.dFecha);
+
+							Ext.Msg.show({
+								title: me.titulo,
+								message: '<b>Atención!</b> El formulario ha sido rechazado por ' + resp.cUsuarioNombre + ' el dia ' + Ext.Date.format(fecha, 'd/m/Y H:m') + 'hs.<br> Motivo: ' + resp.cMotivo,
+								buttons: Ext.Msg.OK,
+								icon: Ext.Msg.WARNING
+							});
+	
+						} else {
+							console.error('[formularioLeer]', resp);
+							Ext.Msg.show({
+								title: me.titulo,
+								message: resp.message,
+								buttons: Ext.Msg.OK,
+								icon: Ext.Msg.ERROR
+							});
+						}
+					},
+					failure : function(response, opts) {
+						var resp = Ext.decode(response.responseText);
+						console.error('[formularioLeer] Falla del lado del servidor', response.responseText);
+						
+						Ext.Msg.show({
+							title: me.titulo,
+							message: resp.message,
+							buttons: Ext.Msg.OK,
+							icon: Ext.Msg.ERROR
+						})
+					}
+				});
+			}
+
 			me.formularioHabilitar();
 
 			view.unmask();
@@ -227,6 +282,8 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 		view.resetForm();
 		view.setEtapaActual('ingresado');
 		view.setTitle('Formulario Cierre de Venta - Nuevo');
+
+		me.formularioHabilitar();
 
 		refs.ctnFinanciamiento.setHidden(true);
 		refs.ctnFinanciamientoGastos.setHidden(true);
@@ -531,10 +588,6 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
                     });
 				}
 				break;
-			
-			case 'cotizacion_finalizar':
-				// TODO: Consultar que valores son obligatorios en este punto
-				break;
 
 			case 'salir':
 				me.salir();
@@ -544,9 +597,7 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 				me.formularioReiniciar();
 				break;
 
-			case 'venta_leas_autoriza':
 			case 'venta_leas_rechaza':
-			case 'escritura_autoriza':
 			case 'escritura_rechaza':
 				if (btn.getXType() == 'wkfaccionbutton' && btn.getBRechaza()) {
 					// Solicita motivo de la cancelacion
@@ -575,19 +626,35 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {
 					}, this);
 
 				} else {
-					btn.ejecutarAcciones(jsonData, view.getEvento(), view.getEtapaActual(), function(dataOut) {
-						// if (DEBUG) console.log('[onWkfAccion] btn.ejecutaAcciones', dataOut);
-						Ext.Msg.alert(me.titulo, 'Formulario de Venta autorizado con éxito.');
-						me.salir();
+					console.error('[onWkfAccion] La accion no esta declarada como rechazo', btn);
+						
+					Ext.Msg.show({
+						title: me.titulo,
+						message: 'Error de configuracion del workflow',
+						buttons: Ext.Msg.OK,
+						icon: Ext.Msg.ERROR
 					});
 				}
-
 				break;
 			
 			default:
-				console.error('[onWkfAccion] Accion sin implementar: ' + accion);
-				Ext.Msg.alert(me.titulo, 'Accion sin implementar');
-				break;
+				// Para todo el resto de las etapas
+				btn.ejecutarAcciones(jsonData, view.getEvento(), view.getEtapaActual(), function(dataOut) {
+					if (dataOut.success) {
+						Ext.Msg.alert(me.titulo, 'Acción realizada con éxito');
+						me.salir();
+
+					} else {
+						console.error('[onWkfAccion] Error inesperado', dataOut);
+						
+						Ext.Msg.show({
+							title: me.titulo,
+							message: 'Error inesperado',
+							buttons: Ext.Msg.OK,
+							icon: Ext.Msg.ERROR
+						});
+					}
+				});
 		}
 	}
 });

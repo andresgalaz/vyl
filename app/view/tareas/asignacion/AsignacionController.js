@@ -25,11 +25,11 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionController', {
         if (datos) {
             view.mask('Grabando datos');
             
-            // TODO: Implementar funcion
             Ext.Ajax.request({
-                url: '',
-                extraParams: {
-                    prm_data : Ext.encode(datos)
+                url: GLOBAL_HOST+'/do/wkfActualizaRolUsuario',
+                cors: true, withCredentials: true, useDefaultXhrHeader: false,
+                params: {
+                    prm_cJsonData : Ext.encode(datos)
                 },
         
                 success: function(response, opts) {
@@ -114,7 +114,7 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionController', {
                 // url: GLOBAL_HOST+'/do/vyl/bsh/wkfListaRolUsuarios.bsh',
                 url: GLOBAL_HOST+'/do/wkfListaRolUsuarios',
                 cors: true, withCredentials: true, useDefaultXhrHeader: false,
-                extraParams: {
+                params: {
                     prm_cRol : reg
                 },
            

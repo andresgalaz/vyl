@@ -62,7 +62,7 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionRolUsuarios', {
             items: [
                 {
                     xtype: 'combobox',
-                    name: 'rol',
+                    name: 'cRol',
                     reference: 'rol',
                     fieldLabel: 'Rol',
                     editable: false,
@@ -78,7 +78,7 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionRolUsuarios', {
                 },
                 {
                     xtype: 'tagfield',
-                    name: 'usuariosAsignados',
+                    name: 'usuarios',
                     reference: 'tagUsrRol',
                     fieldLabel: 'Usuarios Asignados',
                     disabled: true,

@@ -1,5 +1,6 @@
 package vyl.db;
 
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,6 +25,7 @@ import prg.util.cnv.ConvertList;
 import prg.util.cnv.ConvertMap;
 import prg.util.cnv.ConvertNumber;
 import prg.util.cnv.ConvertTimestamp;
+import prg.util.cnv.ConvertXml;
 import prg.util.db.AbstractDataDB;
 import prg.util.db.hlp.ConexionHelper;
 
@@ -390,19 +392,92 @@ public class Venta {
                 " WHERE 1 = 1 \n" +
                 (nEvento == null ? "" : " AND v.fEvento = ?");
 
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
-            PreparedStatement ps = this.cnxHlp.getConnection().prepareStatement( cSql );
+            ps = this.cnxHlp.getConnection().prepareStatement( cSql );
             int nIdx = 1;
             if (nEvento != null)
                 ps.setInt( nIdx++, nEvento );
-            ResultSet rs = ps.executeQuery();
+            rs = ps.executeQuery();
             List lis = ConvertList.fromResultSet( rs );
             rs.close();
             ps.close();
             return lis;
         } catch (SQLException e) {
+            db.close( rs );
+            db.close( ps );
             traza.add( "listaByFiltro: Error SQL=" + e.getMessage() );
             throw new FrameworkException( "Error SQL al listar consulta de ventas:" + e.getMessage(), e );
         }
     }
+
+    public Map motivoRechazo() throws FrameworkException {
+        Map mResp = new HashMap();
+        if (this.request == null) {
+            mResp.put( "success", false );
+            mResp.put( "message", "No hay request" );
+            traza.add( "motivoRechazo(): No hay request" );
+            return mResp;
+        }
+        return motivoRechazo( u.getInt( this.request, "prm_pVenta" ) );
+    }
+
+    private Map motivoRechazo(Integer pVenta) throws FrameworkException {
+        Map mResp = null;
+        if (pVenta == null) {
+            mResp = new HashMap();
+            mResp.put( "success", false );
+            mResp.put( "message", "pVenta no puede ser nulo" );
+            traza.add( "motivoRechazo(): pVenta no puede ser nulo" );
+            return mResp;
+        }
+
+        //        String cSqlXX = "SELECT extractvalue(e.CDATAIN, '//data_wkf/request/json_data/DATOS/rechazo/cMotivo') RECHAZO_MOTIVO,\n" +
+        //                "    extractvalue(e.CDATAIN, '//data_wkf/request/json_data/DATOS/rechazo/cUsuarioNombre') RECHAZO_USUARIO,\n" +
+        //                "    extractvalue(e.CDATAIN, '//data_wkf/request/json_data/DATOS/rechazo/dFecha') RECHAZO_FECHA\n" +
+        //                " FROM  tVenta v\n" +
+        //                "      INNET JOIN xformgen4.wkf_evento e ON e.PEVENTO = v.fEvento \n" +
+        //                "                                       AND e.BACTIVA = 1 \n" +
+        //                " WHERE 1 = 1 \n" +
+        //                " where v.pVenta = ? \n";
+        String cSql = "SELECT evento.cDataIn \n" +
+                " FROM  tVenta \n" +
+                "      INNER JOIN xformgen4.wkf_evento evento ON evento.PEVENTO = tVenta.fEvento \n" +
+                "                                            AND evento.BACTIVA = 1 \n" +
+                " WHERE tVenta.pVenta = ? \n";
+
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = this.cnxHlp.getConnection().prepareStatement( cSql );
+            ps.setInt( 1, pVenta );
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                Map m;
+                try {
+                    String cXml = rs.getString( 1 );
+                    m = ConvertXml.toMap( cXml );
+                } catch (IOException e) {
+                    db.close( rs );
+                    db.close( ps );
+                    throw new FrameworkException( "Error inesperado al convetir XML wkf_evento.cDataIn. pVenta=" + pVenta + "\n" + e.getMessage(), e );
+                }
+                mResp = u.getRuta( m, "request.json_data.DATOS.rechazo" );
+            } else {
+                mResp = new HashMap();
+                mResp.put( "message", "no hay datos" );
+            }
+            mResp.put( "success", true );
+            rs.close();
+            ps.close();
+            return mResp;
+        } catch (SQLException e) {
+            db.close( rs );
+            db.close( ps );
+            traza.add( "motivoRechazo: pVenta=" + pVenta + ". Error SQL=" + e.getMessage() );
+            throw new FrameworkException( "Error SQL al leer motivo rechazo pVenta=" + pVenta + "\n" + e.getMessage(), e );
+        }
+    }
+
 }

@@ -15,12 +15,16 @@ Ext.define('vyl.view.ventas.cierre.Consulta', {
     plugins: [
         {
             ptype: 'rowexpander',
-            rowBodyTpl : new Ext.XTemplate(
-                '<p><b>Rol:</b> {ROL_PROPIEDAD}</p>',
-                '<p><b>Modalidad de Venta:</b> {MODALIDAD_VENTA}</p>',
-                '<p><b>Cuotas Pagadas:</b> {CUOTAS_PAGADAS} - <b>Atrasadas:</b> {CUOTAS_ATRASADAS}</p>',
-                '<p><b>Ultimo Pago:</b> {FECHA_ULTIMO_PAGO}</p>'
-            )
+            rowBodyTpl: [
+                '<tpl>',
+                    '<p><b>Modalidad de Venta:</b> {MODALIDAD_VENTA}</p>',
+                    '<tpl if="ROL_PROPIEDAD"><p><b>Rol:</b> {ROL_PROPIEDAD}</p></tpl>',
+                    '<tpl if="CUOTAS_PAGADAS === Financiado">',
+                        '<p><b>Cuotas Pagadas:</b> {CUOTAS_PAGADAS} - <b>Atrasadas:</b> {CUOTAS_ATRASADAS}</p>',
+                        '<p><b>Ultimo Pago:</b> {FECHA_ULTIMO_PAGO}</p>',
+                    '</tpl>',
+                '</tpl>'
+            ]
         },
         {
             ptype: 'gridfilters',

@@ -39,26 +39,7 @@ Ext.define('vyl.view.admin.cobranza.Consulta', {
                     dock: 'bottom',
                     displayInfo: true,
                     bind: '{stCobranzaLocal}'
-                },
-                // {   
-                //     xtype: 'toolbar',
-                //     dock: 'bottom',
-                //     fixed: true,
-                //     ui: 'wkf-tlb-acciones',
-                //     margin: '10 0 10 0',
-                //     items: [
-                //         '->',
-
-                //         {
-                //             text: 'Ver archivos procesados',
-                //             iconCls: 'x-fa fa-file',
-                //             ui: 'wkf-tlb-acciones-toolbar',
-                //             handler: 'onArchivoCobranzasVer'
-                //         }
-                //     ],
-                //     height: 36
-                // }
-            ],
+                }            ],
         
             listeners: {
                 activate: 'onConsultaActivate',
@@ -119,7 +100,7 @@ Ext.define('vyl.view.admin.cobranza.Consulta', {
             items: [
                 {
                     xtype: 'form',
-                    references: 'frmProcesarArchivo',
+                    reference: 'frmProcesarArchivo',
                     layout: {
                         type: 'hbox', 
                     },

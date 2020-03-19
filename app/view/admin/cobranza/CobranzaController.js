@@ -31,10 +31,11 @@ Ext.define('vyl.view.admin.cobranza.CobranzaController', {
 
                 if (obj.success) {
                     Ext.Ajax.request({
-                        url : GLOBAL_HOST+'',
+                        url : GLOBAL_HOST+'/do/vyl/bsh/leasingProcesaPagos.bsh',
                         cors: true, withCredentials: true, useDefaultXhrHeader: false,
                         method : 'POST',
                         params : {
+                        	prm_cIdArchivo: obj.CIDARCHIVO
                         },
                         
                         success : function(response, opts) {
