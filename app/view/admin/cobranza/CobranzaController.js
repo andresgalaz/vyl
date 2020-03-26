@@ -35,6 +35,7 @@ Ext.define('vyl.view.admin.cobranza.CobranzaController', {
                         cors: true, withCredentials: true, useDefaultXhrHeader: false,
                         method : 'POST',
                         params : {
+                        	prm_dataSource: 'vylDS',
                         	prm_cIdArchivo: obj.CIDARCHIVO
                         },
                         

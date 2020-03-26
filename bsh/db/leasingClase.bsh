@@ -22,6 +22,7 @@ import prg.glz.config.Parametro;
 import prg.glz.wkf.util.JsonDataUtil;
 import prg.util.cnv.ConvertDate;
 import prg.util.cnv.ConvertException;
+import prg.util.cnv.ConvertFile;
 import prg.util.cnv.ConvertList;
 import prg.util.cnv.ConvertMap;
 import prg.util.cnv.ConvertNumber;
@@ -122,6 +123,8 @@ public class Leasing {
         File fPagos = new File( cIdArchivo );
         if (!fPagos.exists() || !fPagos.isFile() || !fPagos.canRead())
             throw new FrameworkException( "No se puede acceder al archivo " + cIdArchivo );
+        if (!"CSV".equalsIgnoreCase( ConvertFile.extension( cIdArchivo ) ))
+            throw new FrameworkException( "El archivo debe ser CSV" );
 
         // String SEPARATOR = ";";
         // String QUOTE = "\"";
@@ -144,7 +147,6 @@ public class Leasing {
             br = new BufferedReader( new FileReader( fPagos ) );
             String line = br.readLine();
             while (null != line) {
-                traza.add( "\n" );
                 String[] fields = null;
                 if (line.indexOf( ';' ) < 0)
                     fields = line.split( "," );
@@ -159,9 +161,9 @@ public class Leasing {
                     cRut = ConvertRut.limpia( fields[0] );
                     cLoteo = fields[2];
                     nParcela = cnvEntero( fields[3] );
-                    dPago = cnvFecha( fields[9] );
-                    nMonto = cnvMonto( fields[12] );
-                    nCuota = cnvEntero( fields[15] );
+                    nCuota = cnvEntero( fields[4] );
+                    dPago = cnvFecha( fields[10] );
+                    nMonto = cnvMonto( fields[13] );
                     if (cRut != null && cLoteo != null && nParcela != null && nMonto != null && nCuota != null) {
                         int nIdx = 1;
                         psUpd.setDouble( nIdx++, nMonto );
@@ -175,7 +177,7 @@ public class Leasing {
                     }
                 } catch (Exception e) {
                     traza.add( "ERROR:" + e.getClass().getName() + " -> " + e.getMessage() + "\n" +
-                            "(" + cRut + "," + cLoteo + "," + nParcela + "," + nMonto + "," + dPago + "," + nCuota + ")");
+                            "(" + cRut + "," + cLoteo + "," + nParcela + "," + nMonto + "," + dPago + "," + nCuota + ")" );
                 }
                 line = br.readLine();
             }
@@ -223,6 +225,8 @@ public class Leasing {
         if (ConvertString.isEmpty( cMonto ))
             return null;
         cMonto = cMonto.replaceAll( "\\$", "" ).replaceAll( "\\.", "" ).trim();
+        if ("-".equals( cMonto ))
+            return null;
         Double n = null;
         try {
             n = Double.parseDouble( cMonto );
