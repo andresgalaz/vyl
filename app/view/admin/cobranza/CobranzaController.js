@@ -43,7 +43,10 @@ Ext.define('vyl.view.admin.cobranza.CobranzaController', {
                             var rta = Ext.decode(response.responseText);
             
                             if (rta.success) {
-                                Ext.toast('Archivo procesado con éxito', '¡Atención!', 'tl');
+                            	if(rta.message)
+                                    Ext.toast(rta.message, '¡Atención!', 'tl');
+                            	else
+                            		Ext.toast('Archivo procesado con éxito', '¡Atención!', 'tl');
                                 view.unmask();
 
                             } else {
