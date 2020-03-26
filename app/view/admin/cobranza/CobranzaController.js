@@ -50,7 +50,7 @@ Ext.define('vyl.view.admin.cobranza.CobranzaController', {
                                 console.warn('[] Error', rta.message);
                                 Ext.Msg.show({
                                     title: 'Cobranzas',
-                                    message: obj.message,
+                                    message: rta.message,
                                     buttons: Ext.Msg.OK,
                                     icon: Ext.Msg.ERROR
                                 });
