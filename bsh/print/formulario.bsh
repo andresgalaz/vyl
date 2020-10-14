@@ -1,8 +1,8 @@
-$call.include('vyl/bsh/report/formularioClase.bsh')
-$call.include('vyl/bsh/util/reportUtilClase.bsh')
-$call.include('vyl/bsh/db/empresaClase.bsh')
-$call.include('vyl/bsh/db/compradorClase.bsh')
-$call.include('vyl/bsh/db/ventaClase.bsh')
+// $call.include('vyl/bsh/report/formularioClase.bsh')
+// $call.include('vyl/bsh/util/reportUtilClase.bsh')
+// $call.include('vyl/bsh/db/empresaClase.bsh')
+// $call.include('vyl/bsh/db/compradorClase.bsh')
+// $call.include('vyl/bsh/db/ventaClase.bsh')
 // Genera PDF "Formulario Resumen"
 traza.add("new Formulario 2.0");
-new Formulario(request, response, connectionHelper, traza).genera();
+new vyl.report.Formulario(request, response, connectionHelper, traza).genera();

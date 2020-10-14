@@ -1,3 +1,3 @@
-$call.include('vyl/bsh/db/ventaArchivosClase.bsh')
-VentaArchivos va = new VentaArchivos(connectionHelper, connectionHelperAlt, wkfData, traza);
+// $call.include('vyl/bsh/db/ventaArchivosClase.bsh')
+vyl.db.VentaArchivos va = new vyl.db.VentaArchivos(connectionHelper, connectionHelperAlt, wkfData, traza);
 va.inserta("Instrucciones Notarios","vyl/bsh/print/instrucciones.bsh");

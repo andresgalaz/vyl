@@ -1,2 +1,2 @@
-$call.include('vyl/bsh/db/ventaArchivosClase.bsh')
-new VentaArchivos(request, connectionHelper, traza).lista();
+// $call.include('vyl/bsh/db/ventaArchivosClase.bsh')
+new vyl.db.VentaArchivos(request, connectionHelper, traza).lista();

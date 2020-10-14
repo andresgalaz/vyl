@@ -1,2 +1,2 @@
-$call.include('vyl/bsh/db/empresaClase.bsh')
-new Empresa(request, connectionHelper).lista();
+// $call.include('vyl/bsh/db/empresaClase.bsh')
+new vyl.db.Empresa(request, connectionHelper).lista();

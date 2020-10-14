@@ -1,5 +1,5 @@
-$call.include('vyl/bsh/db/empresaClase.bsh')
-$call.include('vyl/bsh/db/compradorClase.bsh')
-$call.include('vyl/bsh/db/leasingClase.bsh')
-$call.include('vyl/bsh/db/ventaClase.bsh')
-new Venta(request, connectionHelper, traza).get();
+// $call.include('vyl/bsh/db/empresaClase.bsh')
+// $call.include('vyl/bsh/db/compradorClase.bsh')
+// $call.include('vyl/bsh/db/leasingClase.bsh')
+// $call.include('vyl/bsh/db/ventaClase.bsh')
+new vyl.db.Venta(request, connectionHelper, traza).get();
