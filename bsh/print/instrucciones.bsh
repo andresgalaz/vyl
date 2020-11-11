@@ -1,9 +1,9 @@
-// $call.include('vyl/bsh/report/instruccionesClase.bsh')
-// $call.include('vyl/bsh/util/reportUtilClase.bsh')
-// $call.include('vyl/bsh/db/loteoClase.bsh')
-// $call.include('vyl/bsh/db/empresaClase.bsh')
-// $call.include('vyl/bsh/db/compradorClase.bsh')
-// $call.include('vyl/bsh/db/ventaClase.bsh')
+// call.include('vyl/bsh/report/instruccionesClase.bsh')
+// call.include('vyl/bsh/util/reportUtilClase.bsh')
+// call.include('vyl/bsh/db/loteoClase.bsh')
+// call.include('vyl/bsh/db/empresaClase.bsh')
+// call.include('vyl/bsh/db/compradorClase.bsh')
+// call.include('vyl/bsh/db/ventaClase.bsh')
 // Genera MS Word Escritura
 traza.add("new Instrucciones 1.0");
 new vyl.report.Instrucciones(request, response, connectionHelper, traza).genera();

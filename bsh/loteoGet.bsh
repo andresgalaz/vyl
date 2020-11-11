@@ -1,4 +1,4 @@
-// $call.include('vyl/bsh/db/loteoClase.bsh')
+// call.include('vyl/bsh/db/loteoClase.bsh')
 // Trae los datos del loteo por prm_pLoteo o prm_cNombre
 traza.add("new Loteo");
 new vyl.db.Loteo(request, connectionHelper, traza).get();

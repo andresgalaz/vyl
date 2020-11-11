@@ -1,4 +1,4 @@
-// $call.include('vyl/bsh/db/ventaArchivosClase.bsh')
+// call.include('vyl/bsh/db/ventaArchivosClase.bsh')
 // Este es a modo de ejemplo, en realidad no va a tener
 // un uso muy frecuente
 traza.add("Elimina Archivos");

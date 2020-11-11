@@ -61,7 +61,7 @@
 			</textField>
 			<image>
 				<reportElement x="0" y="0" width="200" height="40" uuid="6ecf7ffd-7c8b-46f5-8365-03adf97a4aa6"/>
-				<imageExpression><![CDATA["https://app.parcelasenchiloe.cl/wapp/vyl/resources/images/logo96.png"]]></imageExpression>
+				<imageExpression><![CDATA["https://lakus.compustrom.com/d/vyl/resources/images/logo96.png"]]></imageExpression>
 			</image>
 		</band>
 	</title>

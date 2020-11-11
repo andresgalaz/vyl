@@ -67167,26 +67167,6 @@ Ext.define('Ext.form.FieldSet', {extend:Ext.container.Container, alias:'widget.f
   this.callParent(arguments);
   renderTpl.renderLegend = this.doRenderLegend;
 }}});
-Ext.define('Ext.form.Label', {extend:Ext.Component, alias:'widget.label', autoEl:'label', maskOnDisable:false, getElConfig:function() {
-  var me = this;
-  me.html = me.text ? Ext.util.Format.htmlEncode(me.text) : me.html || '';
-  return Ext.apply(me.callParent(), {htmlFor:me.forId || ''});
-}, setText:function(text, encode) {
-  var me = this;
-  encode = encode !== false;
-  if (encode) {
-    me.text = text;
-    delete me.html;
-  } else {
-    me.html = text;
-    delete me.text;
-  }
-  if (me.rendered) {
-    me.el.dom.innerHTML = encode !== false ? Ext.util.Format.htmlEncode(text) : text;
-    me.updateLayout();
-  }
-  return me;
-}});
 Ext.define('Ext.form.Panel', {extend:Ext.panel.Panel, alias:'widget.form', alternateClassName:['Ext.FormPanel', 'Ext.form.FormPanel'], mixins:{fieldAncestor:Ext.form.FieldAncestor}, layout:'anchor', bodyAriaRole:'form', basicFormConfigs:['api', 'baseParams', 'errorReader', 'jsonSubmit', 'method', 'paramOrder', 'paramsAsHash', 'reader', 'standardSubmit', 'timeout', 'trackResetOnLoad', 'url', 'waitMsgTarget', 'waitTitle'], initComponent:function() {
   var me = this;
   if (me.frame) {
@@ -67252,6 +67232,65 @@ Ext.define('Ext.form.Panel', {extend:Ext.panel.Panel, alias:'widget.form', alter
   for (f = 0; f < fLen; f++) {
     fields[f].checkChange();
   }
+}});
+Ext.define('Ext.form.RadioManager', {extend:Ext.util.MixedCollection, singleton:true, getByName:function(name, formId) {
+  return this.filterBy(function(item) {
+    return item.name === name && item.getFormId() === formId;
+  });
+}, getWithValue:function(name, value, formId) {
+  return this.filterBy(function(item) {
+    return item.name === name && item.inputValue == value && item.getFormId() === formId;
+  });
+}, getChecked:function(name, formId) {
+  return this.findBy(function(item) {
+    return item.name === name && item.checked && item.getFormId() === formId;
+  });
+}});
+Ext.define('Ext.form.field.Radio', {extend:Ext.form.field.Checkbox, alias:['widget.radiofield', 'widget.radio'], alternateClassName:'Ext.form.Radio', isRadio:true, inputType:'radio', formId:null, modelValue:undefined, modelValueUnchecked:null, initComponent:function() {
+  var me = this;
+  if (me.modelValue === undefined) {
+    me.modelValue = me.inputValue;
+  }
+  me.callParent();
+}, getGroupValue:function() {
+  var selected = this.getManager().getChecked(this.name, this.getFormId());
+  return selected ? selected.inputValue : null;
+}, onRemoved:function() {
+  this.callParent(arguments);
+  this.formId = null;
+}, setValue:function(value) {
+  var me = this, active;
+  if (Ext.isBoolean(value)) {
+    me.callParent(arguments);
+  } else {
+    active = me.getManager().getWithValue(me.name, value, me.getFormId()).getAt(0);
+    if (active) {
+      active.setValue(true);
+    }
+  }
+  return me;
+}, getSubmitValue:function() {
+  return this.checked ? this.inputValue : null;
+}, onChange:function(newVal, oldVal) {
+  var me = this, ownerCt = me.ownerCt, r, rLen, radio, radios;
+  me.callParent(arguments);
+  if (!me.$groupChange) {
+    if (newVal) {
+      radios = me.getManager().getByName(me.name, me.getFormId()).items;
+      rLen = radios.length;
+      for (r = 0; r < rLen; r++) {
+        radio = radios[r];
+        if (radio !== me) {
+          radio.updateValueFromDom();
+        }
+      }
+    }
+    if (ownerCt && ownerCt.isRadioGroup && ownerCt.simpleValue) {
+      ownerCt.checkChange();
+    }
+  }
+}, getManager:function() {
+  return Ext.form.RadioManager;
 }});
 Ext.define('Ext.form.field.Picker', {extend:Ext.form.field.Text, alias:'widget.pickerfield', alternateClassName:'Ext.form.Picker', config:{triggers:{picker:{handler:'onTriggerClick', scope:'this', focusOnMousedown:true}}}, renderConfig:{editable:true}, keyMap:{scope:'this', DOWN:'onDownArrow', ESC:'onEsc'}, keyMapTarget:'inputEl', isPickerField:true, matchFieldWidth:true, pickerAlign:'tl-bl?', openCls:Ext.baseCSSPrefix + 'pickerfield-open', isExpanded:false, applyTriggers:function(triggers) {
   var me = this, picker = triggers.picker;
@@ -69854,6 +69893,110 @@ baseChars:'0123456789', autoStripChars:false, initComponent:function() {
   }
   me.setValue(value);
 }});
+Ext.define('Cmp.form.ThousandSeparatorNumber', {override:'Ext.form.field.Number', allowThousandSeparator:true, config:{obligatorio:false}, updateObligatorio:function(value) {
+  this.allowBlank = !value;
+}, toBaseNumber:function(value) {
+  var me = this;
+  return String(value).replace(new RegExp('[' + Ext.util.Format.thousandSeparator + ']', 'g'), '').replace(me.decimalSeparator, '.');
+}, parseRawValue:function(value) {
+  var me = this;
+  value = parseFloat(me.toBaseNumber(value));
+  return isNaN(value) ? null : value;
+}, getErrors:function(value) {
+  if (!this.allowThousandSeparator) {
+    return this.callParent(arguments);
+  }
+  value = arguments.length > 0 ? value : this.processRawValue(this.getRawValue());
+  var me = this, errors = me.callSuper([value]), format = Ext.String.format, num;
+  if (value.length < 1) {
+    return errors;
+  }
+  value = me.toBaseNumber(value);
+  if (isNaN(value)) {
+    errors.push(format(me.nanText, value));
+  }
+  num = me.parseValue(value);
+  if (me.minValue === 0 && num < 0) {
+    errors.push(this.negativeText);
+  } else {
+    if (num < me.minValue) {
+      errors.push(format(me.minText, me.minValue));
+    }
+  }
+  if (num > me.maxValue) {
+    errors.push(format(me.maxText, me.maxValue));
+  }
+  return errors;
+}, rawToValue:function(rawValue) {
+  if (!this.allowThousandSeparator) {
+    return this.callParent(arguments);
+  }
+  var value = this.fixPrecision(this.parseRawValue(rawValue));
+  if (value === null) {
+    value = rawValue || null;
+  }
+  return value;
+}, valueToRaw:function(value) {
+  if (!this.allowThousandSeparator) {
+    return this.callParent(arguments);
+  }
+  var me = this, decimalSeparator = me.decimalSeparator, format = '0,000';
+  if (me.allowDecimals) {
+    for (var i = 0; i < me.decimalPrecision; i++) {
+      if (i == 0) {
+        format += '.';
+      }
+      format += '0';
+    }
+  }
+  value = me.parseValue(value);
+  value = me.fixPrecision(value);
+  value = Ext.isNumber(value) ? value : parseFloat(String(value).replace(decimalSeparator, '.'));
+  value = isNaN(value) ? '' : Ext.util.Format.number(value, format);
+  return value;
+}, getSubmitValue:function() {
+  if (!this.allowThousandSeparator) {
+    return this.callParent();
+  }
+  var me = this, value = me.callSuper();
+  if (!me.submitLocaleSeparator) {
+    value = me.toBaseNumber(value);
+  }
+  return value;
+}, setMinValue:function(value) {
+  if (!this.allowThousandSeparator) {
+    return this.callParent(arguments);
+  }
+  var me = this, ariaDom = me.ariaEl.dom, minValue, allowed, ariaDom;
+  me.minValue = minValue = Ext.Number.from(value, Number.NEGATIVE_INFINITY);
+  me.toggleSpinners();
+  if (ariaDom) {
+    if (minValue > Number.NEGATIVE_INFINITY) {
+      ariaDom.setAttribute('aria-valuemin', minValue);
+    } else {
+      ariaDom.removeAttribute('aria-valuemin');
+    }
+  }
+  if (me.disableKeyFilter !== true) {
+    allowed = me.baseChars + '';
+    if (me.allowExponential) {
+      allowed += me.decimalSeparator + 'e+-';
+    } else {
+      allowed += Ext.util.Format.thousandSeparator;
+      if (me.allowDecimals) {
+        allowed += me.decimalSeparator;
+      }
+      if (me.minValue < 0) {
+        allowed += '-';
+      }
+    }
+    allowed = Ext.String.escapeRegex(allowed);
+    me.maskRe = new RegExp('[' + allowed + ']');
+    if (me.autoStripChars) {
+      me.stripCharsRe = new RegExp('[^' + allowed + ']', 'gi');
+    }
+  }
+}});
 Ext.define('Ext.locale.es.form.field.Number', {override:'Ext.form.field.Number', decimalPrecision:2, minText:'El valor mínimo para este campo es de {0}', maxText:'El valor máximo para este campo es de {0}', nanText:'{0} no es un número válido'});
 Ext.define('Ext.toolbar.Paging', {extend:Ext.toolbar.Toolbar, xtype:'pagingtoolbar', alternateClassName:'Ext.PagingToolbar', mixins:[Ext.util.StoreHolder], displayInfo:false, prependButtons:false, displayMsg:'Displaying {0} - {1} of {2}', emptyMsg:'No data to display', beforePageText:'Page', afterPageText:'of {0}', firstText:'First Page', prevText:'Previous Page', nextText:'Next Page', lastText:'Last Page', refreshText:'Refresh', inputItemWidth:30, emptyPageData:{total:0, currentPage:0, pageCount:0, 
 toRecord:0, fromRecord:0}, defaultBindProperty:'store', _pagingToolbarCls:Ext.baseCSSPrefix + 'grid-paging-toolbar', getPagingItems:function() {
@@ -72083,6 +72226,41 @@ ariaMinText:'The date must be equal to or after {0}', maxText:'The date in this 
   me.callParent([e]);
 }});
 Ext.define('Ext.locale.es.form.field.Date', {override:'Ext.form.field.Date', disabledDaysText:'Deshabilitado', disabledDatesText:'Deshabilitado', minText:'La fecha para este campo debe ser posterior a {0}', maxText:'La fecha para este campo debe ser anterior a {0}', invalidText:'{0} no es una fecha válida - debe tener el formato {1}', format:'d/m/Y', altFormats:'d/m/Y|d-m-y|d-m-Y|d/m|d-m|dm|dmy|dmY|d|Y-m-d'});
+Ext.define('Ext.form.field.Display', {extend:Ext.form.field.Base, alias:'widget.displayfield', alternateClassName:['Ext.form.DisplayField', 'Ext.form.Display'], fieldSubTpl:['\x3cdiv id\x3d"{id}" data-ref\x3d"inputEl" role\x3d"textbox" aria-readonly\x3d"true"', ' aria-labelledby\x3d"{cmpId}-labelEl" {inputAttrTpl}', ' tabindex\x3d"\x3ctpl if\x3d"tabIdx !\x3d null"\x3e{tabIdx}\x3ctpl else\x3e-1\x3c/tpl\x3e"', '\x3ctpl if\x3d"fieldStyle"\x3e style\x3d"{fieldStyle}"\x3c/tpl\x3e', ' class\x3d"{fieldCls} {fieldCls}-{ui}"\x3e{value}\x3c/div\x3e', 
+{compiled:true, disableFormats:true}], ariaRole:undefined, focusable:false, skipLabelForAttribute:true, readOnly:true, fieldCls:Ext.baseCSSPrefix + 'form-display-field', fieldBodyCls:Ext.baseCSSPrefix + 'form-display-field-body', htmlEncode:false, noWrap:false, validateOnChange:false, initEvents:Ext.emptyFn, submitValue:false, getValue:function() {
+  return this.value;
+}, valueToRaw:function(value) {
+  if (value || value === 0 || value === false) {
+    return value;
+  } else {
+    return '';
+  }
+}, isDirty:function() {
+  return false;
+}, isValid:Ext.returnTrue, validate:Ext.returnTrue, getRawValue:function() {
+  return this.rawValue;
+}, setRawValue:function(value) {
+  var me = this;
+  value = Ext.valueFrom(value, '');
+  me.rawValue = value;
+  if (me.rendered) {
+    me.inputEl.dom.innerHTML = me.getDisplayValue();
+    me.updateLayout();
+  }
+  return value;
+}, getDisplayValue:function() {
+  var me = this, value = this.getRawValue(), renderer = me.renderer, display;
+  if (renderer) {
+    display = Ext.callback(renderer, me.scope, [value, me], 0, me);
+  } else {
+    display = me.htmlEncode ? Ext.util.Format.htmlEncode(value) : value;
+  }
+  return display;
+}, getSubTplData:function(fieldData) {
+  var ret = this.callParent(arguments);
+  ret.value = this.getDisplayValue();
+  return ret;
+}});
 Ext.define('Ext.form.field.FileButton', {extend:Ext.button.Button, alias:'widget.filebutton', childEls:['fileInputEl'], inputCls:Ext.baseCSSPrefix + 'form-file-input', cls:Ext.baseCSSPrefix + 'form-file-btn', preventDefault:false, tabIndex:undefined, useTabGuards:Ext.isIE || Ext.isEdge, promptCalled:false, autoEl:{tag:'div', unselectable:'on'}, afterTpl:['\x3cinput id\x3d"{id}-fileInputEl" data-ref\x3d"fileInputEl" class\x3d"{childElCls} {inputCls}" ', 'type\x3d"file" size\x3d"1" name\x3d"{inputName}" unselectable\x3d"on" ', 
 '\x3ctpl if\x3d"accept !\x3d null"\x3eaccept\x3d"{accept}"\x3c/tpl\x3e', '\x3ctpl if\x3d"tabIndex !\x3d null"\x3etabindex\x3d"{tabIndex}"\x3c/tpl\x3e', '\x3e'], keyMap:null, ariaEl:'fileInputEl', getAfterMarkup:function(values) {
   return this.lookupTpl('afterTpl').apply(values);
@@ -72940,7 +73118,957 @@ Ext.define('Ext.tip.QuickTipManager', {singleton:true, alternateClassName:'Ext.Q
   var tip = this.tip;
   tip.register.apply(tip, arguments);
 }});
+Ext.define('Ext.picker.Color', {extend:Ext.Component, alias:'widget.colorpicker', alternateClassName:'Ext.ColorPalette', focusable:true, componentCls:Ext.baseCSSPrefix + 'color-picker', selectedCls:Ext.baseCSSPrefix + 'color-picker-selected', itemCls:Ext.baseCSSPrefix + 'color-picker-item', value:null, clickEvent:'click', allowReselect:false, colors:['000000', '993300', '333300', '003300', '003366', '000080', '333399', '333333', '800000', 'FF6600', '808000', '008000', '008080', '0000FF', '666699', 
+'808080', 'FF0000', 'FF9900', '99CC00', '339966', '33CCCC', '3366FF', '800080', '969696', 'FF00FF', 'FFCC00', 'FFFF00', '00FF00', '00FFFF', '00CCFF', '993366', 'C0C0C0', 'FF99CC', 'FFCC99', 'FFFF99', 'CCFFCC', 'CCFFFF', '99CCFF', 'CC99FF', 'FFFFFF'], colorRe:/(?:^|\s)color-(.{6})(?:\s|$)/, renderTpl:['\x3ctpl for\x3d"colors"\x3e', '\x3ca href\x3d"#" role\x3d"button" class\x3d"color-{.} {parent.itemCls}" hidefocus\x3d"on"\x3e', '\x3cspan class\x3d"{parent.itemCls}-inner" style\x3d"background:#{.}"\x3e\x26#160;\x3c/span\x3e', 
+'\x3c/a\x3e', '\x3c/tpl\x3e'], initComponent:function() {
+  var me = this;
+  me.callParent(arguments);
+  if (me.handler) {
+    me.on('select', me.handler, me.scope, true);
+  }
+}, initRenderData:function() {
+  var me = this;
+  return Ext.apply(me.callParent(), {itemCls:me.itemCls, colors:me.colors});
+}, onRender:function() {
+  var me = this, clickEvent = me.clickEvent;
+  me.callParent(arguments);
+  me.mon(me.el, clickEvent, me.handleClick, me, {delegate:'a'});
+  if (clickEvent !== 'click') {
+    me.mon(me.el, 'click', Ext.emptyFn, me, {delegate:'a', stopEvent:true});
+  }
+}, afterRender:function() {
+  var me = this, value;
+  me.callParent(arguments);
+  if (me.value) {
+    value = me.value;
+    me.value = null;
+    me.select(value, true);
+  }
+}, handleClick:function(event) {
+  var me = this, color;
+  event.stopEvent();
+  if (!me.disabled) {
+    color = event.currentTarget.className.match(me.colorRe)[1];
+    me.select(color.toUpperCase());
+  }
+}, select:function(color, suppressEvent) {
+  var me = this, selectedCls = me.selectedCls, value = me.value, el, item;
+  color = color.replace('#', '');
+  if (!me.rendered) {
+    me.value = color;
+    return;
+  }
+  if (color !== value || me.allowReselect) {
+    el = me.el;
+    if (me.value) {
+      item = el.down('a.color-' + value, true);
+      Ext.fly(item).removeCls(selectedCls);
+    }
+    item = el.down('a.color-' + color, true);
+    Ext.fly(item).addCls(selectedCls);
+    me.value = color;
+    if (suppressEvent !== true) {
+      me.fireEvent('select', me, color);
+    }
+  }
+}, clear:function() {
+  var me = this, value = me.value, el;
+  if (value && me.rendered) {
+    el = me.el.down('a.color-' + value, true);
+    Ext.fly(el).removeCls(me.selectedCls);
+  }
+  me.value = null;
+}, getValue:function() {
+  return this.value || null;
+}});
+Ext.define('Ext.layout.component.field.HtmlEditor', {extend:Ext.layout.component.field.FieldContainer, alias:['layout.htmleditor'], type:'htmleditor', naturalHeight:150, naturalWidth:300, beginLayout:function(ownerContext) {
+  var owner = this.owner, dom;
+  if (Ext.isGecko) {
+    dom = owner.textareaEl.dom;
+    this.lastValue = dom.value;
+    dom.value = '';
+  }
+  this.callParent(arguments);
+  ownerContext.toolbarContext = ownerContext.context.getCmp(owner.toolbar);
+  ownerContext.inputCmpContext = ownerContext.context.getCmp(owner.inputCmp);
+  ownerContext.bodyCellContext = ownerContext.getEl('bodyEl');
+  ownerContext.textAreaContext = ownerContext.getEl('textareaEl');
+  ownerContext.iframeContext = ownerContext.getEl('iframeEl');
+}, beginLayoutCycle:function(ownerContext) {
+  var me = this, widthModel = ownerContext.widthModel, heightModel = ownerContext.heightModel, owner = me.owner, iframeEl = owner.iframeEl, textareaEl = owner.textareaEl, height = heightModel.natural || heightModel.shrinkWrap ? me.naturalHeight : '';
+  me.callParent(arguments);
+  if (widthModel.shrinkWrap) {
+    iframeEl.setStyle('width', '');
+    textareaEl.setStyle('width', '');
+  } else {
+    if (widthModel.natural) {
+      ownerContext.bodyCellContext.setWidth(me.naturalWidth);
+    }
+  }
+  iframeEl.setStyle('height', height);
+  textareaEl.setStyle('height', height);
+}, finishedLayout:function() {
+  var owner = this.owner;
+  this.callParent(arguments);
+  if (Ext.isGecko) {
+    owner.textareaEl.dom.value = this.lastValue;
+  }
+}});
 Ext.define('Ext.toolbar.Separator', {extend:Ext.toolbar.Item, alias:'widget.tbseparator', alternateClassName:'Ext.Toolbar.Separator', baseCls:Ext.baseCSSPrefix + 'toolbar-separator', ariaRole:'separator'});
+Ext.define('Ext.layout.container.boxOverflow.Menu', {extend:Ext.layout.container.boxOverflow.None, alternateClassName:'Ext.layout.boxOverflow.Menu', alias:['box.overflow.menu', 'box.overflow.Menu'], noItemsMenuText:'\x3cdiv class\x3d"' + Ext.baseCSSPrefix + 'toolbar-no-items" role\x3d"menuitem"\x3e(None)\x3c/div\x3e', menuCls:Ext.baseCSSPrefix + 'box-menu', constructor:function(config) {
+  var me = this;
+  me.callParent([config]);
+  me.menuItems = [];
+}, beginLayout:function(ownerContext) {
+  this.callParent([ownerContext]);
+  this.clearOverflow(ownerContext);
+}, beginLayoutCycle:function(ownerContext, firstCycle) {
+  this.callParent([ownerContext, firstCycle]);
+  if (!firstCycle) {
+    this.clearOverflow(ownerContext);
+    this.layout.cacheChildItems(ownerContext);
+  }
+}, onRemove:function(comp) {
+  Ext.Array.remove(this.menuItems, comp);
+}, clearItem:function(comp) {
+  var menu = comp.menu;
+  if (comp.isButton && menu) {
+    comp.setMenu(menu, false);
+  }
+}, getSuffixConfig:function() {
+  var me = this, layout = me.layout, owner = layout.owner, oid = owner.id;
+  me.menu = new Ext.menu.Menu({listeners:{scope:me, beforeshow:me.beforeMenuShow}});
+  me.menuTrigger = new Ext.button.Button({id:oid + '-menu-trigger', cls:me.menuCls + '-after ' + Ext.baseCSSPrefix + 'toolbar-item', plain:owner.usePlainButtons, ownerCt:owner, ownerLayout:layout, iconCls:Ext.baseCSSPrefix + me.getOwnerType(owner) + '-more-icon', ui:owner.defaultButtonUI || 'default', menu:me.menu, showEmptyMenu:true, getSplitCls:function() {
+    return '';
+  }});
+  return me.menuTrigger.getRenderTree();
+}, getOverflowCls:function(direction) {
+  return this.menuCls + '-body-' + direction;
+}, handleOverflow:function(ownerContext) {
+  var me = this, layout = me.layout;
+  me.showTrigger(ownerContext);
+  if (layout.direction !== 'vertical') {
+    me.menuTrigger.setLocalY((ownerContext.state.boxPlan.maxSize - me.menuTrigger[layout.names.getHeight]()) / 2);
+  }
+  return {reservedSpace:me.triggerTotalWidth};
+}, captureChildElements:function() {
+  var me = this, menuTrigger = me.menuTrigger, names = me.layout.names;
+  if (menuTrigger.rendering) {
+    menuTrigger.finishRender();
+    me.triggerTotalWidth = menuTrigger[names.getWidth]() + menuTrigger.el.getMargin(names.parallelMargins);
+  }
+}, clearOverflow:function(ownerContext) {
+  var me = this, items = me.menuItems, length = items.length, owner = me.layout.owner, asLayoutRoot = owner._asLayoutRoot, item, i;
+  owner.suspendLayouts();
+  me.captureChildElements();
+  me.hideTrigger();
+  owner.resumeLayouts();
+  for (i = 0; i < length; i++) {
+    item = items[i];
+    item.suspendLayouts();
+    item.show();
+    me.clearItem(item);
+    item.resumeLayouts(asLayoutRoot);
+  }
+  items.length = 0;
+}, showTrigger:function(ownerContext) {
+  var me = this, layout = me.layout, owner = layout.owner, names = layout.names, startProp = names.x, sizeProp = names.width, plan = ownerContext.state.boxPlan, available = plan.targetSize[sizeProp], childItems = ownerContext.childItems, menuTrigger = me.menuTrigger, menuItems = me.menuItems, childContext, comp, i, props, len;
+  menuTrigger.suspendLayouts();
+  menuTrigger.show();
+  menuTrigger.resumeLayouts(me._asLayoutRoot);
+  available -= me.triggerTotalWidth;
+  owner.suspendLayouts();
+  for (i = 0, len = menuItems.length; i < len; ++i) {
+    me.clearItem(menuItems[i]);
+  }
+  menuItems.length = 0;
+  for (i = 0, len = childItems.length; i < len; i++) {
+    childContext = childItems[i];
+    props = childContext.props;
+    if (props[startProp] + props[sizeProp] > available) {
+      comp = childContext.target;
+      me.menuItems.push(comp);
+      comp.hide();
+    }
+  }
+  owner.resumeLayouts();
+}, hideTrigger:function() {
+  var menuTrigger = this.menuTrigger;
+  if (menuTrigger) {
+    menuTrigger.hide();
+  }
+}, beforeMenuShow:function(menu) {
+  var me = this, items = me.menuItems, i = 0, len = items.length, item, prev, needsSep = function(group, prev) {
+    return group.isXType('buttongroup') && !(prev instanceof Ext.toolbar.Separator);
+  };
+  menu.suspendLayouts();
+  menu.removeAll(false);
+  for (; i < len; i++) {
+    item = items[i];
+    if (!i && item instanceof Ext.toolbar.Separator) {
+      continue;
+    }
+    if (prev && (needsSep(item, prev) || needsSep(prev, item))) {
+      menu.add('-');
+    }
+    me.addComponentToMenu(menu, item);
+    prev = item;
+  }
+  if (menu.items.length < 1) {
+    menu.add(me.noItemsMenuText);
+  }
+  menu.resumeLayouts();
+}, createMenuConfig:function(component, hideOnClick) {
+  var config = Ext.apply({}, component.initialConfig), group = component.toggleGroup;
+  Ext.copy(config, component, ['iconCls', 'icon', 'itemId', 'disabled', 'handler', 'scope', 'menu', 'tabIndex']);
+  Ext.applyIf(config, {hideOnClick:hideOnClick, destroyMenu:false, listeners:null});
+  config.text = component.overflowText || component.text;
+  config.masterComponent = component;
+  if (component.isFormField) {
+    config.value = component.getValue();
+    if (component instanceof Ext.form.field.Checkbox) {
+      config = {xtype:'menucheckitem', group:component.isRadio ? component.name + '_clone' : undefined, text:component.boxLabel || component.fieldLabel, name:component.name, masterComponent:component, checked:component.getValue(), hideOnClick:false, checkChangeDisabled:true};
+    }
+    config.listeners = {change:function(c, newVal, oldVal) {
+      c.masterComponent.setValue(newVal);
+    }};
+    component.on('change', function(c, newVal, oldVal) {
+      c.overflowClone.setValue(newVal);
+    });
+  } else {
+    if (group || component.enableToggle) {
+      Ext.apply(config, {hideOnClick:false, group:group, checked:component.pressed, handler:function(item, e) {
+        item.masterComponent.onClick(e);
+      }});
+    }
+  }
+  if (component.isButton && !component.changeListenersAdded) {
+    component.on({textchange:this.onButtonAttrChange, iconchange:this.onButtonAttrChange, toggle:this.onButtonToggle});
+    component.changeListenersAdded = true;
+  }
+  component.on({enable:this.onComponentStatusChange, disable:this.onComponentStatusChange});
+  delete config.margin;
+  delete config.ownerCt;
+  delete config.xtype;
+  delete config.id;
+  delete config.itemId;
+  return config;
+}, onButtonAttrChange:function(btn) {
+  var clone = btn.overflowClone;
+  clone.suspendLayouts();
+  clone.setText(btn.text);
+  clone.setIcon(btn.icon);
+  clone.setIconCls(btn.iconCls);
+  clone.resumeLayouts(true);
+}, onButtonToggle:function(btn, state) {
+  if (btn.overflowClone.checked !== state) {
+    btn.overflowClone.setChecked(state);
+  }
+}, onComponentStatusChange:function(cmp) {
+  var clone = cmp.overflowClone;
+  if (clone) {
+    clone.setDisabled(cmp.disabled);
+  }
+}, addComponentToMenu:function(menu, component) {
+  var me = this, i, items, iLen;
+  if (component instanceof Ext.toolbar.Fill) {
+    return;
+  } else {
+    if (component instanceof Ext.toolbar.Separator) {
+      menu.add('-');
+    } else {
+      if (component.overflowClone) {
+        menu.add(component.overflowClone);
+      } else {
+        if (component.isComponent) {
+          if (component.isXType('splitbutton')) {
+            component.overflowClone = menu.add(me.createMenuConfig(component, true));
+          } else {
+            if (component.isXType('button')) {
+              component.overflowClone = menu.add(me.createMenuConfig(component, !component.menu));
+            } else {
+              if (component.isXType('buttongroup')) {
+                items = component.items.items;
+                iLen = items.length;
+                for (i = 0; i < iLen; i++) {
+                  me.addComponentToMenu(menu, items[i]);
+                }
+              } else {
+                if (component.isCheckbox) {
+                  component.overflowClone = menu.add(me.createMenuConfig(component));
+                  Ext.apply(component.overflowClone, {getValue:function() {
+                    return component.overflowClone.checked;
+                  }, setValue:function() {
+                    component.overflowClone.setChecked(component.getValue());
+                  }});
+                  component.overflowClone.on('click', function(item) {
+                    item.setChecked(item.masterComponent.isRadio ? true : !item.checked);
+                    item.fireEvent('change', item, item.checked);
+                  });
+                } else {
+                  component.overflowClone = menu.add(Ext.create(Ext.getClassName(component), me.createMenuConfig(component)));
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}, destroy:function() {
+  Ext.destroy(this.menu, this.menuTrigger);
+  this.callParent();
+}});
+Ext.define('Ext.form.field.HtmlEditor', {extend:Ext.form.FieldContainer, alias:'widget.htmleditor', alternateClassName:'Ext.form.HtmlEditor', mixins:{field:Ext.form.field.Field}, focusable:true, componentLayout:'htmleditor', textareaCls:Ext.baseCSSPrefix + 'htmleditor-textarea', componentTpl:['{beforeTextAreaTpl}', '\x3ctextarea id\x3d"{id}-textareaEl" data-ref\x3d"textareaEl" name\x3d"{name}" tabindex\x3d"-1" {inputAttrTpl}', ' class\x3d"{textareaCls}" autocomplete\x3d"off"\x3e', '{[Ext.util.Format.htmlEncode(values.value)]}', 
+'\x3c/textarea\x3e', '{afterTextAreaTpl}', '{beforeIFrameTpl}', '\x3ciframe id\x3d"{id}-iframeEl" data-ref\x3d"iframeEl" name\x3d"{iframeName}" frameBorder\x3d"0" {iframeAttrTpl}', ' src\x3d"{iframeSrc}" class\x3d"{iframeCls}"\x3e\x3c/iframe\x3e', '{afterIFrameTpl}', {disableFormats:true}], stretchInputElFixed:true, subTplInsertions:['beforeTextAreaTpl', 'afterTextAreaTpl', 'beforeIFrameTpl', 'afterIFrameTpl', 'iframeAttrTpl', 'inputAttrTpl'], enableFormat:true, enableFontSize:true, enableColors:true, 
+enableAlignments:true, enableLists:true, enableSourceEdit:true, enableLinks:true, enableFont:true, createLinkText:'Please enter the URL for the link:', defaultLinkValue:'http:/' + '/', fontFamilies:['Arial', 'Courier New', 'Tahoma', 'Times New Roman', 'Verdana'], defaultValue:Ext.isOpera ? '\x26#160;' : '\x26#8203;', extraFieldBodyCls:Ext.baseCSSPrefix + 'html-editor-wrap', defaultButtonUI:'default-toolbar', buttonDefaults:null, initialized:false, activated:false, sourceEditMode:false, iframePad:3, 
+hideMode:'offsets', layout:{type:'vbox', align:'stretch'}, maskOnDisable:true, containerElCls:Ext.baseCSSPrefix + 'html-editor-container', reStripQuotes:/^['"]*|['"]*$/g, textAlignRE:/text-align:(.*?);/i, safariNonsenseRE:/\sclass="(?:Apple-style-span|Apple-tab-span|khtml-block-placeholder)"/gi, nonDigitsRE:/\D/g, initComponent:function() {
+  var me = this;
+  me.items = [me.createToolbar(), me.createInputCmp()];
+  if (me.value == null) {
+    me.value = '';
+  }
+  me.callParent(arguments);
+  me.initField();
+}, createInputCmp:function() {
+  this.inputCmp = Ext.widget(this.getInputCmpCfg());
+  return this.inputCmp;
+}, getInputCmpCfg:function() {
+  var me = this, id = me.id + '-inputCmp', data = {id:id, name:me.name, textareaCls:me.textareaCls + ' ' + Ext.baseCSSPrefix + 'hidden', value:me.value, iframeName:Ext.id(), iframeSrc:Ext.SSL_SECURE_URL, iframeCls:Ext.baseCSSPrefix + 'htmleditor-iframe'};
+  me.getInsertionRenderData(data, me.subTplInsertions);
+  return {flex:1, xtype:'component', tpl:me.lookupTpl('componentTpl'), childEls:['iframeEl', 'textareaEl'], id:id, cls:Ext.baseCSSPrefix + 'html-editor-input', data:data};
+}, createToolbar:function() {
+  this.toolbar = Ext.widget(this.getToolbarCfg());
+  return this.toolbar;
+}, getToolbarCfg:function() {
+  var me = this, items = [], i, tipsEnabled = Ext.quickTipsActive && Ext.tip.QuickTipManager.isEnabled(), baseCSSPrefix = Ext.baseCSSPrefix, fontSelectItem, undef;
+  function btn(id, toggle, handler) {
+    return Ext.merge({itemId:id, cls:baseCSSPrefix + 'btn-icon', iconCls:baseCSSPrefix + 'edit-' + id, enableToggle:toggle !== false, scope:me, handler:handler || me.relayBtnCmd, clickEvent:'mousedown', tooltip:tipsEnabled ? me.buttonTips[id] : undef, overflowText:me.buttonTips[id].title || undef, tabIndex:-1}, me.buttonDefaults);
+  }
+  if (me.enableFont) {
+    fontSelectItem = Ext.widget('component', {itemId:'fontSelect', renderTpl:['\x3cselect id\x3d"{id}-selectEl" data-ref\x3d"selectEl" class\x3d"' + baseCSSPrefix + 'font-select"\x3e', '\x3c/select\x3e'], childEls:['selectEl'], afterRender:function() {
+      me.fontSelect = this.selectEl;
+      Ext.Component.prototype.afterRender.apply(this, arguments);
+    }, onDisable:function() {
+      var selectEl = this.selectEl;
+      if (selectEl) {
+        selectEl.dom.disabled = true;
+      }
+      Ext.Component.prototype.onDisable.apply(this, arguments);
+    }, onEnable:function() {
+      var selectEl = this.selectEl;
+      if (selectEl) {
+        selectEl.dom.disabled = false;
+      }
+      Ext.Component.prototype.onEnable.apply(this, arguments);
+    }, listeners:{change:function() {
+      me.win.focus();
+      me.relayCmd('fontName', me.fontSelect.dom.value);
+      me.deferFocus();
+    }, element:'selectEl'}});
+    items.push(fontSelectItem, '-');
+  }
+  if (me.enableFormat) {
+    items.push(btn('bold'), btn('italic'), btn('underline'));
+  }
+  if (me.enableFontSize) {
+    items.push('-', btn('increasefontsize', false, me.adjustFont), btn('decreasefontsize', false, me.adjustFont));
+  }
+  if (me.enableColors) {
+    items.push('-', Ext.merge({itemId:'forecolor', cls:baseCSSPrefix + 'btn-icon', iconCls:baseCSSPrefix + 'edit-forecolor', overflowText:me.buttonTips.forecolor.title, tooltip:tipsEnabled ? me.buttonTips.forecolor || undef : undef, tabIndex:-1, menu:Ext.widget('menu', {plain:true, items:[{xtype:'colorpicker', allowReselect:true, focus:Ext.emptyFn, value:'000000', plain:true, clickEvent:'mousedown', handler:function(cp, color) {
+      me.relayCmd('forecolor', Ext.isWebKit || Ext.isIE || Ext.isEdge ? '#' + color : color);
+      this.up('menu').hide();
+    }}]})}, me.buttonDefaults), Ext.merge({itemId:'backcolor', cls:baseCSSPrefix + 'btn-icon', iconCls:baseCSSPrefix + 'edit-backcolor', overflowText:me.buttonTips.backcolor.title, tooltip:tipsEnabled ? me.buttonTips.backcolor || undef : undef, tabIndex:-1, menu:Ext.widget('menu', {plain:true, items:[{xtype:'colorpicker', focus:Ext.emptyFn, value:'FFFFFF', plain:true, allowReselect:true, clickEvent:'mousedown', handler:function(cp, color) {
+      if (Ext.isGecko) {
+        me.execCmd('useCSS', false);
+        me.execCmd('hilitecolor', '#' + color);
+        me.execCmd('useCSS', true);
+        me.deferFocus();
+      } else {
+        me.relayCmd(Ext.isOpera ? 'hilitecolor' : 'backcolor', Ext.isWebKit || Ext.isIE || Ext.isEdge || Ext.isOpera ? '#' + color : color);
+      }
+      this.up('menu').hide();
+    }}]})}, me.buttonDefaults));
+  }
+  if (me.enableAlignments) {
+    items.push('-', btn('justifyleft'), btn('justifycenter'), btn('justifyright'));
+  }
+  if (me.enableLinks) {
+    items.push('-', btn('createlink', false, me.createLink));
+  }
+  if (me.enableLists) {
+    items.push('-', btn('insertorderedlist'), btn('insertunorderedlist'));
+  }
+  if (me.enableSourceEdit) {
+    items.push('-', btn('sourceedit', true, function() {
+      me.toggleSourceEdit(!me.sourceEditMode);
+    }));
+  }
+  for (i = 0; i < items.length; i++) {
+    if (items[i].itemId !== 'sourceedit') {
+      items[i].disabled = true;
+    }
+  }
+  return {xtype:'toolbar', defaultButtonUI:me.defaultButtonUI, cls:Ext.baseCSSPrefix + 'html-editor-tb', enableOverflow:true, items:items, listeners:{click:function(e) {
+    e.preventDefault();
+  }, element:'el'}};
+}, getMaskTarget:function() {
+  return Ext.isGecko ? this.inputCmp.el : this.bodyEl;
+}, setReadOnly:function(readOnly) {
+  var me = this, textareaEl = me.textareaEl, iframeEl = me.iframeEl, body;
+  me.readOnly = readOnly;
+  if (textareaEl) {
+    textareaEl.dom.readOnly = readOnly;
+  }
+  if (me.initialized) {
+    body = me.getEditorBody();
+    if (Ext.isIE) {
+      iframeEl.setDisplayed(false);
+      body.contentEditable = !readOnly;
+      iframeEl.setDisplayed(true);
+    } else {
+      me.setDesignMode(!readOnly);
+    }
+    if (body) {
+      body.style.cursor = readOnly ? 'default' : 'text';
+    }
+    me.disableItems(readOnly);
+  }
+}, getDocMarkup:function() {
+  var me = this, h = me.iframeEl.getHeight() - me.iframePad * 2;
+  return Ext.String.format('\x3c!DOCTYPE html\x3e' + '\x3chtml\x3e\x3chead\x3e\x3cstyle type\x3d"text/css"\x3e' + (Ext.isOpera || Ext.isIE ? 'p{margin:0;}' : '') + 'body{border:0;margin:0;padding:{0}px;direction:' + (me.rtl ? 'rtl;' : 'ltr;') + (Ext.isIE8 ? Ext.emptyString : 'min-') + 'height:{1}px;box-sizing:border-box;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;cursor:text;background-color:white;' + (Ext.isIE ? '' : 'font-size:12px;font-family:{2}') + '}\x3c/style\x3e\x3c/head\x3e\x3cbody\x3e\x3c/body\x3e\x3c/html\x3e', 
+  me.iframePad, h, me.defaultFont);
+}, getEditorBody:function() {
+  var doc = this.getDoc();
+  return doc && doc.body;
+}, getDoc:function() {
+  return this.iframeEl.dom.contentDocument || this.getWin().document;
+}, getWin:function() {
+  return this.iframeEl.dom.contentWindow || window.frames[this.iframeEl.dom.name];
+}, initDefaultFont:function() {
+  var me = this, selIdx = 0, fonts, font, select, option, i, len, lower;
+  if (!me.defaultFont) {
+    font = me.textareaEl.getStyle('font-family');
+    font = Ext.String.capitalize(font.split(',')[0]);
+    fonts = Ext.Array.clone(me.fontFamilies);
+    Ext.Array.include(fonts, font);
+    fonts.sort();
+    me.defaultFont = font;
+    select = me.down('#fontSelect').selectEl.dom;
+    for (i = 0, len = fonts.length; i < len; ++i) {
+      font = fonts[i];
+      lower = font.toLowerCase();
+      option = new Option(font, lower);
+      if (font === me.defaultFont) {
+        selIdx = i;
+      }
+      option.style.fontFamily = lower;
+      if (Ext.isIE) {
+        select.add(option);
+      } else {
+        select.options.add(option);
+      }
+    }
+    select.options[selIdx].selected = true;
+  }
+}, isEqual:function(value1, value2) {
+  return this.isEqualAsString(value1, value2);
+}, afterRender:function() {
+  var me = this, inputCmp = me.inputCmp;
+  me.callParent(arguments);
+  me.iframeEl = inputCmp.iframeEl;
+  me.textareaEl = inputCmp.textareaEl;
+  me.inputEl = me.iframeEl;
+  if (me.enableFont) {
+    me.initDefaultFont();
+  }
+  me.initPhase = 0;
+  me.initializeTask = Ext.TaskManager.start({run:me.initFrameDoc, scope:me, interval:10, duration:5000});
+}, initFrameDoc:function() {
+  var me = this, doc = me.getDoc();
+  if (me.destroying || me.destroyed) {
+    return Ext.TaskManager.stop(me.initializeTask);
+  }
+  switch(me.initPhase) {
+    case 0:
+      if (doc) {
+        me.win = me.getWin();
+        doc.open();
+        doc.write(me.getDocMarkup());
+        doc.close();
+        me.initPhase++;
+      }
+      break;
+    case 1:
+      if (doc.body || doc.readyState === 'complete') {
+        me.setDesignMode(true);
+        me.initPhase++;
+      }
+      break;
+    case 2:
+      me.initEditor();
+      Ext.TaskManager.stop(me.initializeTask);
+  }
+}, setDesignMode:function(mode) {
+  var me = this, doc = me.getDoc();
+  if (doc) {
+    if (me.readOnly) {
+      mode = false;
+    }
+    doc.designMode = /on|true/i.test(String(mode).toLowerCase()) ? 'on' : 'off';
+  }
+}, getDesignMode:function() {
+  var doc = this.getDoc();
+  return !doc ? '' : String(doc.designMode).toLowerCase();
+}, disableItems:function(disabled) {
+  var items = this.getToolbar().items.items, i, iLen = items.length, item;
+  for (i = 0; i < iLen; i++) {
+    item = items[i];
+    if (item.getItemId() !== 'sourceedit') {
+      item.setDisabled(disabled);
+    }
+  }
+}, toggleSourceEdit:function(sourceEditMode) {
+  var me = this, iframe = me.iframeEl, textarea = me.textareaEl, hiddenCls = Ext.baseCSSPrefix + 'hidden', btn = me.getToolbar().getComponent('sourceedit');
+  if (!Ext.isBoolean(sourceEditMode)) {
+    sourceEditMode = !me.sourceEditMode;
+  }
+  me.sourceEditMode = sourceEditMode;
+  if (btn.pressed !== sourceEditMode) {
+    btn.toggle(sourceEditMode);
+  }
+  if (sourceEditMode) {
+    me.disableItems(true);
+    me.syncValue();
+    iframe.addCls(hiddenCls);
+    textarea.removeCls(hiddenCls);
+    textarea.dom.removeAttribute('tabIndex');
+    textarea.focus();
+    me.inputEl = textarea;
+  } else {
+    if (me.initialized) {
+      me.disableItems(me.readOnly);
+    }
+    me.pushValue();
+    iframe.removeCls(hiddenCls);
+    textarea.addCls(hiddenCls);
+    textarea.dom.setAttribute('tabIndex', -1);
+    me.deferFocus();
+    me.inputEl = iframe;
+  }
+  me.fireEvent('editmodechange', me, sourceEditMode);
+  me.updateLayout();
+}, createLink:function() {
+  var url = prompt(this.createLinkText, this.defaultLinkValue);
+  if (url && url !== 'http:/' + '/') {
+    this.relayCmd('createlink', url);
+  }
+}, clearInvalid:Ext.emptyFn, setValue:function(value) {
+  var me = this, textarea = me.textareaEl;
+  if (value === null || value === undefined) {
+    value = '';
+  }
+  if (me.value !== value) {
+    if (textarea) {
+      textarea.dom.value = value;
+    }
+    me.pushValue();
+    if (!me.rendered && me.inputCmp) {
+      me.inputCmp.data.value = value;
+    }
+    me.mixins.field.setValue.call(me, value);
+  }
+  return me;
+}, cleanHtml:function(html) {
+  html = String(html);
+  if (Ext.isWebKit) {
+    html = html.replace(this.safariNonsenseRE, '');
+  }
+  if (html.charCodeAt(0) === parseInt(this.defaultValue.replace(this.nonDigitsRE, ''), 10)) {
+    html = html.substring(1);
+  }
+  return html;
+}, syncValue:function() {
+  var me = this, body, changed, html, bodyStyleText, match, textElDom;
+  if (me.initialized) {
+    body = me.getEditorBody();
+    html = body.innerHTML;
+    textElDom = me.textareaEl.dom;
+    if (Ext.isWebKit) {
+      bodyStyleText = body.style.cssText;
+      match = bodyStyleText.match(me.textAlignRE);
+      if (match && match[1]) {
+        html = '\x3cdiv style\x3d"' + match[0] + '"\x3e' + html + '\x3c/div\x3e';
+      }
+    }
+    html = me.cleanHtml(html);
+    if (me.fireEvent('beforesync', me, html) !== false) {
+      if (Ext.isGecko && textElDom.value === '' && html === '\x3cbr\x3e') {
+        html = '';
+      }
+      if (textElDom.value !== html) {
+        textElDom.value = html;
+        changed = true;
+      }
+      me.fireEvent('sync', me, html);
+      if (changed) {
+        me.checkChange();
+      }
+    }
+  }
+}, getValue:function() {
+  var me = this, value;
+  if (!me.sourceEditMode) {
+    me.syncValue();
+  }
+  value = me.rendered ? me.textareaEl.dom.value : me.value;
+  me.value = value;
+  return value;
+}, pushValue:function() {
+  var me = this, v;
+  if (me.initialized) {
+    v = me.textareaEl.dom.value || '';
+    if (!me.activated && v.length < 1) {
+      v = me.defaultValue;
+    }
+    if (me.fireEvent('beforepush', me, v) !== false) {
+      me.getEditorBody().innerHTML = v;
+      if (Ext.isGecko) {
+        me.setDesignMode(false);
+        me.setDesignMode(true);
+      }
+      me.fireEvent('push', me, v);
+    }
+  }
+}, focus:function(selectText, delay) {
+  var me = this, value, focusEl;
+  if (delay) {
+    if (!me.focusTask) {
+      me.focusTask = new Ext.util.DelayedTask(me.focus);
+    }
+    me.focusTask.delay(Ext.isNumber(delay) ? delay : 10, null, me, [selectText, false]);
+  } else {
+    if (selectText) {
+      if (me.textareaEl && me.textareaEl.dom) {
+        value = me.textareaEl.dom.value;
+      }
+      if (value && value.length) {
+        me.execCmd('selectall', true);
+      }
+    }
+    focusEl = me.getFocusEl();
+    if (focusEl && focusEl.focus) {
+      focusEl.focus();
+    }
+  }
+  return me;
+}, initEditor:function() {
+  var me = this, dbody = me.getEditorBody(), ss = me.textareaEl.getStyle(['font-size', 'font-family', 'background-image', 'background-repeat', 'background-color', 'color']), doc = me.getDoc(), docEl = Ext.get(doc), fn;
+  ss['background-attachment'] = 'fixed';
+  dbody.bgProperties = 'fixed';
+  Ext.DomHelper.applyStyles(dbody, ss);
+  if (docEl) {
+    try {
+      docEl.clearListeners();
+    } catch (e$41) {
+    }
+    fn = Ext.Function.createBuffered(me.updateToolbar, 100, me);
+    docEl.on({mousedown:fn, dblclick:fn, click:fn, keyup:fn, delegated:false});
+    fn = me.onRelayedEvent;
+    docEl.on({mousedown:fn, mousemove:fn, mouseup:fn, click:fn, dblclick:fn, delegated:false, scope:me});
+    if (Ext.isGecko) {
+      docEl.on('keypress', me.applyCommand, me);
+    }
+    if (me.fixKeys) {
+      docEl.on('keydown', me.fixKeys, me, {delegated:false});
+    }
+    if (me.fixKeysAfter) {
+      docEl.on('keyup', me.fixKeysAfter, me, {delegated:false});
+    }
+    if (Ext.isIE9) {
+      Ext.get(doc.documentElement).on('focus', me.focus, me);
+    }
+    if (Ext.isIE8) {
+      docEl.on('focusout', function() {
+        me.savedSelection = doc.selection.type !== 'None' ? doc.selection.createRange() : null;
+      }, me);
+      docEl.on('focusin', function() {
+        if (me.savedSelection) {
+          me.savedSelection.select();
+        }
+      }, me);
+    }
+    Ext.getWin().on('unload', me.destroyEditor, me);
+    me.initialized = true;
+    me.pushValue();
+    me.setReadOnly(me.readOnly);
+    me.fireEvent('initialize', me);
+  }
+}, destroyEditor:function() {
+  var me = this, initializeTask = me.initializeTask, doc, prop;
+  if (initializeTask) {
+    Ext.TaskManager.stop(initializeTask, true);
+  }
+  if (me.rendered) {
+    Ext.getWin().un('unload', me.destroyEditor, me);
+    doc = me.getDoc();
+    if (doc) {
+      Ext.get(doc).destroy();
+      if (doc.hasOwnProperty) {
+        for (prop in doc) {
+          try {
+            if (doc.hasOwnProperty(prop)) {
+              delete doc[prop];
+            }
+          } catch (e$42) {
+          }
+        }
+      }
+    }
+  }
+}, doDestroy:function() {
+  this.destroyEditor();
+  this.callParent();
+}, onRelayedEvent:function(event) {
+  var iframeEl = this.iframeEl, iframeXY = Ext.fly(iframeEl).getTrueXY(), originalEventXY = event.getXY(), eventXY = event.getXY();
+  event.xy = [iframeXY[0] + eventXY[0], iframeXY[1] + eventXY[1]];
+  event.injectEvent(iframeEl);
+  event.xy = originalEventXY;
+}, onFirstFocus:function() {
+  var me = this, selection, range;
+  me.activated = true;
+  me.disableItems(me.readOnly);
+  if (Ext.isGecko) {
+    me.win.focus();
+    selection = me.win.getSelection();
+    if (selection.focusNode && !me.getValue().length) {
+      range = selection.getRangeAt(0);
+      range.selectNodeContents(me.getEditorBody());
+      range.collapse(true);
+      me.deferFocus();
+    }
+    try {
+      me.execCmd('useCSS', true);
+      me.execCmd('styleWithCSS', false);
+    } catch (e$43) {
+    }
+  }
+  me.fireEvent('activate', me);
+}, adjustFont:function(btn) {
+  var adjust = btn.getItemId() === 'increasefontsize' ? 1 : -1, size = this.getDoc().queryCommandValue('FontSize') || '2', isPxSize = Ext.isString(size) && size.indexOf('px') !== -1, isSafari;
+  size = parseInt(size, 10);
+  if (isPxSize) {
+    if (size <= 10) {
+      size = 1 + adjust;
+    } else {
+      if (size <= 13) {
+        size = 2 + adjust;
+      } else {
+        if (size <= 16) {
+          size = 3 + adjust;
+        } else {
+          if (size <= 18) {
+            size = 4 + adjust;
+          } else {
+            if (size <= 24) {
+              size = 5 + adjust;
+            } else {
+              size = 6 + adjust;
+            }
+          }
+        }
+      }
+    }
+    size = Ext.Number.constrain(size, 1, 6);
+  } else {
+    isSafari = Ext.isSafari;
+    if (isSafari) {
+      adjust *= 2;
+    }
+    size = Math.max(1, size + adjust) + (isSafari ? 'px' : 0);
+  }
+  this.relayCmd('FontSize', size);
+}, updateToolbar:function() {
+  var me = this, i, l, btns, doc, name, queriedName, fontSelect, toolbarSubmenus;
+  if (me.readOnly) {
+    return;
+  }
+  if (!me.activated) {
+    me.onFirstFocus();
+    return;
+  }
+  btns = me.getToolbar().items.map;
+  doc = me.getDoc();
+  if (me.enableFont) {
+    queriedName = doc.queryCommandValue('fontName');
+    name = (queriedName ? queriedName.split(',')[0].replace(me.reStripQuotes, '') : me.defaultFont).toLowerCase();
+    fontSelect = me.fontSelect.dom;
+    if (name !== fontSelect.value || name !== queriedName) {
+      fontSelect.value = name;
+    }
+  }
+  function updateButtons() {
+    var state;
+    for (i = 0, l = arguments.length, name; i < l; i++) {
+      name = arguments[i];
+      try {
+        state = doc.queryCommandState(name);
+      } catch (e$44) {
+        state = false;
+      }
+      btns[name].toggle(state);
+    }
+  }
+  if (me.enableFormat) {
+    updateButtons('bold', 'italic', 'underline');
+  }
+  if (me.enableAlignments) {
+    updateButtons('justifyleft', 'justifycenter', 'justifyright');
+  }
+  if (me.enableLists) {
+    updateButtons('insertorderedlist', 'insertunorderedlist');
+  }
+  toolbarSubmenus = me.toolbar.query('menu');
+  for (i = 0; i < toolbarSubmenus.length; i++) {
+    toolbarSubmenus[i].hide();
+  }
+  me.syncValue();
+}, relayBtnCmd:function(btn) {
+  this.relayCmd(btn.getItemId());
+}, relayCmd:function(cmd, value) {
+  Ext.defer(function() {
+    var me = this;
+    if (!this.destroyed) {
+      me.win.focus();
+      me.execCmd(cmd, value);
+      me.updateToolbar();
+    }
+  }, 10, this);
+}, execCmd:function(cmd, value) {
+  var me = this, doc = me.getDoc();
+  doc.execCommand(cmd, false, value === undefined ? null : value);
+  me.syncValue();
+}, applyCommand:function(e) {
+  if (e.ctrlKey) {
+    var me = this, c = e.getCharCode(), cmd;
+    if (c > 0) {
+      c = String.fromCharCode(c);
+      switch(c) {
+        case 'b':
+          cmd = 'bold';
+          break;
+        case 'i':
+          cmd = 'italic';
+          break;
+        case 'u':
+          cmd = 'underline';
+          break;
+      }
+      if (cmd) {
+        me.win.focus();
+        me.execCmd(cmd);
+        me.deferFocus();
+        e.preventDefault();
+      }
+    }
+  }
+}, insertAtCursor:function(text) {
+  var me = this, win = me.getWin(), doc = me.getDoc(), sel, range, el, frag, node, lastNode;
+  if (me.activated) {
+    win.focus();
+    if (win.getSelection) {
+      sel = win.getSelection();
+      if (sel.getRangeAt && sel.rangeCount) {
+        range = sel.getRangeAt(0);
+        range.deleteContents();
+        el = doc.createElement('div');
+        el.innerHTML = text;
+        frag = doc.createDocumentFragment();
+        while (node = el.firstChild) {
+          lastNode = frag.appendChild(node);
+        }
+        range.insertNode(frag);
+        if (lastNode) {
+          range = range.cloneRange();
+          range.setStartAfter(lastNode);
+          range.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+      }
+    } else {
+      if (doc.selection && sel.type !== 'Control') {
+        sel = doc.selection;
+        range = sel.createRange();
+        range.collapse(true);
+        sel.createRange().pasteHTML(text);
+      }
+    }
+    me.deferFocus();
+  }
+}, fixKeys:function() {
+  if (Ext.isIE10m) {
+    return function(e) {
+      var me = this, k = e.getKey(), doc = me.getDoc(), readOnly = me.readOnly, range;
+      if (k === e.TAB) {
+        e.stopEvent();
+        if (!readOnly) {
+          range = doc.selection.createRange();
+          if (range) {
+            if (range.collapse) {
+              range.collapse(true);
+              range.pasteHTML('\x26#160;\x26#160;\x26#160;\x26#160;');
+            }
+            me.deferFocus();
+          }
+        }
+      }
+    };
+  }
+  if (Ext.isOpera) {
+    return function(e) {
+      var me = this, k = e.getKey(), readOnly = me.readOnly;
+      if (k === e.TAB) {
+        e.stopEvent();
+        if (!readOnly) {
+          me.win.focus();
+          me.execCmd('InsertHTML', '\x26#160;\x26#160;\x26#160;\x26#160;');
+          me.deferFocus();
+        }
+      }
+    };
+  }
+  return null;
+}(), fixKeysAfter:function() {
+  if (Ext.isIE) {
+    return function(e) {
+      var me = this, k = e.getKey(), doc = me.getDoc(), readOnly = me.readOnly, innerHTML;
+      if (!readOnly && (k === e.BACKSPACE || k === e.DELETE)) {
+        innerHTML = doc.body.innerHTML;
+        if (innerHTML === '\x3cp\x3e\x26nbsp;\x3c/p\x3e' || innerHTML === '\x3cP\x3e\x26nbsp;\x3c/P\x3e') {
+          doc.body.innerHTML = '';
+        }
+      }
+    };
+  }
+  return null;
+}(), getToolbar:function() {
+  return this.toolbar;
+}, buttonTips:{bold:{title:'Bold (Ctrl+B)', text:'Make the selected text bold.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}, italic:{title:'Italic (Ctrl+I)', text:'Make the selected text italic.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}, underline:{title:'Underline (Ctrl+U)', text:'Underline the selected text.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}, increasefontsize:{title:'Grow Text', text:'Increase the font size.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}, decreasefontsize:{title:'Shrink Text', 
+text:'Decrease the font size.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}, backcolor:{title:'Text Highlight Color', text:'Change the background color of the selected text.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}, forecolor:{title:'Font Color', text:'Change the color of the selected text.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}, justifyleft:{title:'Align Text Left', text:'Align text to the left.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}, justifycenter:{title:'Center Text', text:'Center text in the editor.', 
+cls:Ext.baseCSSPrefix + 'html-editor-tip'}, justifyright:{title:'Align Text Right', text:'Align text to the right.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}, insertunorderedlist:{title:'Bullet List', text:'Start a bulleted list.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}, insertorderedlist:{title:'Numbered List', text:'Start a numbered list.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}, createlink:{title:'Hyperlink', text:'Make the selected text a hyperlink.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}, 
+sourceedit:{title:'Source Edit', text:'Switch to source editing mode.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}}, privates:{deferFocus:function() {
+  this.focus(false, true);
+}, getFocusEl:function() {
+  return this.sourceEditMode ? this.textareaEl : this.iframeEl;
+}}});
+Ext.define('Ext.theme.neptune.form.field.HtmlEditor', {override:'Ext.form.field.HtmlEditor', defaultButtonUI:'plain-toolbar'});
+Ext.define('Ext.locale.es.form.field.HtmlEditor', {override:'Ext.form.field.HtmlEditor', createLinkText:'Por favor proporcione la URL para el enlace:'}, function() {
+  Ext.apply(Ext.form.field.HtmlEditor.prototype, {buttonTips:{bold:{title:'Negritas (Ctrl+B)', text:'Transforma el texto seleccionado en Negritas.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}, italic:{title:'Itálica (Ctrl+I)', text:'Transforma el texto seleccionado en Itálicas.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}, underline:{title:'Subrayado (Ctrl+U)', text:'Subraya el texto seleccionado.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}, increasefontsize:{title:'Aumentar la fuente', text:'Aumenta el tamaño de la fuente', 
+  cls:Ext.baseCSSPrefix + 'html-editor-tip'}, decreasefontsize:{title:'Reducir la fuente', text:'Reduce el tamaño de la fuente.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}, backcolor:{title:'Color de fondo', text:'Modifica el color de fondo del texto seleccionado.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}, forecolor:{title:'Color de la fuente', text:'Modifica el color del texto seleccionado.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}, justifyleft:{title:'Alinear a la izquierda', text:'Alinea el texto a la izquierda.', 
+  cls:Ext.baseCSSPrefix + 'html-editor-tip'}, justifycenter:{title:'Centrar', text:'Centrar el texto.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}, justifyright:{title:'Alinear a la derecha', text:'Alinea el texto a la derecha.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}, insertunorderedlist:{title:'Lista de viñetas', text:'Inicia una lista con viñetas.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}, insertorderedlist:{title:'Lista numerada', text:'Inicia una lista numerada.', cls:Ext.baseCSSPrefix + 
+  'html-editor-tip'}, createlink:{title:'Enlace', text:'Inserta un enlace de hipertexto.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}, sourceedit:{title:'Código Fuente', text:'Pasar al modo de edición de código fuente.', cls:Ext.baseCSSPrefix + 'html-editor-tip'}}});
+});
 Ext.define('Ext.view.TagKeyNav', {extend:Ext.view.BoundListKeyNav, alias:'view.navigation.tagfield', onKeySpace:function(e) {
   var me = this, field = me.view.pickerField;
   if (field.isExpanded && field.inputEl.dom.value === '') {
@@ -73613,6 +74741,229 @@ Ext.baseCSSPrefix + 'tagfield-list{itemListCls}"\x3e', '\x3cli id\x3d"{cmpId}-in
       me.listWrapper.dom.scrollTop = 99999;
     }
   }
+}});
+Ext.define('Ext.picker.Time', {extend:Ext.view.BoundList, alias:'widget.timepicker', config:{store:true}, statics:{createStore:function(format, increment) {
+  var dateUtil = Ext.Date, clearTime = dateUtil.clearTime, initDate = this.prototype.initDate, times = [], min, max;
+  min = clearTime(new Date(initDate[0], initDate[1], initDate[2]));
+  max = dateUtil.add(clearTime(new Date(initDate[0], initDate[1], initDate[2])), 'mi', 24 * 60 - 1);
+  while (min <= max) {
+    times.push({disp:dateUtil.dateFormat(min, format), date:min});
+    min = dateUtil.add(min, 'mi', increment);
+  }
+  return new Ext.data.Store({model:Ext.picker.Time.prototype.modelType, data:times});
+}}, increment:15, format:'g:i A', displayField:'disp', initDate:[2008, 0, 1], componentCls:Ext.baseCSSPrefix + 'timepicker', alignOnScroll:false, loadMask:false, initComponent:function() {
+  var me = this, dateUtil = Ext.Date, clearTime = dateUtil.clearTime, initDate = me.initDate;
+  me.absMin = clearTime(new Date(initDate[0], initDate[1], initDate[2]));
+  me.absMax = dateUtil.add(clearTime(new Date(initDate[0], initDate[1], initDate[2])), 'mi', 24 * 60 - 1);
+  me.updateList();
+  me.callParent();
+}, setStore:function(store) {
+  this.store = store === true ? Ext.picker.Time.createStore(this.format, this.increment) : store;
+}, setMinValue:function(value) {
+  this.minValue = value;
+  this.updateList();
+}, setMaxValue:function(value) {
+  this.maxValue = value;
+  this.updateList();
+}, normalizeDate:function(date) {
+  var initDate = this.initDate;
+  date.setFullYear(initDate[0], initDate[1], initDate[2]);
+  return date;
+}, updateList:function() {
+  var me = this, min = me.normalizeDate(me.minValue || me.absMin), max = me.normalizeDate(me.maxValue || me.absMax), filters = me.getStore().getFilters(), filter = me.rangeFilter;
+  filters.beginUpdate();
+  if (filter) {
+    filters.remove(filter);
+  }
+  filter = me.rangeFilter = new Ext.util.Filter({filterFn:function(record) {
+    var date = record.get('date');
+    return date >= min && date <= max;
+  }});
+  filters.add(filter);
+  filters.endUpdate();
+}}, function() {
+  this.prototype.modelType = Ext.define(null, {extend:'Ext.data.Model', fields:['disp', 'date']});
+});
+Ext.define('Ext.form.field.Time', {extend:Ext.form.field.ComboBox, alias:'widget.timefield', alternateClassName:['Ext.form.TimeField', 'Ext.form.Time'], triggerCls:Ext.baseCSSPrefix + 'form-time-trigger', minText:'The time in this field must be equal to or after {0}', maxText:'The time in this field must be equal to or before {0}', invalidText:'{0} is not a valid time', format:'g:i A', altFormats:'g:ia|g:iA|g:i a|g:i A|h:i|g:i|H:i|ga|ha|gA|h a|g a|g A|gi|hi|gia|hia|g|H|gi a|hi a|giA|hiA|gi A|hi A', 
+formatText:'Expected time format HH:MM space AM or PM', increment:15, pickerMaxHeight:300, selectOnTab:true, snapToIncrement:false, valuePublishEvent:['select', 'blur'], initDate:'1/1/2008', initDateParts:[2008, 0, 1], initDateFormat:'j/n/Y', queryMode:'local', displayField:'disp', valueField:'date', initComponent:function() {
+  var me = this, min = me.minValue, max = me.maxValue;
+  if (min) {
+    me.setMinValue(min);
+  }
+  if (max) {
+    me.setMaxValue(max);
+  }
+  me.displayTpl = new Ext.XTemplate('\x3ctpl for\x3d"."\x3e' + '{[typeof values \x3d\x3d\x3d "string" ? values : this.formatDate(values["' + me.displayField + '"])]}' + '\x3ctpl if\x3d"xindex \x3c xcount"\x3e' + me.delimiter + '\x3c/tpl\x3e' + '\x3c/tpl\x3e', {formatDate:me.formatDate.bind(me)});
+  me.store = Ext.picker.Time.createStore(me.format, me.increment);
+  me.callParent();
+  me.getPicker();
+}, afterQuery:function(queryPlan) {
+  var me = this;
+  me.callParent([queryPlan]);
+  if (me.value === null && me.getRawValue() && me.validateOnChange) {
+    me.validate();
+  }
+}, isEqual:function(v1, v2) {
+  var fromArray = Ext.Array.from, isEqual = Ext.Date.isEqual, i, len;
+  v1 = fromArray(v1);
+  v2 = fromArray(v2);
+  len = v1.length;
+  if (len !== v2.length) {
+    return false;
+  }
+  for (i = 0; i < len; i++) {
+    if (!(v2[i] instanceof Date) || !(v1[i] instanceof Date) || !isEqual(v2[i], v1[i])) {
+      return false;
+    }
+  }
+  return true;
+}, setMinValue:function(value) {
+  var me = this, picker = me.picker;
+  me.setLimit(value, true);
+  if (picker) {
+    picker.setMinValue(me.minValue);
+  }
+}, setMaxValue:function(value) {
+  var me = this, picker = me.picker;
+  me.setLimit(value, false);
+  if (picker) {
+    picker.setMaxValue(me.maxValue);
+  }
+}, setLimit:function(value, isMin) {
+  var me = this, d, val;
+  if (Ext.isString(value)) {
+    d = me.parseDate(value);
+  } else {
+    if (Ext.isDate(value)) {
+      d = value;
+    }
+  }
+  if (d) {
+    val = me.getInitDate();
+    val.setHours(d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds());
+  } else {
+    val = null;
+  }
+  me[isMin ? 'minValue' : 'maxValue'] = val;
+}, getInitDate:function(hours, minutes, seconds) {
+  var parts = this.initDateParts;
+  return new Date(parts[0], parts[1], parts[2], hours || 0, minutes || 0, seconds || 0, 0);
+}, valueToRaw:function(value) {
+  return this.formatDate(this.parseDate(value));
+}, getErrors:function(value) {
+  value = arguments.length > 0 ? value : this.getRawValue();
+  var me = this, format = Ext.String.format, errors = me.callParent([value]), minValue = me.minValue, maxValue = me.maxValue, data = me.displayTplData, raw = me.getRawValue(), i, len, date, item;
+  if (data && data.length > 0) {
+    for (i = 0, len = data.length; i < len; i++) {
+      item = data[i];
+      item = item.date || item.disp;
+      date = me.parseDate(item);
+      if (!date) {
+        errors.push(format(me.invalidText, item, Ext.Date.unescapeFormat(me.format)));
+        continue;
+      }
+    }
+  } else {
+    if (raw.length) {
+      date = me.parseDate(raw);
+      if (!date) {
+        errors.push(format(me.invalidText, raw, Ext.Date.unescapeFormat(me.format)));
+      }
+    }
+  }
+  if (!errors.length) {
+    if (minValue && date < minValue) {
+      errors.push(format(me.minText, me.formatDate(minValue)));
+    }
+    if (maxValue && date > maxValue) {
+      errors.push(format(me.maxText, me.formatDate(maxValue)));
+    }
+  }
+  return errors;
+}, formatDate:function(items) {
+  var formatted = [], i, len;
+  items = Ext.Array.from(items);
+  for (i = 0, len = items.length; i < len; i++) {
+    formatted.push(Ext.form.field.Date.prototype.formatDate.call(this, items[i]));
+  }
+  return formatted.join(this.delimiter);
+}, parseDate:function(value) {
+  var me = this, val = value, altFormats = me.altFormats, altFormatsArray = me.altFormatsArray, i = 0, len;
+  if (value && !Ext.isDate(value)) {
+    val = me.safeParse(value, me.format);
+    if (!val && altFormats) {
+      altFormatsArray = altFormatsArray || altFormats.split('|');
+      len = altFormatsArray.length;
+      for (; i < len && !val; ++i) {
+        val = me.safeParse(value, altFormatsArray[i]);
+      }
+    }
+  }
+  if (val && me.snapToIncrement) {
+    val = new Date(Ext.Number.snap(val.getTime(), me.increment * 60 * 1000));
+  }
+  return val;
+}, safeParse:function(value, format) {
+  var me = this, utilDate = Ext.Date, parsedDate, result = null;
+  if (utilDate.formatContainsDateInfo(format)) {
+    result = utilDate.parse(value, format);
+  } else {
+    parsedDate = utilDate.parse(me.initDate + ' ' + value, me.initDateFormat + ' ' + format);
+    if (parsedDate) {
+      result = parsedDate;
+    }
+  }
+  return result;
+}, getSubmitValue:function() {
+  var me = this, format = me.submitFormat || me.format, value = me.getValue();
+  return value ? Ext.Date.format(value, format) : null;
+}, createPicker:function() {
+  var me = this;
+  me.listConfig = Ext.apply({xtype:'timepicker', pickerField:me, cls:undefined, minValue:me.minValue, maxValue:me.maxValue, increment:me.increment, format:me.format, maxHeight:me.pickerMaxHeight}, me.listConfig);
+  return me.callParent();
+}, completeEdit:function() {
+  var me = this, val = me.getValue();
+  me.callParent(arguments);
+  if (me.validateValue(val)) {
+    me.setValue(val);
+  }
+}, findRecordByValue:function(value) {
+  if (typeof value === 'string') {
+    value = this.parseDate(value);
+  }
+  return this.callParent([value]);
+}, rawToValue:function(item) {
+  var me = this, items, values, i, len;
+  if (me.multiSelect) {
+    values = [];
+    items = Ext.Array.from(item);
+    for (i = 0, len = items.length; i < len; i++) {
+      values.push(me.parseDate(items[i]));
+    }
+    return values;
+  }
+  return me.parseDate(item);
+}, setValue:function(v) {
+  var me = this;
+  if (me.creatingPicker) {
+    return;
+  }
+  me.getPicker();
+  if (Ext.isDate(v)) {
+    v = me.getInitDate(v.getHours(), v.getMinutes(), v.getSeconds());
+  }
+  return me.callParent([v]);
+}, getValue:function() {
+  return this.rawToValue(this.callParent(arguments));
+}});
+Ext.define('Ext.locale.es.form.field.Time', {override:'Ext.form.field.Time', minText:'La hora en este campo debe ser igual o posterior a {0}', maxText:'La hora en este campo debe ser igual o anterior a {0}', invalidText:'{0} no es una hora válida', format:'g:i A', altFormats:'g:ia|g:iA|g:i a|g:i A|h:i|g:i|H:i|ga|ha|gA|h a|g a|g A|gi|hi|gia|hia|g|H'});
+Ext.define('Ext.form.field.Trigger', {extend:Ext.form.field.Text, alias:['widget.triggerfield', 'widget.trigger'], alternateClassName:['Ext.form.TriggerField', 'Ext.form.TwinTriggerField', 'Ext.form.Trigger'], triggerCls:Ext.baseCSSPrefix + 'form-arrow-trigger', inheritableStatics:{warnDeprecated:function() {
+  Ext.log.warn('Ext.form.field.Trigger is deprecated. Use Ext.form.field.Text instead.');
+}}, onClassExtended:function() {
+  this.warnDeprecated();
+}, constructor:function(config) {
+  this.self.warnDeprecated();
+  this.callParent([config]);
 }});
 Ext.define('Ext.grid.CellContext', {isCellContext:true, generation:0, constructor:function(view) {
   this.view = view;
@@ -89148,144 +90499,6 @@ Ext.define('Cmp.form.Domicilio', {extend:'Ext.form.field.Base', mixins:['Ext.mix
   }
   return c.replace(/Á/g, 'A').replace(/É/g, 'E').replace(/Í/g, 'I').replace(/Ó/g, 'O').replace(/Ú/g, 'U').replace(/Ü/g, 'U').replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i').replace(/ó/g, 'o').replace(/ú/g, 'u').replace(/ü/g, 'u').replace(/Ñ/g, 'N').replace(/ñ/g, 'n');
 }}});
-Ext.define('Cmp.form.Numberfield', {extend:Ext.form.field.Number, alias:'widget.cmpNumberfield', xtype:'cmpnumberfield', config:{obligatorio:false}, constructor:function(config) {
-  var me = this, boxes;
-  me.callParent(arguments);
-  me.initConfig(config);
-}, updateObligatorio:function(value) {
-  this.allowBlank = !value;
-}});
-Ext.define('Cmp.form.NumberMilesField', {extend:Cmp.form.Numberfield, alias:'widget.cmpNumberMilesField', xtype:'cmpnumbermilesfield', allowThousandSeparator:true, baseChars:'0123456789. ', initComponent:function() {
-  Ext.util.Format.thousandSeparator = '.';
-  Ext.util.Format.decimalSeparator = ',';
-  var me = this;
-  if (me.decimalSeparator === null) {
-    me.decimalSeparator = Ext.util.Format.decimalSeparator;
-  }
-  me.callParent();
-  me.setMinValue(me.minValue);
-  me.setMaxValue(me.maxValue);
-}, toBaseNumber:function(value) {
-  var me = this;
-  return String(value).replace(new RegExp('[' + Ext.util.Format.thousandSeparator + ']', 'g'), '').replace(me.decimalSeparator, '.');
-}, parseRawValue:function(value) {
-  var me = this;
-  value = parseFloat(me.toBaseNumber(value));
-  return isNaN(value) ? null : value;
-}, onChange:function(newValue) {
-  var ariaDom = this.ariaEl.dom;
-  this.toggleSpinners();
-  this.callParent(arguments);
-  if (ariaDom) {
-    if (Ext.isNumber(newValue) && isFinite(newValue)) {
-      ariaDom.setAttribute('aria-valuenow', newValue);
-    } else {
-      ariaDom.removeAttribute('aria-valuenow');
-    }
-  }
-  if (newValue != null && newValue != '') {
-    var sepPos = newValue.toString().indexOf('.'), lenCtrl = newValue.toString().length;
-    if (lenCtrl > 3 && sepPos == -1) {
-      this.allowDecimals = false;
-      this.setValue(newValue);
-      this.allowDecimals = true;
-    }
-  }
-}, getErrors:function(value) {
-  if (!this.allowThousandSeparator) {
-    return this.callParent(arguments);
-  }
-  value = arguments.length > 0 ? value : this.processRawValue(this.getRawValue());
-  var me = this, errors = me.callSuper([value]), format = Ext.String.format, num;
-  if (value.length < 1) {
-    return errors;
-  }
-  value = me.toBaseNumber(value);
-  if (isNaN(value)) {
-    errors.push(format(me.nanText, value));
-  }
-  num = me.parseValue(value);
-  if (me.minValue === 0 && num < 0) {
-    errors.push(this.negativeText);
-  } else {
-    if (num < me.minValue) {
-      errors.push(format(me.minText, me.minValue));
-    }
-  }
-  if (num > me.maxValue) {
-    errors.push(format(me.maxText, me.maxValue));
-  }
-  return errors;
-}, rawToValue:function(rawValue) {
-  if (!this.allowThousandSeparator) {
-    return this.callParent(arguments);
-  }
-  var value = this.fixPrecision(this.parseRawValue(rawValue));
-  if (value === null) {
-    value = rawValue || null;
-  }
-  return value;
-}, valueToRaw:function(value) {
-  if (!this.allowThousandSeparator) {
-    return this.callParent(arguments);
-  }
-  var me = this, decimalSeparator = me.decimalSeparator, format = '0,000';
-  if (me.allowDecimals) {
-    for (var i = 0; i < me.decimalPrecision; i++) {
-      if (i == 0) {
-        format += '.';
-      }
-      format += '0';
-    }
-  }
-  value = me.parseValue(value);
-  value = me.fixPrecision(value);
-  value = Ext.isNumber(value) ? value : parseFloat(String(value).replace(decimalSeparator, '.'));
-  value = isNaN(value) ? '' : Ext.util.Format.number(value, format);
-  return value;
-}, getSubmitValue:function() {
-  if (!this.allowThousandSeparator) {
-    return this.callParent();
-  }
-  var me = this, value = me.callSuper();
-  if (!me.submitLocaleSeparator) {
-    value = me.toBaseNumber(value);
-  }
-  return value;
-}, setMinValue:function(value) {
-  if (!this.allowThousandSeparator) {
-    return this.callParent(arguments);
-  }
-  var me = this, ariaDom = me.ariaEl.dom, minValue, allowed, ariaDom;
-  me.minValue = minValue = Ext.Number.from(value, Number.NEGATIVE_INFINITY);
-  me.toggleSpinners();
-  if (ariaDom) {
-    if (minValue > Number.NEGATIVE_INFINITY) {
-      ariaDom.setAttribute('aria-valuemin', minValue);
-    } else {
-      ariaDom.removeAttribute('aria-valuemin');
-    }
-  }
-  if (me.disableKeyFilter !== true) {
-    allowed = me.baseChars + '';
-    if (me.allowExponential) {
-      allowed += me.decimalSeparator + 'e+-';
-    } else {
-      allowed += Ext.util.Format.thousandSeparator;
-      if (me.allowDecimals) {
-        allowed += me.decimalSeparator;
-      }
-      if (me.minValue < 0) {
-        allowed += '-';
-      }
-    }
-    allowed = Ext.String.escapeRegex(allowed);
-    me.maskRe = new RegExp('[' + allowed + ']');
-    if (me.autoStripChars) {
-      me.stripCharsRe = new RegExp('[^' + allowed + ']', 'gi');
-    }
-  }
-}});
 Ext.define('Cmp.form.Rutfield', {extend:Ext.form.field.Text, alias:'widget.rut', xtype:'rut', viewModel:{data:{numeroRut:''}}, config:{obligatorio:false, rut:null}, bind:{value:'{numeroRut}', rut:'{numeroRut}'}, fieldLabel:'RUT', vtype:'rutCheck', updateRut:function(value) {
   var me = this, rut = value.trim().toUpperCase();
   if (/[0]*/.test(value)) {
@@ -89307,13 +90520,9 @@ Ext.define('Cmp.form.Rutfield', {extend:Ext.form.field.Text, alias:'widget.rut',
     me.setValue(value);
   }
 }});
-Ext.define('Cmp.wkf.button.Accion', {extend:Ext.button.Button, alias:'widget.wkfAccionButton', xtype:'wkfaccionbutton', config:{idAccion:0, cAccion:'', bRechaza:false}, constructor:function(config) {
-  var me = this;
-  me.callParent(arguments);
-  me.initConfig(config);
-}, ejecutarAcciones:function(jsonData, idEvento, cEtapaActual, fnCallback, fecha_programada) {
-  var me = this, cAccion = me.getCAccion(), cxnCtrl = Ext.getApplication().getController('Conexion'), mensaje = 'Error inesperado en botón ' + me.getText(), json = JSON.stringify(jsonData);
-  Ext.Ajax.request({url:GLOBAL_HOST + '/do/wkfAccionEvento', cors:true, withCredentials:true, useDefaultXhrHeader:false, method:'POST', params:{prm_dataSource:cxnCtrl.getDefaultDS(), prm_nEvento:idEvento, prm_cEtapaActual:cEtapaActual, prm_cAccion:cAccion, prm_tProgramada:fecha_programada, json_data:json}, success:function(response, opts) {
+Ext.define('Cmp.wkf.button.Accion', {extend:Ext.button.Button, alias:'widget.wkfAccionButton', xtype:'wkfaccionbutton', config:{idAccion:0, cAccion:null, bRechaza:false, token:null, dataSource:null}, ejecutarAcciones:function(jsonData, idEvento, cEtapaActual, fnCallback, fecha_programada) {
+  var me = this, cAccion = me.getCAccion(), mensaje = 'Error inesperado en botón ' + me.getText(), json = JSON.stringify(jsonData), token = me.getToken(), ds = me.getDataSource();
+  Ext.Ajax.request({url:GLOBAL_HOST + '/do/wkfAccionEvento', cors:true, withCredentials:true, useDefaultXhrHeader:false, method:'POST', params:{prm_nEvento:idEvento, prm_cEtapaActual:cEtapaActual, prm_cAccion:cAccion, prm_tProgramada:fecha_programada, json_data:json, prm_token:token ? token : null, prm_dataSource:ds ? ds : null}, success:function(response, opts) {
     var obj = Ext.decode(response.responseText);
     if (obj.success) {
       if (fnCallback) {
@@ -89329,25 +90538,79 @@ Ext.define('Cmp.wkf.button.Accion', {extend:Ext.button.Button, alias:'widget.wkf
     Ext.Msg.show({title:'Error inesperado', message:'Falla del lado del servidor', buttons:Ext.Msg.OK, icon:Ext.Msg.ERROR});
   }});
 }});
-Ext.define('Cmp.wkf.form.Panel', {extend:Ext.form.Panel, xtype:'wkfform', config:{flujo:null, evento:0, etapaActual:null, buttonSalir:true, buttonNuevo:true}, frame:false, scrollable:false, bodyPadding:5, fieldDefaults:{labelAlign:'top', labelWidth:90, margin:'0 0 5 6'}, listeners:{crearEvento:{fn:function(fn) {
+Ext.define('Cmp.wkf.toolbar.Acciones', {extend:Ext.toolbar.Toolbar, alias:'widget.wkfAccionesToolbar', xtype:'wkfaccionestoolbar', config:{acciones:[], token:null}, defaultType:'button', fixed:true, items:[], listeners:{afterRender:{fn:function() {
+  var me = this;
+  if (me.getAcciones()) {
+    me.cargaBotonera();
+  } else {
+    me.add({xtype:'button', text:'Salir', iconCls:'x-fa fa-sign-out-alt', name:'salir', handler:'onWkfAccion'});
+  }
+}}}, cargaBotonera:function() {
+  var me = this, botones = me.getAcciones(), config = {}, mainController = Ext.getApplication().getMainView().getController(), node = mainController.getActiveNode(), pTpAcceso = 0, btnUI = me.defaultButtonUI;
+  if (me.items) {
+    me.removeAll();
+  }
+  switch(node.data.cTpAcceso) {
+    case 'READ':
+      pTpAcceso = 10;
+      break;
+    case 'EXECUTE':
+      pTpAcceso = 20;
+      break;
+    case 'WRITE':
+      pTpAcceso = 30;
+      break;
+    case 'WRITE MASTER':
+      pTpAcceso = 32;
+      break;
+    case 'DELETE':
+      pTpAcceso = 40;
+      break;
+    default:
+      pTpAcceso = 10;
+      break;
+  }
+  me.add({xtype:'button', text:'Salir', iconCls:'x-fa fa-sign-out-alt', name:'salir', handler:'onWkfAccion'}, '-');
+  if (botones && pTpAcceso > 10) {
+    botones.forEach(function(btn) {
+      config = {};
+      if (btn.cJsonData) {
+        config = Ext.decode(btn.cJsonData);
+      }
+      if (config.extjs) {
+        if (config.extjs.separador) {
+          me.add(config.extjs.separador);
+        }
+        me.add({xtype:'wkfaccionbutton', idAccion:btn.pAccion, cAccion:btn.cNombre, bRechaza:config.extjs.btn_rechazo ? config.extjs.btn_rechazo : false, ui:config.extjs.ui ? config.extjs.ui : btnUI, iconCls:config.extjs.icono ? config.extjs.icono : null, name:btn.cNombre, text:btn.cTitulo, formBind:config.extjs.habilita_form ? config.extjs.habilita_form : false, hidden:config.extjs.oculto ? config.extjs.oculto : false, disabled:config.extjs.pTpAcceso <= pTpAcceso ? false : true, handler:'onWkfAccion'});
+      } else {
+        me.add({xtype:'wkfaccionbutton', idAccion:btn.pAccion, cAccion:btn.cNombre, bRechaza:false, iconCls:null, name:btn.cNombre, text:btn.cTitulo, formBind:false, hidden:false, handler:'onWkfAccion'});
+      }
+    });
+  }
+}});
+Ext.define('Cmp.wkf.form.Panel', {extend:Ext.form.Panel, xtype:'wkfform', config:{flujo:null, evento:0, etapaActual:null, buttonSalir:true, buttonNuevo:true, token:null, dataSource:null}, frame:false, scrollable:false, bodyPadding:5, fieldDefaults:{labelAlign:'top', labelWidth:90, margin:'0 0 5 6'}, listeners:{crearEvento:{fn:function(fn) {
   this.creaEvento(fn);
 }}, leerEvento:{fn:function(fn) {
   this.leeEvento(fn);
-}}}, constructor:function(config) {
+}}, afterRender:{fn:function() {
   var me = this;
-  me.callParent(arguments);
-  me.initConfig(config);
+  console.log('[afterRender]');
   me.cargaBotoneraInicial();
-}, cargaBotonera:function(obj) {
-  var me = this, tlb = me.down('#tlbAcciones');
+}}}, cargaBotonera:function(obj) {
+  console.log('[cargaBotonera]', obj);
+  var me = this, refs = me.getReferences(), tlb = refs ? refs.tlbAcciones : null;
   if (tlb) {
     me.removeDocked(tlb);
   }
-  me.addDocked({xtype:'wkfaccionestoolbar', reference:'tlbAcciones', itemId:'tlbAcciones', dock:'bottom', buttonSalir:me.getButtonSalir(), buttonNuevo:me.getButtonNuevo(), acciones:obj.dataWkf.acciones, margin:'10 0 10 0'});
+  me.addDocked({xtype:'wkfaccionestoolbar', reference:'tlbAcciones', itemId:'tlbAcciones', dock:'bottom', buttonSalir:me.getButtonSalir(), buttonNuevo:me.getButtonNuevo(), acciones:obj.dataWkf.acciones, margin:'10 0 10 0', token:me.getToken()});
 }, cargaBotoneraInicial:function() {
-  var me = this, flujo = me.getFlujo();
+  var me = this, flujo = me.getFlujo(), token = me.getToken(), tokenLocal = localStorage.token, ds = me.getDataSource();
+  if (token == null && tokenLocal != null) {
+    var tokenCtrl = Ext.getApplication().getController('Token');
+    token = tokenCtrl.buildTokenParam();
+  }
   if (flujo) {
-    Ext.Ajax.request({url:GLOBAL_HOST + '/do/wkfAccionesInicio', cors:true, withCredentials:true, useDefaultXhrHeader:false, method:'POST', params:{prm_cFlujo:flujo}, success:function(response, opts) {
+    Ext.Ajax.request({url:GLOBAL_HOST + '/do/wkfAccionesInicio', cors:true, withCredentials:true, useDefaultXhrHeader:false, method:'POST', params:{prm_cFlujo:flujo, prm_token:token ? token : null, prm_dataSource:ds ? ds : null}, success:function(response, opts) {
       var obj = Ext.decode(response.responseText);
       if (obj.success) {
         me.cargaBotonera(obj);
@@ -89363,10 +90626,9 @@ Ext.define('Cmp.wkf.form.Panel', {extend:Ext.form.Panel, xtype:'wkfform', config
     console.error('[cargaBotoneraInicial] Falta parametro flujo', this);
   }
 }, creaEvento:function(callback, pusuario, json_data) {
-  var me = this, cxnCtrl = Ext.getApplication().getController('Conexion');
-  flujo = me.getFlujo();
+  var me = this, flujo = me.getFlujo(), token = me.getToken(), ds = me.getDataSource();
   if (flujo) {
-    Ext.Ajax.request({url:GLOBAL_HOST + '/do/wkfCreaEvento', cors:true, withCredentials:true, useDefaultXhrHeader:false, method:'POST', params:{prm_dataSource:cxnCtrl.getDefaultDS(), prm_cFlujo:flujo, prm_pUsuario:pusuario ? pusuario : null, json_data:json_data ? JSON.stringify(json_data) : null}, success:function(response, opts) {
+    Ext.Ajax.request({url:GLOBAL_HOST + '/do/wkfCreaEvento', cors:true, withCredentials:true, useDefaultXhrHeader:false, method:'POST', params:{prm_cFlujo:flujo, prm_pUsuario:pusuario ? pusuario : null, json_data:json_data ? JSON.stringify(json_data) : null, prm_token:token ? token : null, prm_dataSource:ds ? ds : null}, success:function(response, opts) {
       var obj = Ext.decode(response.responseText);
       if (obj.success) {
         me.cargaBotonera(obj);
@@ -89387,9 +90649,9 @@ Ext.define('Cmp.wkf.form.Panel', {extend:Ext.form.Panel, xtype:'wkfform', config
     console.warn('[creaEvento] Error en configuracion: valor flujo obligatio', this);
   }
 }, leeEvento:function(callback) {
-  var me = this, pEvento = me.getEvento(), cxnCtrl = Ext.getApplication().getController('Conexion');
+  var me = this, pEvento = me.getEvento(), token = me.getToken(), ds = me.getDataSource();
   if (pEvento > 0) {
-    Ext.Ajax.request({url:GLOBAL_HOST + '/do/wkfLeeEvento', cors:true, withCredentials:true, useDefaultXhrHeader:false, method:'POST', params:{prm_dataSource:cxnCtrl.getDefaultDS(), prm_nEvento:pEvento}, success:function(response, opts) {
+    Ext.Ajax.request({url:GLOBAL_HOST + '/do/wkfLeeEvento', cors:true, withCredentials:true, useDefaultXhrHeader:false, method:'POST', params:{prm_nEvento:pEvento, prm_token:token ? token : null, prm_dataSource:ds ? ds : null}, success:function(response, opts) {
       var obj = Ext.decode(response.responseText);
       if (obj.success) {
         me.cargaBotonera(obj);
@@ -89417,57 +90679,6 @@ Ext.define('Cmp.wkf.form.Panel', {extend:Ext.form.Panel, xtype:'wkfform', config
   me.setEvento(0);
   me.setEtapaActual(etapaActual);
   me.cargaBotoneraInicial();
-}});
-Ext.define('Cmp.wkf.toolbar.Acciones', {extend:Ext.toolbar.Toolbar, alias:'widget.wkfAccionesToolbar', xtype:'wkfaccionestoolbar', config:{acciones:[]}, defaultType:'button', fixed:true, ui:'wkf-tlb-acciones', constructor:function(config) {
-  var me = this;
-  me.callParent(arguments);
-  me.initConfig(config);
-  if (me.getAcciones()) {
-    me.cargaBotonera();
-  } else {
-    me.add({xtype:'button', text:'Salir', iconCls:'x-fa fa-sign-out', ui:'wkf-tlb-acciones-toolbar', name:'salir', handler:'onWkfAccion'});
-  }
-}, cargaBotonera:function() {
-  var me = this, botones = me.getAcciones(), config = {}, mainController = Ext.getApplication().getMainView().getController(), node = mainController.getActiveNode(), pTpAcceso = 0;
-  me.removeAll();
-  switch(node.data.cTpAcceso) {
-    case 'READ':
-      pTpAcceso = 10;
-      break;
-    case 'EXECUTE':
-      pTpAcceso = 20;
-      break;
-    case 'WRITE':
-      pTpAcceso = 30;
-      break;
-    case 'WRITE MASTER':
-      pTpAcceso = 32;
-      break;
-    case 'DELETE':
-      pTpAcceso = 40;
-      break;
-    default:
-      pTpAcceso = 10;
-      break;
-  }
-  me.add({xtype:'button', text:'Salir', iconCls:'x-fa fa-sign-out', ui:'wkf-tlb-acciones-toolbar', name:'salir', handler:'onWkfAccion'}, '-');
-  if (botones && pTpAcceso > 10) {
-    botones.forEach(function(btn) {
-      config = {};
-      if (btn.cEstilo) {
-        config = Ext.decode(btn.cEstilo);
-      }
-      if (config.extjs) {
-        if (config.extjs.separador) {
-          me.add(config.extjs.separador);
-        }
-        me.add({xtype:'wkfaccionbutton', idAccion:btn.pAccion, cAccion:btn.cNombre, bRechaza:config.extjs.btn_rechazo ? config.extjs.btn_rechazo : false, ui:config.extjs.ui ? config.extjs.ui : 'wkf-tlb-acciones-toolbar', iconCls:config.extjs.icono ? config.extjs.icono : null, name:btn.cNombre, text:btn.cTitulo, formBind:config.extjs.habilita_form ? config.extjs.habilita_form : false, hidden:config.extjs.oculto ? config.extjs.oculto : false, disabled:config.extjs.pTpAcceso <= pTpAcceso ? false : true, 
-        handler:'onWkfAccion'});
-      } else {
-        me.add({xtype:'wkfaccionbutton', idAccion:btn.pAccion, cAccion:btn.cNombre, bRechaza:false, ui:'wkf-tlb-acciones-toolbar', iconCls:null, name:btn.cNombre, text:btn.cTitulo, formBind:false, hidden:false, handler:'onWkfAccion'});
-      }
-    });
-  }
 }});
 Ext.onReady(function() {
   if (Ext.Date) {
@@ -92542,10 +93753,13 @@ Ext.define('vyl.controller.Token', {extend:Ext.app.Controller, init:function() {
   }});
 }});
 Ext.define('vyl.model.Base', {extend:Ext.data.Model, schema:{namespace:'vyl.model'}});
-Ext.define('vyl.proxy.JsonCall', {extend:Ext.data.proxy.Ajax, alias:'proxy.jsoncall', url:GLOBAL_HOST + '/do/vyl/srv/jsonCall.bsh', cors:true, withCredentials:true, useDefaultXhrHeader:false, method:'POST', reader:{type:'json', rootProperty:'records', totalProperty:'count'}, extraParams:{prm_dataSource:'vylDS'}, failure:function(response) {
+Ext.define('vyl.proxy.JsonCall', {extend:Ext.data.proxy.Ajax, alias:'proxy.jsoncall', cors:true, withCredentials:true, useDefaultXhrHeader:false, method:'POST', reader:{type:'json', rootProperty:'response', totalProperty:'count'}, initComponent:function() {
+  console.log('[initComponent]');
+}, failure:function(response) {
   Ext.Msg.show({title:'Atención!', message:response.statusText, buttons:Ext.Msg.OK, icon:Ext.Msg.ERROR});
   console.error('[jsonCall] failure: ' + response.statusTest, response);
 }});
+Ext.define('vyl.view.FormBase', {extend:'Ext.form.Panel', alias:'widget.formbase', requires:['Ext.form.field.*', 'Ext.form.FieldSet', 'Cmp.form.Domicilio', 'Cmp.form.Rutfield'], frame:false, scrollable:true, bodyPadding:15, fieldDefaults:{labelAlign:'top', labelWidth:90, margin:'0 0 5 6'}});
 Ext.define('vyl.view.admin.cobranza.ArchivosWnd', {extend:Ext.window.Window, xtype:'wndarchivos', controller:'cobranza', viewModel:{type:'cobranza'}, layout:{type:'vbox', align:'stretch'}, height:550, width:600, scrollable:true, bodyPadding:0, constrain:true, listeners:{beforerender:'onArchivosWndBeforeRender'}, initComponent:function() {
   Ext.apply(this, {title:'Cobranzas - Archivos Procesados', modal:true, closable:false, items:[{xtype:'grid', scrollable:'y', viewConfig:{stripeRows:true}, bind:{store:'{stArchivosCobranzasProcesados}'}, emptyText:'No existen archivos procesados', columns:[{text:'Procesado', dataIndex:'', width:130, formatter:'date("d/m/Y H:i:s")'}, {text:'Nombre', dataIndex:'', flex:1}, {text:'Usuario', dataIndex:'', flex:1}], flex:1}], bbar:{fixed:true, margin:'10 0 0 0', items:['-\x3e', {xtype:'button', text:'Cerrar', 
   handler:'onArchivosWndCerrar'}]}});
@@ -92606,11 +93820,11 @@ Ext.define('vyl.view.admin.cobranza.CobranzaController', {extend:Ext.app.ViewCon
 Ext.define('vyl.view.admin.cobranza.CobranzaViewModel', {extend:Ext.app.ViewModel, alias:'viewmodel.cobranza', stores:{stArchivosCobranzasProcesados:{}, stCobranza:{}, stCobranzaLocal:{}}});
 Ext.define('vyl.view.admin.cobranza.Consulta', {extend:Ext.container.Container, xtype:'admin-cobranza', controller:'cobranza', viewModel:{type:'cobranza'}, layout:{type:'vbox', align:'stretch'}, scrollable:true, items:[{xtype:'grid', plugins:'gridfilters', bind:{store:'{stCobranzaLocal}'}, width:'100%', scrollable:true, emptyText:'No existen pagos pendientes', viewConfig:{stripeRows:true}, dockedItems:[{xtype:'pagingtoolbar', dock:'bottom', displayInfo:true, bind:'{stCobranzaLocal}'}], listeners:{activate:'onConsultaActivate'}, 
 columns:[{text:'Vencimiento', dataIndex:'VENCIMIENTO', width:130, formatter:'date("d/m/Y")'}, {text:'Importe', dataIndex:'IMPORTE', width:130}, {text:'Comprador', dataIndex:'COMPRADOR', flex:2}, {text:'Loteo', dataIndex:'LOTEO', flex:1}, {text:'Parcela', dataIndex:'PARCELA', width:130}, {text:'Rol', dataIndex:'ROL_PROPIEDAD', width:130}, {xtype:'actioncolumn', align:'center', width:50, items:[{iconCls:'x-fa fa-file-text-o', tooltip:'Consultar Formulario', handler:'onConsultarFormulario'}]}], flex:1}, 
-{xtype:'fieldset', title:'Archivo de Cobranzas', collapsible:true, margin:'10 0 5 0', items:[{xtype:'form', reference:'frmProcesarArchivo', layout:{type:'hbox'}, margin:'0 0 5 0', fieldDefaults:{labelAlign:'top', labelWidth:90, margin:'0 0 5 6'}, items:[{xtype:'filefield', name:'dataArchivo', fieldLabel:'Archivo', buttonOnly:false, margin:'10 5 0 5', buttonText:'Subir...', buttonConfig:{iconCls:'x-fa fa-upload'}, listeners:{change:'onArchivoCobranzasChange'}, flex:1}, {xtype:'button', text:'Procesar', 
+{xtype:'fieldset', title:'Archivo de Cobranzas', collapsible:true, margin:'10 0 5 0', items:[{xtype:'formbase', reference:'frmProcesarArchivo', layout:{type:'hbox'}, margin:'0 0 5 0', fieldDefaults:{labelAlign:'top', labelWidth:90, margin:'0 0 5 6'}, items:[{xtype:'filefield', name:'dataArchivo', fieldLabel:'Archivo', buttonOnly:false, margin:'10 5 0 5', buttonText:'Subir...', buttonConfig:{iconCls:'x-fa fa-upload'}, listeners:{change:'onArchivoCobranzasChange'}, flex:1}, {xtype:'button', text:'Procesar', 
 margin:'35 5 0 5', iconCls:'x-fa fa-file-import', handler:'onArchivoCobranzasProcesar'}], flex:1, maxHeight:100}]}]});
 Ext.define('vyl.view.admin.loteo.Loteo', {extend:Ext.container.Container, xtype:'admin-loteo', controller:'loteo', viewModel:{type:'loteo'}, layout:{type:'vbox', align:'stretch'}, listeners:{cargadatos:'onLoteoCargar'}, items:[{xtype:'tabpanel', reference:'tabPrincipal', activeTab:0, items:[{xtype:'loteoLista', reference:'gpLista', title:'Lista Loteos', name:'listado', routeId:'listado', iconCls:'x-fa fa-list', listeners:{activate:'onActivateGrillaLista'}}, {xtype:'abmloteo', reference:'frmAbmLoteo', 
 title:'Formulario Ingreso Loteo', routeId:'frmingreso', iconCls:'x-fa fa-image', maxWidth:1000, listeners:{activate:'onActivateAbmLoteo'}}], flex:1}]});
-Ext.define('vyl.view.admin.loteo.LoteoAbm', {extend:Ext.form.Panel, xtype:'abmloteo', frame:false, scrollable:true, bodyPadding:15, fieldDefaults:{labelAlign:'top', labelWidth:90, margin:'0 0 5 6'}, title:'Lista Loteo', bbar:{reference:'tlbAcciones', fixed:true, margin:'10 0 10 0', items:[{text:'Salir', iconCls:'x-fa fa-sign-out', name:'salir', handler:'onAccionAbm'}, '-', {text:'Nuevo', iconCls:'x-fa fa-file', name:'nuevo', handler:'onAccionAbm'}, '-\x3e', {text:'Grabar', reference:'btnGrabar', 
+Ext.define('vyl.view.admin.loteo.LoteoAbm', {extend:'vyl.view.FormBase', xtype:'abmloteo', frame:false, scrollable:true, bodyPadding:15, fieldDefaults:{labelAlign:'top', labelWidth:90, margin:'0 0 5 6'}, title:'Lista Loteo', bbar:{reference:'tlbAcciones', fixed:true, margin:'10 0 10 0', items:[{text:'Salir', iconCls:'x-fa fa-sign-out-alt', name:'salir', handler:'onAccionAbm'}, '-', {text:'Nuevo', iconCls:'x-fa fa-file', name:'nuevo', handler:'onAccionAbm'}, '-\x3e', {text:'Grabar', reference:'btnGrabar', 
 iconCls:'x-fa fa-save', name:'grabar', handler:'onAccionAbm'}]}, listeners:{activate:'onActivateAbmLoteo'}, initComponent:function() {
   Ext.apply(this, {jsonSubmit:true, layout:{type:'vbox', align:'stretch'}, defaults:{defaultType:'textfield', layout:'anchor', collapsible:true, margin:10}, items:[{xtype:'hidden', reference:'idRegistro', name:'LOTEO_ID', value:0}, {xtype:'fieldset', name:'datosPpal', title:'Datos Principales', layout:{type:'vbox', align:'stretch'}, items:[{xtype:'container', layout:'hbox', margin:'0 0 5 0', defaultType:'textfield', items:[{fieldLabel:'Nombre', name:'LOTEO_NOMBRE', allowBlank:false, maxLength:20, 
   flex:1}, {fieldLabel:'Descripción', name:'LOTEO_DESCRIPCION', maxLength:120, flex:4}]}, {xtype:'container', layout:'hbox', margin:'0 0 5 0', defaultType:'textfield', items:[{fieldLabel:'Deslinde Escritura', xtype:'textarea', name:'LOTEO_DESLINDE', allowBlank:true, anchor:'100%', grow:true, flex:4}]}, {xtype:'container', layout:'hbox', margin:'0 0 5 0', defaultType:'textfield', items:[{fieldLabel:'Historia Adquisición', xtype:'textarea', name:'LOTEO_HISTORIA', allowBlank:true, anchor:'100%', grow:true, 
@@ -92624,7 +93838,7 @@ Ext.define('vyl.view.admin.loteo.LoteoController', {extend:Ext.app.ViewControlle
   me.tokenCtrl = Ext.getApplication().getController('Token');
 }, actualizar:function() {
   var me = this, vm = me.getViewModel(), stListaLoteo = vm.getStore('stListaLoteo');
-  stListaLoteo.load({extraParams:{prm_token:me.tokenCtrl.buildTokenParam()}});
+  stListaLoteo.load({params:{prm_token:me.tokenCtrl.buildTokenParam()}});
 }, borrarFormulario:function() {
   var me = this, refs = me.getReferences(), frmLoteo = refs.frmAbmLoteo, arrFields = frmLoteo.query('field{submitValue\x3d\x3dtrue}');
   frmLoteo.reset();
@@ -92788,7 +94002,7 @@ Ext.define('vyl.view.login.AuthenticationController', {extend:Ext.app.ViewContro
     localStorage.setItem('menu', Ext.encode(obj.menu));
     localStorage.setItem('token', obj.token);
     if (obj.caducaPassword) {
-      var wndCambioPass = Ext.create({xtype:'pass_cambiar', reference:'wndCambioPass'});
+      var wndCambioPass = Ext.create({xtype:'login-cambiar', reference:'wndCambioPass'});
       Ext.Msg.show({title:'Compustrom - Login', message:'Su password ha caducado. Ingrese una nueva.', buttons:Ext.Msg.OK, icon:Ext.Msg.WARN});
       wndCambioPass.show();
       view.destroy();
@@ -92820,11 +94034,10 @@ Ext.define('vyl.view.login.AuthenticationController', {extend:Ext.app.ViewContro
   }});
 }});
 Ext.define('vyl.view.login.AuthenticationViewModel', {extend:Ext.app.ViewModel, alias:'viewmodel.authentication', data:{usuario:{}}});
-Ext.define('vyl.view.login.LoginBase', {extend:Ext.window.Window, xtype:'loginwindow', controller:'authentication', viewModel:{type:'authentication'}, cls:'auth-locked-window', closable:false, resizable:false, autoShow:true, titleAlign:'center', maximized:true, modal:true, scrollable:true, layout:{type:'vbox', align:'center', pack:'center'}});
-Ext.define('vyl.view.login.CambiarPassword', {extend:vyl.view.login.LoginBase, xtype:'pass_cambiar', title:'Compustrom - Lakus Sistema de Venta y Leasing', items:[{xtype:'form', reference:'frmCambioPass', defaultButton:'cambiarButton', bodyPadding:'20 20', cls:'auth-dialog-login', header:false, width:415, layout:{type:'vbox', align:'stretch'}, defaults:{margin:'5 0', xtype:'textfield', cls:'auth-textbox', height:55, hideLabel:true, inputType:'password', allowBlank:false}, fieldDefaults:{msgTarget:'side', 
-autoFitErrors:false}, items:[{xtype:'hidden', name:'CUsuario', reference:'CUsuario'}, {emptyText:'Password Anterior', name:'CPasswordActual'}, {emptyText:'Nueva Password', name:'CPasswordNueva', itemId:'pass_nueva', vtype:'passwordCheck'}, {emptyText:'Confirme Password', submitValue:false, vtype:'passwordMatch', initialPassField:'pass_nueva'}, {xtype:'button', reference:'cambiarButton', scale:'large', ui:'soft-green', iconAlign:'right', iconCls:'x-fa fa-angle-right', text:'Actualizar Password', formBind:true, 
-listeners:{click:'onCambioPass'}}]}]});
-Ext.define('vyl.view.login.Dialog', {extend:Ext.form.Panel, xtype:'authdialog', defaultFocus:'textfield:focusable:not([hidden]):not([disabled]):not([value])', autoComplete:false, initComponent:function() {
+Ext.define('vyl.view.login.LoginBase', {extend:Ext.window.Window, xtype:'loginwindow', controller:'authentication', viewModel:{type:'authentication'}, cls:'auth-locked-window', closable:false, resizable:false, autoShow:true, titleAlign:'center', maximized:true, modal:true, scrollable:true, title:'Compustrom - Ingreso Sistema Ventas y Leasing', layout:{type:'vbox', align:'center', pack:'center'}});
+Ext.define('vyl.view.login.CambiarPassword', {extend:vyl.view.login.LoginBase, xtype:'login-cambiar', items:[{xtype:'form', reference:'frmCambioPass', defaultButton:'cambiarButton', bodyPadding:'20 20', cls:'auth-dialog-login', header:false, width:415, layout:{type:'vbox', align:'stretch'}, defaults:{margin:'5 0', xtype:'textfield', cls:'auth-textbox', height:55, hideLabel:true, inputType:'password', allowBlank:false}, fieldDefaults:{msgTarget:'side', autoFitErrors:false}, items:[{xtype:'hidden', 
+name:'CUsuario', reference:'CUsuario'}, {emptyText:'Password Anterior', name:'CPasswordActual'}, {emptyText:'Nueva Password', name:'CPasswordNueva', itemId:'pass_nueva', vtype:'passwordCheck'}, {emptyText:'Confirme Password', submitValue:false, vtype:'passwordMatch', initialPassField:'pass_nueva'}, {xtype:'button', reference:'cambiarButton', scale:'large', ui:'soft-green', iconAlign:'right', iconCls:'x-fa fa-angle-right', text:'Actualizar Password', formBind:true, listeners:{click:'onCambioPass'}}]}]});
+Ext.define('vyl.view.login.Dialog', {extend:'vyl.view.FormBase', xtype:'authdialog', requires:[], defaultFocus:'textfield:focusable:not([hidden]):not([disabled]):not([value])', autoComplete:false, initComponent:function() {
   var me = this, listen;
   if (me.autoComplete) {
     me.autoEl = Ext.applyIf(me.autoEl || {}, {tag:'form', name:'authdialog', method:'post'});
@@ -92842,18 +94055,17 @@ Ext.define('vyl.view.login.Dialog', {extend:Ext.form.Panel, xtype:'authdialog', 
     target.inputEl.set({autocomplete:'on'});
   }
 }});
-Ext.define('vyl.view.login.RecuperarPassword', {extend:vyl.view.login.LoginBase, xtype:'pass_recupera', items:[{xtype:'form', reference:'frmRecuperaPass', defaultButton:'recuperarButton', bodyPadding:'20 20', cls:'auth-dialog-login', header:false, width:415, layout:{type:'vbox', align:'stretch'}, defaults:{margin:'5 0', xtype:'textfield', cls:'auth-textbox', height:55, hideLabel:true, allowBlank:false}, fieldDefaults:{msgTarget:'side', autoFitErrors:false}, items:[{xtype:'hidden', name:'prm_cUrl', 
+Ext.define('vyl.view.login.RecuperarPassword', {extend:vyl.view.login.LoginBase, xtype:'login-recupera', items:[{xtype:'form', reference:'frmRecuperaPass', defaultButton:'recuperarButton', bodyPadding:'20 20', cls:'auth-dialog-login', header:false, width:415, layout:{type:'vbox', align:'stretch'}, defaults:{margin:'5 0', xtype:'textfield', cls:'auth-textbox', height:55, hideLabel:true, allowBlank:false}, fieldDefaults:{msgTarget:'side', autoFitErrors:false}, items:[{xtype:'hidden', name:'prm_cUrl', 
 reference:'Curl'}, {emptyText:'Email registrado', vtype:'email', name:'prm_cEmail'}, {xtype:'button', reference:'recuperarButton', scale:'large', ui:'soft-green', iconAlign:'right', iconCls:'x-fa fa-angle-right', text:'Recuperar Password', formBind:true, listeners:{click:'onRecuperarPass'}}]}]});
-Ext.define('vyl.view.login.Login', {extend:vyl.view.login.LoginBase, xtype:'login', title:'Lakus Sistema de Venta y Leasing', defaultFocus:'authdialog', items:[{xtype:'authdialog', reference:'frmLogin', defaultButton:'loginButton', autoComplete:true, bodyPadding:'20 20', cls:'auth-dialog-login', header:false, width:415, layout:{type:'vbox', align:'stretch'}, defaults:{margin:'5 0'}, items:[{xtype:'textfield', cls:'auth-textbox', name:'cUsuario', height:55, hideLabel:true, allowBlank:false, emptyText:'Usuario de acceso', 
-triggers:{glyphed:{cls:'trigger-glyph-noop auth-email-trigger'}}}, {xtype:'textfield', cls:'auth-textbox', height:55, hideLabel:true, emptyText:'Password', inputType:'password', name:'cPassword', allowBlank:false, triggers:{glyphed:{cls:'trigger-glyph-noop auth-password-trigger'}}}, {xtype:'button', reference:'loginButton', scale:'large', ui:'soft-green', iconAlign:'right', iconCls:'x-fa fa-angle-right', text:'Ingresar', formBind:true, listeners:{click:'onLogin'}}, {xtype:'component', html:'\x3ca href\x3d"#pass_recupera"\x3eRecuperar password\x3c/a\x3e'}]}], 
-initComponent:function() {
+Ext.define('vyl.view.login.Login', {extend:'vyl.view.login.LoginBase', xtype:'login', requires:['vyl.view.login.Dialog', 'vyl.view.login.RecuperarPassword', 'vyl.view.login.CambiarPassword'], defaultFocus:'authdialog', items:[{xtype:'authdialog', reference:'frmLogin', defaultButton:'loginButton', autoComplete:true, bodyPadding:'20 20', cls:'auth-dialog-login', header:false, width:415, layout:{type:'vbox', align:'stretch'}, defaults:{margin:'5 0'}, items:[{xtype:'textfield', cls:'auth-textbox', name:'cUsuario', 
+height:55, hideLabel:true, allowBlank:false, emptyText:'Usuario de acceso', triggers:{glyphed:{cls:'trigger-glyph-noop auth-email-trigger'}}}, {xtype:'textfield', cls:'auth-textbox', height:55, hideLabel:true, emptyText:'Password', inputType:'password', name:'cPassword', allowBlank:false, triggers:{glyphed:{cls:'trigger-glyph-noop auth-password-trigger'}}}, {xtype:'button', reference:'loginButton', scale:'large', ui:'soft-green', iconAlign:'right', iconCls:'x-fa fa-angle-right', text:'Ingresar', 
+formBind:true, listeners:{click:'onLogin'}}, {xtype:'component', html:'\x3ca href\x3d"#login-recupera"\x3eRecuperar password\x3c/a\x3e'}]}], initComponent:function() {
   this.addCls('user-login-register-container');
   this.callParent(arguments);
 }});
 Ext.define('vyl.view.main.Main', {extend:Ext.container.Viewport, controller:'main', viewModel:'main', itemId:'mainView', layout:{type:'vbox', align:'stretch'}, listeners:{loginok:'onLoginOk', nologin:'doLogin'}, items:[{xtype:'toolbar', cls:'main-headerbar', height:64, items:[{xtype:'component', reference:'logo', cls:'logo', html:'\x3cdiv class\x3d"main-logo"\x3e\x3cimg src\x3d"resources/images/logo.png" style\x3d"width:70%; height:70%;"\x3e\x3c/div\x3e', width:250}, {margin:'0 0 0 8', ui:'header', 
 iconCls:'x-fa fa-navicon', id:'main-navigation-btn', handler:'onToggleNavigationSize'}, '-\x3e', {iconCls:'x-fa fa-envelope-open-o', reference:'btnMensajes', ui:'header', handler:'onMensajes', disabled:true, tooltip:'Mensajes Recibidos'}, '-', {xtype:'tbtext', reference:'usrConectado', cls:'top-user-name'}, {xtype:'image', reference:'usrImagen', cls:'header-right-profile-image', height:35, width:35, alt:'Imagen del Usuario Conectado', src:'resources/images/sin_foto.png'}, '-', {iconCls:'x-fa fa-power-off', 
-ui:'header', handler:'onLogout', tooltip:'Salir del sistema'}]}, {xtype:'maincontainerwrap', reference:'mainContainerWrap', flex:1, items:[{xtype:'treelist', reference:'navigationList', itemId:'navigationList', ui:'main-navigation', bind:{store:'{stNavigationTree}'}, width:250, expanderFirst:false, expanderOnly:false, listeners:{selectionchange:'onNavigationTreeSelectionChange'}}, {xtype:'container', flex:1, reference:'mainCardPanel', cls:'pe-main-container', itemId:'contentPanel', layout:{type:'card', 
-anchor:'100%'}}]}]});
+ui:'header', handler:'onLogout', tooltip:'Salir del sistema'}]}, {xtype:'maincontainerwrap', reference:'mainContainerWrap', flex:1, items:[{xtype:'treelist', reference:'navigationList', itemId:'navigationList', ui:'main-navigation', bind:{store:'{stNavigationTree}'}, width:250, expanderFirst:false, expanderOnly:false, listeners:{selectionchange:'onNavigationTreeSelectionChange'}}, {xtype:'container', flex:1, reference:'mainCardPanel', itemId:'contentPanel', layout:{type:'card', anchor:'100%'}}]}]});
 Ext.define('vyl.view.main.MainContainerWrap', {extend:Ext.container.Container, xtype:'maincontainerwrap', scrollable:'y', layout:{type:'hbox', align:'stretchmax', animate:true, animatePolicy:{x:true, width:true}}, beforeLayout:function() {
   var me = this, height = Ext.Element.getViewportHeight() - 64, navTree = me.getComponent('navigationList');
   me.minHeight = height;
@@ -92864,11 +94076,7 @@ Ext.define('vyl.view.main.Routes', {extend:Ext.Mixin, lastView:null, activeNode:
   var me = this;
   me.titulo = 'Lakus - Sistema de Ventas y Leasing';
 }, beforeRoute:function(viewType, action) {
-  var me = this, app = Ext.getApplication(), mainCtrl = app.getMainView().getController(), cUsuario = localStorage.getItem('usuario') ? Ext.decode(localStorage.getItem('usuario')).cUsuario : null, menu = localStorage.getItem('menu') ? Ext.decode(localStorage.getItem('menu')) : null, token = localStorage.getItem('token');
-  if (viewType == 'pass_recupera') {
-    action.resume();
-    return;
-  }
+  var me = this, app = Ext.getApplication(), mainView = app.getMainView(), cUsuario = localStorage.getItem('usuario') ? Ext.decode(localStorage.getItem('usuario')).cUsuario : null, menu = localStorage.getItem('menu') ? Ext.decode(localStorage.getItem('menu')) : null, token = localStorage.getItem('token');
   if (cUsuario != null && token != null) {
     console.log('[beforeRoute]', viewType);
     if (menu && menu.length > 0) {
@@ -92902,7 +94110,7 @@ Ext.define('vyl.view.main.Routes', {extend:Ext.Mixin, lastView:null, activeNode:
     }
   } else {
     console.log('[launch] Usuario no conectado');
-    mainCtrl.doLogin();
+    mainView.fireEvent('nologin');
   }
 }, beforeRouteDeep:function(node, id, action) {
   action.resume();
@@ -92939,6 +94147,7 @@ Ext.define('vyl.view.main.Routes', {extend:Ext.Mixin, lastView:null, activeNode:
       }
       newView = existingItem;
     } else {
+      console.log('[setCurrentView] newView', newView);
       Ext.suspendLayouts();
       mainLayout.setActiveItem(mainCard.add(newView));
       Ext.resumeLayouts(true);
@@ -92987,14 +94196,15 @@ Ext.define('vyl.view.main.Routes', {extend:Ext.Mixin, lastView:null, activeNode:
   var hash = window.location.hash;
   return hash.substring(1, hash.length);
 }});
-Ext.define('vyl.view.main.MainController', {extend:Ext.app.ViewController, alias:'controller.main', mixins:[vyl.view.main.Routes], listen:{controller:{'#':{unmatchedroute:'onNoRoute'}}}, routes:{':node':{action:'onRouteChange', before:'beforeRoute'}, ':node/:id':{action:'onRouteChange', before:'beforeRouteDeep'}}, doLogin:function() {
+Ext.define('vyl.view.main.MainController', {extend:'Ext.app.ViewController', alias:'controller.main', mixins:['vyl.view.main.Routes'], requires:['vyl.view.login.Login'], listen:{controller:{'#':{unmatchedroute:'onNoRoute'}}}, routes:{'login-recupera':'onLoginRecuperaPass', ':node':{action:'onRouteChange', before:'beforeRoute'}, ':node/:id':{action:'onRouteChange', before:'beforeRouteDeep'}}, doLogin:function() {
   var me = this, refs = me.getReferences(), pnLogin = refs.wndLogin ? refs.wndLogin : Ext.create({xtype:'login', reference:'wndLogin', listeners:{close:'onLoginOk'}});
   if (DEBUG) {
     console.log('[doLogin] login', pnLogin);
   }
   pnLogin.show();
 }, onLoginOk:function(pnl, opts) {
-  var me = this, refs = me.getReferences(), view = me.getView(), app = Ext.getApplication(), stNavigationTree = me.getViewModel().getStore('stNavigationTree'), usrNombre = localStorage.getItem('usuario') ? Ext.decode(localStorage.getItem('usuario')).cNombre : null, menu = Ext.decode(localStorage.getItem('menu'));
+  console.log('[onLoginOk]', localStorage);
+  var me = this, refs = me.getReferences(), view = me.getView(), app = Ext.getApplication(), stNavigationTree = me.getViewModel().getStore('stNavigationTree'), usrNombre = localStorage.getItem('usuario') ? Ext.decode(localStorage.getItem('usuario')).cNombre : null, menu = localStorage.getItem('menu') ? Ext.decode(localStorage.getItem('menu')) : null;
   app.setDefaultToken('tareas-dashboard');
   var hash = me.getHash() ? me.getHash() : app.getDefaultToken();
   if (usrNombre) {
@@ -93010,6 +94220,8 @@ Ext.define('vyl.view.main.MainController', {extend:Ext.app.ViewController, alias
     me.redirectTo(hash);
   }
 }, onLoginCambioPass:function(pnl, opts) {
+}, onLoginRecuperaPass:function() {
+  var pnRecuperaPass = Ext.create({xtype:'login-recupera'}).show();
 }, onLogout:function() {
   var me = this, refs = me.getReferences(), pnLogin = refs.wndLogin ? refs.wndLogin : Ext.create({xtype:'login', reference:'wndLogin', listeners:{close:'onLoginOk'}});
   Ext.Ajax.request({url:GLOBAL_HOST + '/do/salir', cors:true, withCredentials:false, useDefaultXhrHeader:false, method:'POST', success:function(response, opts) {
@@ -93073,11 +94285,11 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionController', {extend:Ext.app.Vi
   me.defaultToken = Ext.getApplication().getDefaultToken();
   me.tokenCtrl = Ext.getApplication().getController('Token');
 }, onActivate:function() {
-  var me = this, vm = me.getViewModel(), stRolDetalle = vm.getStore('stRolDetalle'), stRolUsuarios = vm.getStore('stRolUsuarios'), stRoles = vm.getStore('stRoles'), stUsuarios = vm.getStore('stUsuarios');
-  stUsuarios.load({extraParams:{prm_token:me.tokenCtrl.buildTokenParam()}});
-  stRolDetalle.load({extraParams:{prm_token:me.tokenCtrl.buildTokenParam()}});
-  stRolUsuarios.load({extraParams:{prm_token:me.tokenCtrl.buildTokenParam()}});
-  stRoles.load({extraParams:{prm_token:me.tokenCtrl.buildTokenParam()}});
+  var me = this, vm = me.getViewModel(), stRolDetalle = vm.getStore('stRolDetalle'), stRolUsuarios = vm.getStore('stRolUsuarios'), stRoles = vm.getStore('stRoles'), stUsuarios = vm.getStore('stUsuarios'), token = me.tokenCtrl.buildTokenParam();
+  stUsuarios.load({params:{prm_token:token, prm_fSistema:3}});
+  stRolDetalle.load({params:{prm_token:token}});
+  stRolUsuarios.load({params:{prm_token:token}});
+  stRoles.load({params:{prm_token:token}});
 }, onGrabar:function() {
   var me = this, view = me.getView(), refs = view.getReferences(), form = view.down('#frmAsignacionRolUsrs'), datos = form.getValues();
   if (datos) {
@@ -93116,7 +94328,7 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionController', {extend:Ext.app.Vi
     refs.btnGrabar.setDisabled(false);
     refs.tagUsrRol.setDisabled(false);
     refs.tagUsrRol.clearValue();
-    Ext.Ajax.request({url:GLOBAL_HOST + '/do/vyl/bsh/wkfListaRolUsuarios.bsh', cors:true, withCredentials:true, useDefaultXhrHeader:false, params:{prm_token:me.tokenCtrl.buildTokenParam(), prm_cRol:reg}, success:function(response, opts) {
+    Ext.Ajax.request({url:GLOBAL_HOST + '/do/wkfListaRolUsuarios', cors:true, withCredentials:true, useDefaultXhrHeader:false, params:{prm_token:me.tokenCtrl.buildTokenParam(), prm_cRol:reg}, success:function(response, opts) {
       var rta = JSON.parse(response.responseText);
       if (rta.success) {
         if (rta.response.length > 0) {
@@ -93137,24 +94349,24 @@ Ext.define('vyl.view.tareas.asignacion.AsignacionController', {extend:Ext.app.Vi
 }});
 Ext.define('vyl.view.tareas.asignacion.AsignacionGrillaRolFuncion', {extend:Ext.grid.Panel, xtype:'asignaciongrillarolfn', title:'Tareas por Rol', scrollable:'y', bind:'{stRolDetalle}', columns:[{text:'Tarea', dataIndex:'cEtapaTitulo', flex:1}, {text:'Hs. Estimadas', dataIndex:'nDuracionHoras', width:100}, {text:'Flujo', dataIndex:'cFlujoTitulo', flex:1}], features:[{ftype:'grouping', startCollapsed:true, groupHeaderTpl:'Rol: \x3cb\x3e{renderedGroupValue}\x3c/b\x3e ({[values.children[0].data["nUsuariosAsignados"]]} {[values.children[0].data["nUsuariosAsignados"] \x3d\x3d 1 ? "Usuario Asignado" : "Usuarios Asignados"]})'}]});
 Ext.define('vyl.view.tareas.asignacion.AsignacionGrillaUsrRoles', {extend:Ext.grid.Panel, xtype:'asignaciongrillausrroles', title:'Tareas asignadas a Usuarios', scrollable:'y', bind:'{stRolUsuarios}', columns:[{text:'Rol', dataIndex:'cRolTitulo', flex:1}, {text:'Cant. Tareas', dataIndex:'nCantidadTareas', flex:1}], features:[{ftype:'grouping', startCollapsed:true, groupHeaderTpl:'Usuario: \x3cb\x3e{renderedGroupValue}\x3c/b\x3e (Total {[values.children[0].data["nCantidadTareas"]]} {[values.children[0].data["nCantidadTareas"] \x3d\x3d 1 ? "Tarea Asignada" : "Tareas Asignadas"]})'}]});
-Ext.define('vyl.view.tareas.asignacion.AsignacionRolUsuarios', {extend:Ext.form.Panel, xtype:'asignacionrolusrs', itemId:'frmRolUsr', height:320, title:'Asignacion de Usuarios por Rol', url:GLOBAL_HOST + '/do/jsonCall', cors:true, withCredentials:true, useDefaultXhrHeader:false, fieldDefaults:{labelAlign:'top', labelWidth:90, margin:'0 0 5 6'}, bbar:{fixed:true, margin:'10 0 0 0', defaults:{}, items:[{text:'Salir', iconCls:'x-fa fa-sign-out', name:'salir', handler:'onSalir'}, '-', {text:'Limpiar', 
+Ext.define('vyl.view.tareas.asignacion.AsignacionRolUsuarios', {extend:'vyl.view.FormBase', xtype:'asignacionrolusrs', itemId:'frmRolUsr', height:320, title:'Asignacion de Usuarios por Rol', url:GLOBAL_HOST + '/do/jsonCall', cors:true, withCredentials:true, useDefaultXhrHeader:false, fieldDefaults:{labelAlign:'top', labelWidth:90, margin:'0 0 5 6'}, bbar:{fixed:true, margin:'10 0 0 0', defaults:{}, items:[{text:'Salir', iconCls:'x-fa fa-sign-out-alt', name:'salir', handler:'onSalir'}, '-', {text:'Limpiar', 
 handler:'onLimpiar', iconCls:'x-fa fa-file'}, '-\x3e', {text:'Grabar', reference:'btnGrabar', disabled:true, handler:'onGrabar', iconCls:'x-fa fa-save'}]}, initComponent:function() {
   Ext.apply(this, {jsonSubmit:true, layout:{type:'vbox', align:'stretch'}, defaults:{defaultType:'textfield', layout:'anchor', collapsible:true, margin:'5 10 5 10'}, items:[{xtype:'combobox', name:'cRol', reference:'rol', fieldLabel:'Rol', editable:false, allowBlank:false, displayField:'cRolTitulo', valueField:'cRol', bind:{store:'{stRoles}'}, listeners:{change:'onSelectRol'}}, {xtype:'tagfield', name:'usuarios', reference:'tagUsrRol', fieldLabel:'Usuarios Asignados', disabled:true, bind:{store:'{stUsuarios}'}, 
   displayField:'cUsuarioNombre', valueField:'pUsuario', filterPickList:true, queryMode:'local', publishes:'value', flex:1}]});
   this.callParent(arguments);
 }});
-Ext.define('vyl.view.tareas.asignacion.AsignacionViewModel', {extend:Ext.app.ViewModel, alias:'viewmodel.asignacion', stores:{stRoles:{idProperty:'pRol', fields:[{name:'pRol', type:'int'}, {name:'cRol', type:'string'}, {name:'cRolTitulo', type:'string'}, {name:'fSistema', type:'int'}], proxy:{type:'ajax', reader:{type:'json', rootProperty:'response', successProperty:'success'}, url:GLOBAL_HOST + '/do/wkfListaRol', cors:true, withCredentials:true, useDefaultXhrHeader:false, method:'POST', extraParams:{}}, 
-autoLoad:false}, stUsuarios:{idProperty:'pUsuario', fields:[{name:'cUsuario', type:'string'}, {name:'cUsuarioNombre', type:'string'}, {name:'pUsuario', type:'int'}, {name:'fSistema', type:'int'}], autoLoad:false, proxy:{type:'ajax', reader:{type:'json', rootProperty:'response', successProperty:'success'}, url:GLOBAL_HOST + '/do/wkfListaUsuariosJerarquia', cors:true, withCredentials:true, useDefaultXhrHeader:false, method:'POST', extraParams:{prm_fSistema:3}}}, stRolUsuarios:{fields:[{name:'pRol', 
-type:'int'}, {name:'cRol', type:'string'}, {name:'cRolTitulo', type:'string'}, {name:'nCantidadTareas', type:'int'}, {name:'nTotalTareas', type:'int'}, {name:'pUsuario', type:'int'}, {name:'cUsuario', type:'string'}, {name:'cUsuarioNombre', type:'string'}], proxy:{type:'ajax', reader:{type:'json', rootProperty:'response', successProperty:'success'}, url:GLOBAL_HOST + '/do/wkfListaRolUsuarios', cors:true, withCredentials:true, useDefaultXhrHeader:false, method:'POST', extraParams:{}}, groupField:'cUsuarioNombre', 
-sorters:['cRolTitulo', 'cRol'], autoLoad:false}, stRolDetalle:{fields:[{name:'cRol', type:'string'}, {name:'cRolTitulo', type:'string'}, {name:'cEtapa', type:'string'}, {name:'cEtapaTitulo', type:'string'}, {name:'nDuracionMinutos', type:'int'}, {name:'nDuracionHoras', type:'int'}, {name:'cFlujo', type:'string'}, {name:'cFlujoTitulo', type:'string'}, {name:'nUsuariosAsignados', type:'int'}], proxy:{type:'ajax', reader:{type:'json', rootProperty:'response', successProperty:'success'}, url:GLOBAL_HOST + 
-'/do/wkfListaRolDetalle', cors:true, withCredentials:true, useDefaultXhrHeader:false, method:'POST', extraParams:{}}, groupField:'cRolTitulo', sorters:['cEtapaTitulo', 'cFlujoTitulo', 'cRol'], autoLoad:false}}});
+Ext.define('vyl.view.tareas.asignacion.AsignacionViewModel', {extend:Ext.app.ViewModel, alias:'viewmodel.asignacion', stores:{stRoles:{idProperty:'pRol', fields:[{name:'pRol', type:'int'}, {name:'cRol', type:'string'}, {name:'cRolTitulo', type:'string'}, {name:'fSistema', type:'int'}], proxy:{type:'ajax', reader:{type:'json', rootProperty:'response', successProperty:'success'}, url:GLOBAL_HOST + '/do/wkfListaRol', cors:true, withCredentials:true, useDefaultXhrHeader:false, method:'POST'}, autoLoad:false}, 
+stUsuarios:{idProperty:'pUsuario', fields:[{name:'cUsuario', type:'string'}, {name:'cUsuarioNombre', type:'string'}, {name:'pUsuario', type:'int'}, {name:'fSistema', type:'int'}], autoLoad:false, proxy:{type:'ajax', reader:{type:'json', rootProperty:'response', successProperty:'success'}, url:GLOBAL_HOST + '/do/wkfListaUsuariosJerarquia', cors:true, withCredentials:true, useDefaultXhrHeader:false, method:'POST'}}, stRolUsuarios:{fields:[{name:'pRol', type:'int'}, {name:'cRol', type:'string'}, {name:'cRolTitulo', 
+type:'string'}, {name:'nCantidadTareas', type:'int'}, {name:'nTotalTareas', type:'int'}, {name:'pUsuario', type:'int'}, {name:'cUsuario', type:'string'}, {name:'cUsuarioNombre', type:'string'}], proxy:{type:'ajax', reader:{type:'json', rootProperty:'response', successProperty:'success'}, url:GLOBAL_HOST + '/do/wkfListaRolUsuarios', cors:true, withCredentials:true, useDefaultXhrHeader:false, method:'POST'}, groupField:'cUsuarioNombre', sorters:['cRolTitulo', 'cRol'], autoLoad:false}, stRolDetalle:{fields:[{name:'cRol', 
+type:'string'}, {name:'cRolTitulo', type:'string'}, {name:'cEtapa', type:'string'}, {name:'cEtapaTitulo', type:'string'}, {name:'nDuracionMinutos', type:'int'}, {name:'nDuracionHoras', type:'int'}, {name:'cFlujo', type:'string'}, {name:'cFlujoTitulo', type:'string'}, {name:'nUsuariosAsignados', type:'int'}], proxy:{type:'ajax', reader:{type:'json', rootProperty:'response', successProperty:'success'}, url:GLOBAL_HOST + '/do/wkfListaRolDetalle', cors:true, withCredentials:true, useDefaultXhrHeader:false, 
+method:'POST'}, groupField:'cRolTitulo', sorters:['cEtapaTitulo', 'cFlujoTitulo', 'cRol'], autoLoad:false}}});
 Ext.define('vyl.view.tareas.dashboard.Dashboard', {extend:Ext.container.Container, xtype:'tareas-dashboard', requires:[], controller:'dashboard', viewModel:{type:'dashboard'}, layout:'fit', listeners:{activate:'onActivate', afterrender:'onAfterRender'}, margin:'10 20 5 20', items:[{xtype:'dashboard-pendientes', reference:'gdPendientes', bind:{store:'{stTareasPendientes}'}, listeners:{rowdblclick:'onGrillaPendientesDblClick'}}]});
 Ext.define('vyl.view.tareas.dashboard.DashboardController', {extend:Ext.app.ViewController, alias:'controller.dashboard', init:function() {
   var me = this;
   this.autoRefresh = false;
   me.tokenCtrl = Ext.getApplication().getController('Token');
 }, actualizar:function() {
-  var me = this, refs = me.getReferences(), stTareasPendientes = me.getViewModel().getStore('stTareasPendientes'), date = new Date, opcion = me.getReferences().sbVerTareas.getValue(), filtros = stTareasPendientes.getFilters();
+  var me = this, refs = me.getReferences(), stTareasPendientes = me.getViewModel().getStore('stTareasPendientes'), date = new Date, opcion = me.getReferences().sbVerTareas.getValue(), filtros = stTareasPendientes.getFilters(), token = me.tokenCtrl.buildTokenParam();
   function propias(item) {
     var data = item.getData(), usuario = Ext.decode(localStorage.get('usuario'));
     return data.pUsuarioAsignado == usuario.pUsuario;
@@ -93164,27 +94376,20 @@ Ext.define('vyl.view.tareas.dashboard.DashboardController', {extend:Ext.app.View
     return data.pUsuarioAsignadoPadre == usuario.pUsuario;
   }
   filtros.removeAll();
-  refs.gdPendientes.mask('Actualizando');
   switch(opcion) {
     case 'tareas_propias':
       refs.colUsuarioAsignado.setHidden(true);
       filtros.add(propias);
-      stTareasPendientes.load({scope:this, extraParams:{prm_token:me.tokenCtrl.buildTokenParam(), prm_pFlujo:3}, callback:function(records, operation, success) {
-        refs.gdPendientes.unmask();
-      }});
+      stTareasPendientes.load({scope:this, params:{prm_token:token, prm_pFlujo:3}});
       break;
     case 'tareas_a_cargo':
       refs.colUsuarioAsignado.setHidden(false);
       filtros.add(equipo);
-      stTareasPendientes.load({scope:this, extraParams:{prm_token:me.tokenCtrl.buildTokenParam()}, callback:function(records, operation, success) {
-        refs.gdPendientes.unmask();
-      }});
+      stTareasPendientes.load({scope:this, params:{prm_token:token}});
       break;
     case 'tareas_todas':
       refs.colUsuarioAsignado.setHidden(false);
-      stTareasPendientes.load({scope:this, extraParams:{prm_token:me.tokenCtrl.buildTokenParam()}, callback:function(records, operation, success) {
-        refs.gdPendientes.unmask();
-      }});
+      stTareasPendientes.load({scope:this, params:{prm_token:token}});
       break;
     default:
       console.warn('Filtro invalido');
@@ -93298,7 +94503,7 @@ dataIndex:'nAtraso', width:70, renderer:function(value, metaData) {
   }
   return;
 }}, {text:'Tiempo Restante', dataIndex:'cAtraso', flex:1, sortable:false}, {text:'Tarea', dataIndex:'cEtapaTitulo', flex:2, sortable:true, filter:{type:'list'}}, {text:'Solicitante', dataIndex:'cUsuarioNombre', flex:1, sortable:true}, {text:'Asignado', reference:'colUsuarioAsignado', dataIndex:'cUsuarioAsignadoNombre', flex:1, sortable:true, hidden:true, filter:{type:'list'}}, {text:'Finalización Estimada', dataIndex:'tEstimadaFin', formatter:'date("d/m/Y H:i")', width:130, sortable:true, filter:true}]});
-Ext.define('vyl.view.ventas.DatosBase', {extend:Ext.container.Container, layout:{type:'vbox', align:'stretch'}});
+Ext.define('vyl.view.ventas.DatosBase', {extend:'Ext.container.Container', requires:['Ext.form.field.*', 'Cmp.form.ThousandSeparatorNumber', 'Cmp.form.Domicilio', 'Cmp.form.Rutfield'], layout:{type:'vbox', align:'stretch'}});
 Ext.define('vyl.view.ventas.cierre.ArchivosDisponibles', {extend:Ext.view.View, alias:'widget.archivos', emptyText:'No hay archivos disponibles', itemSelector:'div.thumb-wrap', tpl:Ext.create('Ext.XTemplate', '\x3ctpl for\x3d"."\x3e', '\x3cdiv class\x3d"thumb-wrap"\x3e', '\x3ca class\x3d"thumb" href\x3d"{[this.getUrl(values.BSH)]}" download\x3d"{[this.getNombre(values.TITULO)]}"\x3e', '\x3cdiv class\x3d"thumb-icon"\x3e\x3c/div\x3e', '\x3cdiv class\x3d"thumb-title-container"\x3e', '\x3cdiv class\x3d"thumb-title"\x3e{TITULO}\x3c/div\x3e', 
 '\x3c/div\x3e', '\x3cdiv class\x3d"thumb-download"\x3e\x3c/div\x3e', '\x3c/a\x3e', '\x3c/div\x3e', '\x3c/tpl\x3e', {getUrl:function(url) {
   var data = this.owner.getData();
@@ -93307,38 +94512,36 @@ Ext.define('vyl.view.ventas.cierre.ArchivosDisponibles', {extend:Ext.view.View, 
   return archivoTp;
 }})});
 Ext.define('vyl.view.ventas.cierre.Consulta', {extend:Ext.grid.Panel, xtype:'ventas-cierre-consulta', controller:'ventasciere', viewModel:{type:'ventasciere'}, plugins:[{ptype:'rowexpander', rowBodyTpl:['\x3ctpl\x3e', '\x3cp\x3e\x3cb\x3eModalidad de Venta:\x3c/b\x3e {MODALIDAD_VENTA}\x3c/p\x3e', '\x3ctpl if\x3d"ROL_PROPIEDAD"\x3e\x3cp\x3e\x3cb\x3eRol:\x3c/b\x3e {ROL_PROPIEDAD}\x3c/p\x3e\x3c/tpl\x3e', '\x3ctpl if\x3d"CUOTAS_PAGADAS \x3d\x3d\x3d Financiado"\x3e', '\x3cp\x3e\x3cb\x3eCuotas Pagadas:\x3c/b\x3e {CUOTAS_PAGADAS} - \x3cb\x3eAtrasadas:\x3c/b\x3e {CUOTAS_ATRASADAS}\x3c/p\x3e', 
-'\x3cp\x3e\x3cb\x3eUltimo Pago:\x3c/b\x3e {FECHA_ULTIMO_PAGO}\x3c/p\x3e', '\x3c/tpl\x3e', '\x3c/tpl\x3e']}, {ptype:'gridfilters'}, {ptype:'gridexporter'}], bind:{store:'{stFormulariosIngresadosLocal}'}, width:'100%', scrollable:true, margin:'10 20 10 20', cls:'consulta-venta', emptyText:'No existen formularios ingresados con este filtro', viewConfig:{stripeRows:true}, tbar:['-\x3e', {text:'Exportar', tooltip:'Exportar a Excel', iconCls:'x-fa fa-file-excel', handler:'onConsultaExportar'}], dockedItems:[{xtype:'pagingtoolbar', 
-dock:'bottom', displayInfo:true, bind:'{stFormulariosIngresadosLocal}'}], listeners:{activate:'onConsultaActivate', rowdblclick:'onConsultaRowDblClick'}, columns:[{dataIndex:'LEASING_ATRASADO', width:38, renderer:function(value, metaData) {
+'\x3cp\x3e\x3cb\x3eUltimo Pago:\x3c/b\x3e {FECHA_ULTIMO_PAGO}\x3c/p\x3e', '\x3c/tpl\x3e', '\x3c/tpl\x3e']}, {ptype:'gridfilters'}, {ptype:'gridexporter'}], bind:{store:'{stFormulariosIngresados}'}, width:'100%', scrollable:true, margin:'10 20 10 20', cls:'consulta-venta', emptyText:'No existen formularios ingresados con este filtro', viewConfig:{stripeRows:true}, dockedItems:[{xtype:'pagingtoolbar', dock:'bottom', displayInfo:true, bind:'{stFormulariosIngresadosLocal}', items:['-', {text:'Exportar', 
+tooltip:'Exportar a Excel', iconCls:'x-fa fa-file-excel', handler:'onConsultaExportar'}]}], listeners:{activate:'onConsultaActivate', rowdblclick:'onConsultaRowDblClick'}, columns:[{dataIndex:'LEASING_ATRASADO', width:38, renderer:function(value, metaData) {
   if (value == 1) {
     metaData.tdCls = 'icono-urgente';
   }
   return;
 }}, {text:'Fecha Vta.', dataIndex:'FECHA_VENTA', width:100, formatter:'date("d/m/Y")', filter:{type:'date', fields:{lt:{text:'Antes de...'}, gt:{text:'Despues de...'}, eq:{text:'Fecha Exacta'}}}}, {text:'Loteo', dataIndex:'LOTEO', flex:1, filter:{type:'list'}}, {text:'Parcela', dataIndex:'PARCELA', width:70}, {text:'Comprador', dataIndex:'COMPRADOR_NOMBRE', flex:2, filter:{type:'string', itemDefaults:{emptyText:'Ingrese Nombre y Apellido...'}}}, {text:'Monto', dataIndex:'VALOR_PREDIO', xtype:'numbercolumn', 
 format:'999,999,999', align:'right', width:90}, {text:'Pie', dataIndex:'PIE_INICIAL', xtype:'numbercolumn', format:'999,999,999', align:'right', width:90}, {text:'Reserva', dataIndex:'MONTO_RESERVA', xtype:'numbercolumn', format:'999,999,999', align:'right', width:90}, {text:'Estado', dataIndex:'WKF_ETAPA', width:300, filter:{type:'list'}}, {xtype:'actioncolumn', align:'center', width:40, items:[{iconCls:'x-fa fa-file-text-o', tooltip:'Consultar Formulario', handler:'onConsultarFormulario'}]}]});
-Ext.define('vyl.view.ventas.cierre.DatosComprador', {extend:Ext.form.Panel, alias:'widget.datos-comprador', layout:'hbox', items:[{xtype:'container', layout:'hbox', margin:'0 0 5 0', defaultType:'textfield', defaults:{readOnly:true, allowBlank:false}, items:[{xtype:'hidden', name:'VYL_COMPRADOR_ID'}, {xtype:'rut', name:'VYL_COMPRADOR_RUT', readOnly:false, obligatorio:true, listeners:{blur:'onClienteBuscar'}, width:200}, {fieldLabel:'Nombre y Apellido', reference:'txfCompradorAyN', name:'VYL_COMPRADOR_NOMBRE', 
-flex:2}, {xtype:'combobox', fieldLabel:'Sexo', name:'VYL_COMPRADOR_SEXO', editable:false, allowBlank:true, displayField:'SEXO', valueField:'COD', bind:{store:'{stSexo}'}, width:200}, {xtype:'combobox', reference:'cbNacionalidad', fieldLabel:'Nacionalidad', name:'VYL_COMPRADOR_NACIONALIDAD', allowBlank:true, editable:false, displayField:'NACIONALIDAD', valueField:'COD', bind:{store:'{stNacionalidad}'}, flex:1}]}, {xtype:'container', layout:'hbox', margin:'0 0 5 0', defaultType:'textfield', defaults:{readOnly:true}, 
-items:[{xtype:'textfield', allowThousandSeparator:false, fieldLabel:'Fono', inputType:'tel', name:'VYL_COMPRADOR_TELEFONO', hideTrigger:true, width:200}, {fieldLabel:'Email', name:'VYL_COMPRADOR_EMAIL', vtype:'email', flex:1}, {xtype:'container', layout:'vbox', defaultType:'textfield', flex:1, items:[{xtype:'label', forId:'direccion', text:'Direccion:', margin:'5 0 5 6'}, {xtype:'cmpdomicilio', name:'VYL_COMPRADOR_DOMICILIO', readOnly:true, width:'100%', margin:'0 0 5 6'}]}, {xtype:'numberfield', 
-name:'VYL_COMPRADOR_DOMICILIO_PISO', fieldLabel:'Piso', allowDecimals:false, decimalPrecision:0, minValue:0, width:80}, {name:'VYL_COMPRADOR_DOMICILIO_DTO', fieldLabel:'Dpto.', width:80}]}, {xtype:'container', layout:'hbox', margin:'0 0 5 0', defaultType:'textfield', defaults:{readOnly:true}, items:[{fieldLabel:'Profesion', name:'VYL_COMPRADOR_PROFESION', flex:1}, {xtype:'combobox', fieldLabel:'Estado Civil', name:'VYL_COMPRADOR_ESTADO_CIVIL', editable:false, displayField:'ESTADO', valueField:'COD', 
-bind:{store:'{stEstadoCivil}'}, flex:1}]}]});
-Ext.define('vyl.view.ventas.cierre.DatosContrato', {extend:vyl.view.ventas.DatosBase, alias:'widget.datos-contrato', items:[{xtype:'checkboxgroup', fieldLabel:'Contrato', columns:1, vertical:true, items:[{boxLabel:'Escritura', name:'VYL_CONTRATO', reference:'chEscritura', inputValue:'escritura'}, {boxLabel:'Instrucciones', name:'VYL_CONTRATO', reference:'chInstrucciones', inputValue:'instrucciones'}], flex:1}, {xtype:'textarea', fieldLabel:'Observaciones', name:'VYL_MODALIDAD_OBSERVACIONES', flex:1}]});
-Ext.define('vyl.view.ventas.cierre.DatosGastos', {extend:vyl.view.ventas.DatosBase, alias:'widget.datos-gastos', items:[{xtype:'container', reference:'ctnFinanciamientoGastos', layout:'hbox', margin:'0 0 5 0', hidden:true, defaultType:'cmpnumbermilesfield', defaults:{allowBlank:true, mouseWheelEnabled:false, hideTrigger:true, allowDecimals:false, decimalPrecision:0, minValue:0, flex:1}, items:[{fieldLabel:'Contrato Leasing', name:'VYL_FINANCIAMIENTO_GASTO_CONTRATO', bind:{}}, {fieldLabel:'Gasto Notarial', 
-name:'VYL_FINANCIAMIENTO_GASTO_NOTARIAL'}]}, {xtype:'container', layout:'hbox', margin:'0 0 5 0', defaultType:'cmpnumbermilesfield', defaults:{allowBlank:true, mouseWheelEnabled:false, hideTrigger:true, allowDecimals:false, decimalPrecision:0, minValue:0, flex:1}, bind:{hidden:'{!chEscritura.checked}'}, items:[{fieldLabel:'Escritura', name:'VYL_ESCRITURA'}, {fieldLabel:'Gasto Notarial', name:'VYL_ESCRITURA_NOTARIO'}]}, {xtype:'container', layout:'hbox', margin:'0 0 5 0', defaultType:'cmpnumbermilesfield', 
-defaults:{allowBlank:true, hideTrigger:true, allowDecimals:false, decimalPrecision:0, minValue:0, flex:1}, items:[{fieldLabel:'Gasto Notarial Instrucciones', bind:{hidden:'{!chInstrucciones.checked}'}, name:'VYL_INSTRUCCIONES_NOTARIO'}, {fieldLabel:'CBR (Estimado)', name:'VYL_CBR'}]}, {xtype:'container', layout:'hbox', margin:'0 0 5 0', items:[{xtype:'textarea', fieldLabel:'Observaciones', name:'VYL_GASTOS_OBSERVACIONES', flex:1}]}]});
-Ext.define('vyl.view.ventas.cierre.DatosValores', {extend:vyl.view.ventas.DatosBase, alias:'widget.datos-valores', items:[{xtype:'container', layout:'hbox', margin:'0 0 5 0', defaultType:'cmpnumbermilesfield', defaults:{hideTrigger:true, allowDecimals:false, decimalPrecision:0, minValue:0, flex:1}, items:[{xtype:'combobox', reference:'cbModalidadVenta', fieldLabel:'Modalidad de Venta', name:'VYL_MODALIDAD_VENTA', hideTrigger:false, editable:false, allowBlank:false, displayField:'MODALIDAD', valueField:'COD', 
+Ext.define('vyl.view.ventas.cierre.DatosComprador', {extend:'vyl.view.FormBase', alias:'widget.datos-comprador', layout:{type:'vbox', align:'stretch'}, bodyPadding:0, items:[{xtype:'container', layout:'hbox', margin:'0 0 5 0', defaultType:'textfield', defaults:{readOnly:true, allowBlank:false}, items:[{xtype:'hidden', name:'VYL_COMPRADOR_ID'}, {xtype:'rut', name:'VYL_COMPRADOR_RUT', readOnly:false, obligatorio:true, listeners:{blur:'onClienteBuscar'}, width:200}, {fieldLabel:'Nombre y Apellido', 
+reference:'txfCompradorAyN', name:'VYL_COMPRADOR_NOMBRE', flex:2}, {xtype:'combobox', fieldLabel:'Sexo', name:'VYL_COMPRADOR_SEXO', editable:false, allowBlank:true, displayField:'SEXO', valueField:'COD', bind:{store:'{stSexo}'}, width:200}, {xtype:'combobox', reference:'cbNacionalidad', fieldLabel:'Nacionalidad', name:'VYL_COMPRADOR_NACIONALIDAD', allowBlank:true, editable:false, displayField:'NACIONALIDAD', valueField:'COD', bind:{store:'{stNacionalidad}'}, flex:1}]}, {xtype:'container', layout:'hbox', 
+margin:'0 0 5 0', defaultType:'textfield', defaults:{readOnly:true}, items:[{xtype:'textfield', allowThousandSeparator:false, fieldLabel:'Fono', inputType:'tel', name:'VYL_COMPRADOR_TELEFONO', hideTrigger:true, width:200}, {fieldLabel:'Email', name:'VYL_COMPRADOR_EMAIL', vtype:'email', flex:1}, {xtype:'container', layout:'vbox', defaultType:'textfield', flex:1, items:[{xtype:'cmpdomicilio', fieldLabel:'Dirección', name:'VYL_COMPRADOR_DOMICILIO', readOnly:true, width:'100%', margin:'0 0 5 6', centro:{lat:-33.4727092, 
+lng:-70.7699151, radio:80000}}]}, {xtype:'numberfield', name:'VYL_COMPRADOR_DOMICILIO_PISO', fieldLabel:'Piso', allowDecimals:false, decimalPrecision:0, minValue:0, width:80}, {name:'VYL_COMPRADOR_DOMICILIO_DTO', fieldLabel:'Dpto.', width:80}]}, {xtype:'container', layout:'hbox', margin:'0 0 5 0', defaultType:'textfield', defaults:{readOnly:true}, items:[{fieldLabel:'Profesion', name:'VYL_COMPRADOR_PROFESION', flex:1}, {xtype:'combobox', fieldLabel:'Estado Civil', name:'VYL_COMPRADOR_ESTADO_CIVIL', 
+editable:false, displayField:'ESTADO', valueField:'COD', bind:{store:'{stEstadoCivil}'}, flex:1}]}]});
+Ext.define('vyl.view.ventas.cierre.DatosContrato', {extend:'vyl.view.ventas.DatosBase', alias:'widget.datos-contrato', requires:['Ext.form.CheckboxGroup'], items:[{xtype:'checkboxgroup', fieldLabel:'Contrato', columns:1, vertical:true, items:[{boxLabel:'Escritura', name:'VYL_CONTRATO', reference:'chEscritura', inputValue:'escritura'}, {boxLabel:'Instrucciones', name:'VYL_CONTRATO', reference:'chInstrucciones', inputValue:'instrucciones'}], flex:1}, {xtype:'textarea', fieldLabel:'Observaciones', name:'VYL_MODALIDAD_OBSERVACIONES', 
+flex:1}]});
+Ext.define('vyl.view.ventas.cierre.DatosGastos', {extend:'vyl.view.ventas.DatosBase', alias:'widget.datos-gastos', items:[{xtype:'container', reference:'ctnFinanciamientoGastos', layout:'hbox', margin:'0 0 5 0', hidden:true, defaultType:'numberfield', defaults:{allowBlank:true, mouseWheelEnabled:false, hideTrigger:true, allowDecimals:false, decimalPrecision:0, minValue:0, flex:1}, items:[{fieldLabel:'Contrato Leasing', name:'VYL_FINANCIAMIENTO_GASTO_CONTRATO', bind:{}}, {fieldLabel:'Gasto Notarial', 
+name:'VYL_FINANCIAMIENTO_GASTO_NOTARIAL'}]}, {xtype:'container', layout:'hbox', margin:'0 0 5 0', defaultType:'numberfield', defaults:{allowBlank:true, mouseWheelEnabled:false, hideTrigger:true, allowDecimals:false, decimalPrecision:0, minValue:0, flex:1}, bind:{hidden:'{!chEscritura.checked}'}, items:[{fieldLabel:'Escritura', name:'VYL_ESCRITURA'}, {fieldLabel:'Gasto Notarial', name:'VYL_ESCRITURA_NOTARIO'}]}, {xtype:'container', layout:'hbox', margin:'0 0 5 0', defaultType:'numberfield', defaults:{allowBlank:true, 
+hideTrigger:true, allowDecimals:false, decimalPrecision:0, minValue:0, flex:1}, items:[{fieldLabel:'Gasto Notarial Instrucciones', bind:{hidden:'{!chInstrucciones.checked}'}, name:'VYL_INSTRUCCIONES_NOTARIO'}, {fieldLabel:'CBR (Estimado)', name:'VYL_CBR'}]}, {xtype:'container', layout:'hbox', margin:'0 0 5 0', items:[{xtype:'textarea', fieldLabel:'Observaciones', name:'VYL_GASTOS_OBSERVACIONES', flex:1}]}]});
+Ext.define('vyl.view.ventas.cierre.DatosValores', {extend:'vyl.view.ventas.DatosBase', alias:'widget.datos-valores', items:[{xtype:'container', layout:'hbox', margin:'0 0 5 0', defaultType:'numberfield', defaults:{hideTrigger:true, allowDecimals:false, decimalPrecision:0, minValue:0, flex:1}, items:[{xtype:'combobox', reference:'cbModalidadVenta', fieldLabel:'Modalidad de Venta', name:'VYL_MODALIDAD_VENTA', hideTrigger:false, editable:false, allowBlank:false, displayField:'MODALIDAD', valueField:'COD', 
 bind:{store:'{stModalidadVenta}'}, listeners:{select:'onModalidadVentaSelect'}}, {reference:'nfValorPredio', fieldLabel:'Valor del Predio', name:'VYL_VALOR', obligatorio:true, bind:{value:'{valorPredio}'}}, {reference:'nfReserva', fieldLabel:'Reserva', name:'VYL_RESERVA', obligatorio:true, bind:{value:'{valorReserva}'}}, {fieldLabel:'Saldo', readOnly:true, submitValue:false, bind:{value:'{getSaldo}'}}, {xtype:'combobox', reference:'cbModalidadPago', fieldLabel:'Modalidad de Pago', name:'VYL_MODALIDAD_PAGO', 
-hideTrigger:false, allowBlank:false, editable:false, displayField:'MODALIDAD', valueField:'COD', bind:{store:'{stModalidadPago}'}, flex:1}]}, {xtype:'container', reference:'ctnFinanciamiento', layout:'hbox', margin:'0 0 5 0', hidden:true, defaultType:'cmpnumbermilesfield', defaults:{hideTrigger:true, allowDecimals:false, decimalPrecision:0, minValue:0, flex:1}, items:[{fieldLabel:'Pie de Contado', name:'VYL_FINANCIAMIENTO_PIE', bind:{value:'{valorContado}', obligatorio:'{visible}'}}, {fieldLabel:'Monto a Financiar', 
+hideTrigger:false, allowBlank:false, editable:false, displayField:'MODALIDAD', valueField:'COD', bind:{store:'{stModalidadPago}'}, flex:1}]}, {xtype:'container', reference:'ctnFinanciamiento', layout:'hbox', margin:'0 0 5 0', hidden:true, defaultType:'numberfield', defaults:{hideTrigger:true, allowDecimals:false, decimalPrecision:0, minValue:0, flex:1}, items:[{fieldLabel:'Pie de Contado', name:'VYL_FINANCIAMIENTO_PIE', bind:{value:'{valorContado}', obligatorio:'{visible}'}}, {fieldLabel:'Monto a Financiar', 
 readOnly:true, submitValue:false, bind:{value:'{getFinanciamiento}', obligatorio:'{visible}'}}, {fieldLabel:'Cuotas', name:'VYL_FINANCIAMIENTO_CUOTAS', minValue:0, hideTrigger:false, bind:{value:'{cuotas}', obligatorio:'{visible}'}, width:100}, {fieldLabel:'% Interés Anual', name:'VYL_FINANCIAMIENTO_INTERESES', allowDecimals:true, decimalPrecision:2, bind:{value:'{interes}', obligatorio:'{visible}'}, width:100}, {fieldLabel:'Valor Cuota', name:'VYL_VALOR_CUOTA', readOnly:true, bind:{value:'{getValorCuota}'}}, 
 {xtype:'cmpdatefield', format:'d/m/Y', fieldLabel:'Vto. 1er Cuota', name:'VYL_FINANCIAMIENTO_VTO', hideTrigger:false, bind:{obligatorio:'{visible}'}, width:150}]}, {xtype:'container', layout:'hbox', margin:'0 0 5 0', items:[{xtype:'textarea', fieldLabel:'Importante', name:'VYL_FORMA_PAGO_OBSERVACIONES', flex:1}]}]});
-Ext.define('vyl.view.ventas.cierre.DatosVenta', {extend:vyl.view.ventas.DatosBase, alias:'widget.datos-ventas', items:[{xtype:'container', layout:'hbox', margin:'0 0 5 0', defaultType:'textfield', defaults:{allowBlank:false}, items:[{xtype:'combobox', name:'VYL_LOTEO', fieldLabel:'Loteo', queryMode:'local', displayField:'LOTEO_NOMBRE', valueField:'LOTEO_ID', allowBlank:false, forceSelection:true, bind:{store:'{stLoteo}'}, flex:2}, {xtype:'button', iconCls:'x-fa fa-plus-circle', text:'Nuevo Loteo', 
-margin:'26 0 5 5', handler:'onLoteoNuevo'}, {xtype:'numberfield', fieldLabel:'Parcela', name:'VYL_PARCELA', hideTrigger:true, submitLocaleSeparator:false, allowDecimals:false, decimalPrecision:0, flex:1}, {fieldLabel:'Rol', name:'VYL_ROL', allowBlank:true, flex:1}]}, {xtype:'container', layout:'hbox', margin:'0 0 5 0', defaultType:'textfield', defaults:{allowBlank:false}, items:[{xtype:'datefield', format:'d/m/Y', fieldLabel:'Fecha Venta', name:'VYL_FECHA_CIERRE', width:100}, {xtype:'combobox', name:'VYL_EMPRESA_ID', 
-fieldLabel:'Empresa Vendedora', queryMode:'local', displayField:'EMPRESA_NOMBRE', valueField:'EMPRESA_ID', allowBlank:false, forceSelection:true, bind:{store:'{stEmpresas}'}, displayTpl:Ext.create('Ext.XTemplate', '\x3ctpl for\x3d"."\x3e', '{EMPRESA_NOMBRE} ({EMPRESA_RUT}) - Representante: {EMPRESA_REPRESENTANTE} ({EMPRESA_RUT_REPRESENTANTE})', '\x3c/tpl\x3e'), flex:1}]}, {xtype:'container', layout:'hbox', margin:'0 0 5 0', items:[{xtype:'textarea', fieldLabel:'Observaciones', name:'VYL_VENTAS_OBSERVACIONES', 
-flex:1}]}, {xtype:'container', layout:'hbox', margin:'0 0 5 0', items:[{xtype:'textarea', fieldLabel:'Deslinde Loteo', name:'VYL_LOTEO_DESLINDE', flex:1}]}]});
-Ext.define('vyl.view.ventas.cierre.Formulario', {extend:'Cmp.wkf.form.Panel', xtype:'ventas-cierre', requires:['Cmp.form.Rutfield', 'Cmp.form.Domicilio', 'Cmp.form.Datefield', 'Cmp.form.NumberMilesField', 'vyl.view.ventas.cierre.ArchivosDisponibles', 'vyl.view.ventas.cierre.DatosComprador', 'vyl.view.ventas.cierre.DatosContrato', 'vyl.view.ventas.cierre.DatosGastos', 'vyl.view.ventas.cierre.DatosValores', 'vyl.view.ventas.cierre.DatosVenta'], controller:'ventasciere', viewModel:{type:'ventasciere'}, 
-url:GLOBAL_HOST + '/do/jsonCall', cors:true, withCredentials:true, useDefaultXhrHeader:false, scrollable:'y', margin:'10 20 10 20', title:'', flujo:'VENTA_CIERRE', etapaActual:'ingresado', cls:'formulario-venta', layout:{type:'vbox', align:'stretch'}, maxWidth:1000, title:'Formulario Cierre de Venta - Nuevo', listeners:{cargadatos:'onFormularioCargar', activate:'onFormularioActivate'}, initComponent:function() {
-  Ext.apply(this, {submitValue:true, layout:{type:'vbox', align:'stretch'}, items:[{xtype:'hidden', name:'VYL_ID', bind:{value:'{formularioId}'}}, {xtype:'fieldset', title:'Datos de Venta', items:[{xtype:'datos-ventas'}]}, {xtype:'fieldset', title:'Datos Comprador', items:[{xtype:'datos-comprador', reference:'frmComprador'}]}, {xtype:'fieldset', title:'Modalidad de Contrato Compraventa', collapsible:true, items:[{xtype:'datos-contrato', margin:'0 0 5 0'}]}, {xtype:'fieldset', title:'Valores y Forma de Pago', 
-  collapsible:true, items:[{xtype:'datos-valores'}]}, {xtype:'fieldset', title:'Gastos de Operación', collapsible:true, items:[{xtype:'datos-gastos'}]}, {xtype:'fieldset', title:'Archivos Disponibles', reference:'flsArchivos', collapsible:true, items:[{xtype:'archivos', cls:'archivos-dataview', bind:{store:'{stArchivos}', data:{pVenta:'{formularioId}'}}, flex:1}]}]});
-  this.callParent(arguments);
-}});
+Ext.define('vyl.view.ventas.cierre.DatosVenta', {extend:'vyl.view.ventas.DatosBase', alias:'widget.datos-ventas', items:[{xtype:'container', layout:'hbox', margin:'0 0 5 0', defaultType:'textfield', defaults:{allowBlank:false}, items:[{xtype:'combobox', name:'VYL_LOTEO', fieldLabel:'Loteo', displayField:'LOTEO_NOMBRE', valueField:'LOTEO_ID', allowBlank:false, editable:false, bind:{store:'{stLoteo}'}, flex:2}, {xtype:'button', iconCls:'x-fa fa-plus-circle', text:'Nuevo Loteo', margin:'26 0 5 5', handler:'onLoteoNuevo'}, 
+{xtype:'numberfield', fieldLabel:'Parcela', name:'VYL_PARCELA', hideTrigger:true, submitLocaleSeparator:false, allowDecimals:false, decimalPrecision:0, flex:1}, {fieldLabel:'Rol', name:'VYL_ROL', allowBlank:true, flex:1}]}, {xtype:'container', layout:'hbox', margin:'0 0 5 0', defaultType:'textfield', defaults:{allowBlank:false}, items:[{xtype:'datefield', format:'d/m/Y', fieldLabel:'Fecha Venta', name:'VYL_FECHA_CIERRE', width:100}, {xtype:'combobox', name:'VYL_EMPRESA_ID', fieldLabel:'Empresa Vendedora', 
+queryMode:'local', displayField:'EMPRESA_NOMBRE', valueField:'EMPRESA_ID', editable:false, allowBlank:false, bind:{store:'{stEmpresas}'}, displayTpl:Ext.create('Ext.XTemplate', '\x3ctpl for\x3d"."\x3e', '{EMPRESA_NOMBRE} ({EMPRESA_RUT}) - Representante: {EMPRESA_REPRESENTANTE} ({EMPRESA_RUT_REPRESENTANTE})', '\x3c/tpl\x3e'), flex:1}]}, {xtype:'container', layout:'hbox', margin:'0 0 5 0', items:[{xtype:'textarea', fieldLabel:'Observaciones', name:'VYL_VENTAS_OBSERVACIONES', flex:1}]}, {xtype:'container', 
+layout:'hbox', margin:'0 0 5 0', items:[{xtype:'textarea', fieldLabel:'Deslinde Loteo', name:'VYL_LOTEO_DESLINDE', flex:1}]}]});
+Ext.define('vyl.view.ventas.cierre.Formulario', {extend:'Cmp.wkf.form.Panel', xtype:'ventas-cierre', requires:['Cmp.form.Rutfield', 'Cmp.form.Domicilio', 'Cmp.form.Datefield'], controller:'ventasciere', viewModel:{type:'ventasciere'}, url:GLOBAL_HOST + '/do/jsonCall', cors:true, withCredentials:true, useDefaultXhrHeader:false, scrollable:'y', margin:'10 20 10 20', flujo:'VENTA_CIERRE', etapaActual:'ingresado', cls:'formulario-venta', layout:{type:'vbox', align:'stretch'}, maxWidth:1000, listeners:{activate:'onFormularioActivate', 
+cargadatos:'onFormularioCargar'}, submitValue:true, layout:{type:'vbox', align:'stretch'}, items:[{xtype:'hidden', name:'VYL_ID', bind:{value:'{formularioId}'}}, {xtype:'fieldset', title:'Datos de Venta', items:[{xtype:'datos-ventas'}]}, {xtype:'fieldset', title:'Datos Comprador', items:[{xtype:'datos-comprador', reference:'frmComprador'}]}, {xtype:'fieldset', title:'Modalidad de Contrato Compraventa', collapsible:true, items:[{xtype:'datos-contrato', margin:'0 0 5 0'}]}, {xtype:'fieldset', title:'Valores y Forma de Pago', 
+collapsible:true, items:[{xtype:'datos-valores'}]}, {xtype:'fieldset', title:'Gastos de Operación', collapsible:true, items:[{xtype:'datos-gastos'}]}, {xtype:'fieldset', title:'Archivos Disponibles', reference:'flsArchivos', collapsible:true, items:[{xtype:'archivos', cls:'archivos-dataview', bind:{store:'{stArchivos}', data:{pVenta:'{formularioId}'}}, flex:1}]}]});
 Ext.define('vyl.view.ventas.cierre.VentasCierreController', {extend:Ext.app.ViewController, alias:'controller.ventasciere', requires:[], init:function(view) {
   var me = this;
   me.titulo = 'Formulario Cierre Venta';
@@ -93519,7 +94722,7 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {extend:Ext.app.View
     var rut = fld.getValue();
     if (rut != vm.get('rutComprador')) {
       frmComprador.mask('Buscando comprador');
-      Ext.Ajax.request({url:GLOBAL_HOST + '/do/vyl/bsh/getComprador.bsh', cors:true, withCredentials:true, useDefaultXhrHeader:false, method:'POST', params:{prm_token:me.tokenCtrl.buildTokenParam(), prm_dataSource:'vylDS', prm_cRut:rut, prm_alias:'VYL'}, success:function(response, opts) {
+      Ext.Ajax.request({url:GLOBAL_HOST + '/do/vyl/bsh/getComprador.bsh', cors:true, withCredentials:true, useDefaultXhrHeader:false, method:'POST', params:{prm_token:me.tokenCtrl.buildTokenParam(), prm_cRut:rut, prm_alias:'VYL'}, success:function(response, opts) {
         var resp = Ext.decode(response.responseText);
         if (resp.success) {
           console.log('[onClienteBuscar]', resp);
@@ -93560,12 +94763,14 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {extend:Ext.app.View
 }, onConsultaActivate:function() {
   var me = this, vm = me.getViewModel(), view = me.getView(), stFormulariosIngresados = vm.getStore('stFormulariosIngresados');
   view.mask('Cargando Listado');
-  stFormulariosIngresados.load({callback:function(records, operation, success) {
+  stFormulariosIngresados.load({params:{prm_token:me.tokenCtrl.buildTokenParam()}, callback:function(records, operation, success) {
     if (success) {
       view.unmask();
     }
   }});
 }, onConsultaExportar:function() {
+  var me = this, grid = me.getView(), dt = new Date, fecha = Ext.Date.format(dt, 'Ymd');
+  grid.saveDocumentAs({type:'xlsx', charset:'Shift-JIS', title:'Cierres de Venta Ingresados', fileName:'vyl_cierres_vta_' + fecha + '.xlsx'});
 }, onConsultaRowDblClick:function(grid, record, element, rowIndex, e, eOpts) {
   var me = this, eventoId = record.get('WKF_EVENTO');
   if (eventoId > 0) {
@@ -93580,10 +94785,13 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreController', {extend:Ext.app.View
   } else {
     console.warn('[onConsultarFormulario] Evento invalido ' + eventoId, record);
   }
-}, onFormularioActivate:function() {
-  var me = this, vm = me.getViewModel(), stLoteo = vm.getStore('stLoteo'), stEmpresas = vm.getStore('stEmpresas');
-  stLoteo.load({extraParams:{prm_token:me.tokenCtrl.buildTokenParam()}});
-  stEmpresas.load({extraParams:{prm_token:me.tokenCtrl.buildTokenParam()}});
+}, onFormularioActivate:function(form, eOpts) {
+  var me = this, vm = me.getViewModel(), stLoteo = vm.getStore('stLoteo'), stEmpresas = vm.getStore('stEmpresas'), token = me.tokenCtrl.buildTokenParam();
+  if (token) {
+    form.setToken(token);
+  } else {
+    console.warn('[onFormularioActivate] No existe token activo');
+  }
 }, onFormularioCargar:function(eventoId) {
   var me = this;
   if (eventoId > 0) {
@@ -93723,31 +94931,31 @@ Ext.define('vyl.view.ventas.cierre.VentasCierreViewModel', {extend:Ext.app.ViewM
 }, getVentaId:function(get) {
   var pVenta = get('formularioId') == 0 ? null : get('formularioId');
   return pVenta;
-}}, stores:{stArchivos:{idProperty:'TITULO', fields:[{name:'BSH', type:'string'}, {name:'TITULO', type:'string'}], proxy:{url:GLOBAL_HOST + '/do/vyl/bsh/ventaArchivosLista.bsh', type:'jsoncall', extraParams:{}}, autoLoad:false}, stEmpresas:{idProperty:'EMPRESA_ID', fields:[{name:'EMPRESA_ID', type:'int'}, {name:'EMPRESA_NOMBRE', type:'string'}, {name:'EMPRESA_REPRESENTANTE', type:'string'}, {name:'EMPRESA_RUT', type:'string'}, {name:'EMPRESA_RUT_REPRESENTANTE', type:'string'}], proxy:{url:GLOBAL_HOST + 
-'/do/vyl/bsh/lisEmpresa.bsh', type:'jsoncall'}, autoLoad:false}, stEstadoCivil:{fields:['COD', 'ESTADO'], data:[{COD:'soltero', ESTADO:'Soltera/o'}, {COD:'casado', ESTADO:'Casada/o'}, {COD:'divorciado', ESTADO:'Divorciada/o'}, {COD:'viudo', ESTADO:'Viuda/o'}]}, stFormulariosIngresados:{fields:[{name:'FECHA_VENTA', type:'date', dateFormat:'Y-m-d'}, {name:'LOTEO', type:'string'}, {name:'PARCELA', type:'string'}, {name:'ROL_PROPIEDAD', type:'string'}, {name:'COMPRADOR_NOMBRE', type:'string'}, {name:'COMPRADOR_RUT', 
-type:'string'}, {name:'WKF_ETAPA', type:'string'}, {name:'WKF_ETAPA_NOMBRE', type:'string'}, {name:'WKF_USUARIO', type:'string'}, {name:'WKF_EVENTO', type:'int'}], proxy:{url:GLOBAL_HOST + '/do/vyl/bsh/lisVenta.bsh', type:'jsoncall', extraParams:{}}, autoLoad:false, listeners:{load:'onLoadStFormulariosIngresados'}}, stFormulariosIngresadosLocal:{fields:[{name:'FECHA_VENTA', type:'date', dateFormat:'Y-m-d'}, {name:'LOTEO', type:'string'}, {name:'PARCELA', type:'string'}, {name:'ROL_PROPIEDAD', type:'string'}, 
-{name:'COMPRADOR_NOMBRE', type:'string'}, {name:'COMPRADOR_RUT', type:'string'}, {name:'WKF_ETAPA', type:'string'}, {name:'WKF_ETAPA_NOMBRE', type:'string'}, {name:'WKF_USUARIO', type:'string'}, {name:'WKF_EVENTO', type:'int'}], proxy:{type:'memory', enablePaging:true, reader:{rootProperty:'records', totalProperty:'count'}}, sorters:[{property:'FECHA_VENTA', direction:'DESC'}, {property:'LOTEO', direction:'ASC'}], filters:[function(item) {
+}}, stores:{stArchivos:{idProperty:'TITULO', fields:[{name:'BSH', type:'string'}, {name:'TITULO', type:'string'}], proxy:{url:GLOBAL_HOST + '/do/vyl/bsh/ventaArchivosLista.bsh', type:'jsoncall'}, autoLoad:false}, stEmpresas:{idProperty:'EMPRESA_ID', fields:[{name:'EMPRESA_ID', type:'int'}, {name:'EMPRESA_NOMBRE', type:'string'}, {name:'EMPRESA_REPRESENTANTE', type:'string'}, {name:'EMPRESA_RUT', type:'string'}, {name:'EMPRESA_RUT_REPRESENTANTE', type:'string'}], proxy:{type:'jsoncall', url:GLOBAL_HOST + 
+'/do/vyl/bsh/lisEmpresa.bsh', params:{prm_token:localStorage.getItem('token')}}, autoLoad:true}, stEstadoCivil:{fields:['COD', 'ESTADO'], data:[{COD:'soltero', ESTADO:'Soltera/o'}, {COD:'casado', ESTADO:'Casada/o'}, {COD:'divorciado', ESTADO:'Divorciada/o'}, {COD:'viudo', ESTADO:'Viuda/o'}]}, stFormulariosIngresados:{fields:[{name:'FECHA_VENTA', type:'date', dateFormat:'Y-m-d'}, {name:'LOTEO', type:'string'}, {name:'PARCELA', type:'string'}, {name:'ROL_PROPIEDAD', type:'string'}, {name:'COMPRADOR_NOMBRE', 
+type:'string'}, {name:'COMPRADOR_RUT', type:'string'}, {name:'WKF_ETAPA', type:'string'}, {name:'WKF_ETAPA_NOMBRE', type:'string'}, {name:'WKF_USUARIO', type:'string'}, {name:'WKF_EVENTO', type:'int'}], proxy:{type:'jsoncall', url:GLOBAL_HOST + '/do/vyl/bsh/lisVenta.bsh', params:{prm_token:localStorage.getItem('token')}}, autoLoad:true, listeners:{load:'onLoadStFormulariosIngresados'}}, stFormulariosIngresadosLocal:{fields:[{name:'FECHA_VENTA', type:'date', dateFormat:'Y-m-d'}, {name:'LOTEO', type:'string'}, 
+{name:'PARCELA', type:'string'}, {name:'ROL_PROPIEDAD', type:'string'}, {name:'COMPRADOR_NOMBRE', type:'string'}, {name:'COMPRADOR_RUT', type:'string'}, {name:'WKF_ETAPA', type:'string'}, {name:'WKF_ETAPA_NOMBRE', type:'string'}, {name:'WKF_USUARIO', type:'string'}, {name:'WKF_EVENTO', type:'int'}], proxy:{type:'memory', enablePaging:true, reader:{rootProperty:'records', totalProperty:'count'}}, sorters:[{property:'FECHA_VENTA', direction:'DESC'}, {property:'LOTEO', direction:'ASC'}], filters:[function(item) {
   return item.WKF_ETAPA_NOMBRE !== 'cancelado';
-}], pageSize:25}, stLoteo:{idProperty:'LOTEO_ID', fields:[{name:'LOTEO_ID', type:'int'}, {name:'LOTEO_NOMBRE', type:'string'}, {name:'LOTEO_DESCRIPCION', type:'string'}], proxy:{url:GLOBAL_HOST + '/do/vyl/bsh/loteoNombres.bsh', type:'jsoncall', extraParams:{}}, autoLoad:false}, stModalidadPago:{fields:['COD', 'MODALIDAD'], data:[{COD:'vale_vista', MODALIDAD:'Vale Vista'}]}, stModalidadVenta:{fields:['COD', 'MODALIDAD'], data:[{COD:'directa', MODALIDAD:'Venta al Contado'}, {COD:'financiamiento', MODALIDAD:'Venta con Financiamiento'}]}, 
-stNacionalidad:{fields:['COD', 'NACIONALIDAD', 'COD_F', 'COD_M'], data:[{COD:'chile', NACIONALIDAD:'Chilena', COD_F:'chilena', COD_M:'chileno'}, {COD:'argentina', NACIONALIDAD:'Argentina', COD_F:'argentina', COD_M:'argentino'}, {COD:'bolivia', NACIONALIDAD:'Boliviana', COD_F:'boliviana', COD_M:'boliviano'}, {COD:'brasil', NACIONALIDAD:'Brasileña', COD_F:'brasileña', COD_M:'brasileño'}, {COD:'colombia', NACIONALIDAD:'Colombiana', COD_F:'colombiana', COD_M:'colombiano'}, {COD:'ecuador', NACIONALIDAD:'Ecuatoriana', 
-COD_F:'ecuatoriana', COD_M:'ecuatoriano'}, {COD:'paraguay', NACIONALIDAD:'Paraguaya', COD_F:'paraguaya', COD_M:'paraguayo'}, {COD:'peru', NACIONALIDAD:'Peruana', COD_F:'peruana', COD_M:'peruano'}, {COD:'uruguay', NACIONALIDAD:'Uruguaya', COD_F:'uruguaya', COD_M:'uruguayo'}, {COD:'venezuela', NACIONALIDAD:'Venezolana', COD_F:'venezolana', COD_M:'venezolano'}, {COD:'-', NACIONALIDAD:'_______________'}, {COD:'afganistán', NACIONALIDAD:'Afganistán'}, {COD:'albania', NACIONALIDAD:'Albania'}, {COD:'alemania', 
-NACIONALIDAD:'Alemania'}, {COD:'andorra', NACIONALIDAD:'Andorra'}, {COD:'angola', NACIONALIDAD:'Angola'}, {COD:'antigua y barbuda', NACIONALIDAD:'Antigua y Barbuda'}, {COD:'arabia saudita', NACIONALIDAD:'Arabia Saudita'}, {COD:'argelia', NACIONALIDAD:'Argelia'}, {COD:'armenia', NACIONALIDAD:'Armenia'}, {COD:'australia', NACIONALIDAD:'Australia'}, {COD:'austria', NACIONALIDAD:'Austria'}, {COD:'azerbaiyán', NACIONALIDAD:'Azerbaiyán'}, {COD:'bahamas', NACIONALIDAD:'Bahamas'}, {COD:'bangladés', NACIONALIDAD:'Bangladés'}, 
-{COD:'barbados', NACIONALIDAD:'Barbados'}, {COD:'baréin', NACIONALIDAD:'Baréin'}, {COD:'bélgica', NACIONALIDAD:'Bélgica'}, {COD:'belice', NACIONALIDAD:'Belice'}, {COD:'benín', NACIONALIDAD:'Benín'}, {COD:'bielorrusia', NACIONALIDAD:'Bielorrusia'}, {COD:'birmania', NACIONALIDAD:'Birmania'}, {COD:'bosnia y herzegovina', NACIONALIDAD:'Bosnia y Herzegovina'}, {COD:'botsuana', NACIONALIDAD:'Botsuana'}, {COD:'brunéi', NACIONALIDAD:'Brunéi'}, {COD:'bulgaria', NACIONALIDAD:'Bulgaria'}, {COD:'burkina faso', 
-NACIONALIDAD:'Burkina Faso'}, {COD:'burundi', NACIONALIDAD:'Burundi'}, {COD:'bután', NACIONALIDAD:'Bután'}, {COD:'cabo verde', NACIONALIDAD:'Cabo Verde'}, {COD:'camboya', NACIONALIDAD:'Camboya'}, {COD:'camerún', NACIONALIDAD:'Camerún'}, {COD:'canadá', NACIONALIDAD:'Canadá'}, {COD:'catar', NACIONALIDAD:'Catar'}, {COD:'chad', NACIONALIDAD:'Chad'}, {COD:'china', NACIONALIDAD:'China'}, {COD:'chipre', NACIONALIDAD:'Chipre'}, {COD:'ciudad del vaticano', NACIONALIDAD:'Ciudad del Vaticano'}, {COD:'comoras', 
-NACIONALIDAD:'Comoras'}, {COD:'corea del norte', NACIONALIDAD:'Corea del Norte'}, {COD:'corea del sur', NACIONALIDAD:'Corea del Sur'}, {COD:'costa de marfil', NACIONALIDAD:'Costa de Marfil'}, {COD:'costa rica', NACIONALIDAD:'Costa Rica'}, {COD:'croacia', NACIONALIDAD:'Croacia'}, {COD:'cuba', NACIONALIDAD:'Cuba'}, {COD:'dinamarca', NACIONALIDAD:'Dinamarca'}, {COD:'dominica', NACIONALIDAD:'Dominica'}, {COD:'egipto', NACIONALIDAD:'Egipto'}, {COD:'el salvador', NACIONALIDAD:'El Salvador'}, {COD:'eau', 
-NACIONALIDAD:'Emiratos Árabes Unidos'}, {COD:'eritrea', NACIONALIDAD:'Eritrea'}, {COD:'eslovaquia', NACIONALIDAD:'Eslovaquia'}, {COD:'eslovenia', NACIONALIDAD:'Eslovenia'}, {COD:'españa', NACIONALIDAD:'España'}, {COD:'estados unidos', NACIONALIDAD:'Estados Unidos'}, {COD:'estonia', NACIONALIDAD:'Estonia'}, {COD:'etiopía', NACIONALIDAD:'Etiopía'}, {COD:'filipinas', NACIONALIDAD:'Filipinas'}, {COD:'finlandia', NACIONALIDAD:'Finlandia'}, {COD:'fiyi', NACIONALIDAD:'Fiyi'}, {COD:'francia', NACIONALIDAD:'Francia'}, 
-{COD:'gabón', NACIONALIDAD:'Gabón'}, {COD:'gambia', NACIONALIDAD:'Gambia'}, {COD:'georgia', NACIONALIDAD:'Georgia'}, {COD:'ghana', NACIONALIDAD:'Ghana'}, {COD:'granada', NACIONALIDAD:'Granada'}, {COD:'grecia', NACIONALIDAD:'Grecia'}, {COD:'guatemala', NACIONALIDAD:'Guatemala'}, {COD:'guyana', NACIONALIDAD:'Guyana'}, {COD:'guinea', NACIONALIDAD:'Guinea'}, {COD:'guinea ecuatorial', NACIONALIDAD:'Guinea ecuatorial'}, {COD:'guinea-bisáu', NACIONALIDAD:'Guinea-Bisáu'}, {COD:'haití', NACIONALIDAD:'Haití'}, 
-{COD:'honduras', NACIONALIDAD:'Honduras'}, {COD:'hungría', NACIONALIDAD:'Hungría'}, {COD:'india', NACIONALIDAD:'India'}, {COD:'indonesia', NACIONALIDAD:'Indonesia'}, {COD:'irak', NACIONALIDAD:'Irak'}, {COD:'irán', NACIONALIDAD:'Irán'}, {COD:'irlanda', NACIONALIDAD:'Irlanda'}, {COD:'islandia', NACIONALIDAD:'Islandia'}, {COD:'islas marshall', NACIONALIDAD:'Islas Marshall'}, {COD:'islas salomón', NACIONALIDAD:'Islas Salomón'}, {COD:'israel', NACIONALIDAD:'Israel'}, {COD:'italia', NACIONALIDAD:'Italia'}, 
-{COD:'jamaica', NACIONALIDAD:'Jamaica'}, {COD:'japón', NACIONALIDAD:'Japón'}, {COD:'jordania', NACIONALIDAD:'Jordania'}, {COD:'kazajistán', NACIONALIDAD:'Kazajistán'}, {COD:'kenia', NACIONALIDAD:'Kenia'}, {COD:'kirguistán', NACIONALIDAD:'Kirguistán'}, {COD:'kiribati', NACIONALIDAD:'Kiribati'}, {COD:'kuwait', NACIONALIDAD:'Kuwait'}, {COD:'laos', NACIONALIDAD:'Laos'}, {COD:'lesoto', NACIONALIDAD:'Lesoto'}, {COD:'letonia', NACIONALIDAD:'Letonia'}, {COD:'líbano', NACIONALIDAD:'Líbano'}, {COD:'liberia', 
-NACIONALIDAD:'Liberia'}, {COD:'libia', NACIONALIDAD:'Libia'}, {COD:'liechtenstein', NACIONALIDAD:'Liechtenstein'}, {COD:'lituania', NACIONALIDAD:'Lituania'}, {COD:'luxemburgo', NACIONALIDAD:'Luxemburgo'}, {COD:'madagascar', NACIONALIDAD:'Madagascar'}, {COD:'malasia', NACIONALIDAD:'Malasia'}, {COD:'malaui', NACIONALIDAD:'Malaui'}, {COD:'maldivas', NACIONALIDAD:'Maldivas'}, {COD:'malí', NACIONALIDAD:'Malí'}, {COD:'malta', NACIONALIDAD:'Malta'}, {COD:'marruecos', NACIONALIDAD:'Marruecos'}, {COD:'mauricio', 
-NACIONALIDAD:'Mauricio'}, {COD:'mauritania', NACIONALIDAD:'Mauritania'}, {COD:'méxico', NACIONALIDAD:'México'}, {COD:'micronesia', NACIONALIDAD:'Micronesia'}, {COD:'moldavia', NACIONALIDAD:'Moldavia'}, {COD:'mónaco', NACIONALIDAD:'Mónaco'}, {COD:'mongolia', NACIONALIDAD:'Mongolia'}, {COD:'montenegro', NACIONALIDAD:'Montenegro'}, {COD:'mozambique', NACIONALIDAD:'Mozambique'}, {COD:'namibia', NACIONALIDAD:'Namibia'}, {COD:'nauru', NACIONALIDAD:'Nauru'}, {COD:'nepal', NACIONALIDAD:'Nepal'}, {COD:'nicaragua', 
-NACIONALIDAD:'Nicaragua'}, {COD:'níger', NACIONALIDAD:'Níger'}, {COD:'nigeria', NACIONALIDAD:'Nigeria'}, {COD:'noruega', NACIONALIDAD:'Noruega'}, {COD:'nueva zelanda', NACIONALIDAD:'Nueva Zelanda'}, {COD:'omán', NACIONALIDAD:'Omán'}, {COD:'países bajos', NACIONALIDAD:'Países Bajos'}, {COD:'pakistán', NACIONALIDAD:'Pakistán'}, {COD:'palaos', NACIONALIDAD:'Palaos'}, {COD:'panamá', NACIONALIDAD:'Panamá'}, {COD:'papúa nueva guinea', NACIONALIDAD:'Papúa Nueva Guinea'}, {COD:'polonia', NACIONALIDAD:'Polonia'}, 
-{COD:'portugal', NACIONALIDAD:'Portugal'}, {COD:'reino unido', NACIONALIDAD:'Reino Unido'}, {COD:'república centroafricana', NACIONALIDAD:'República Centroafricana'}, {COD:'república checa', NACIONALIDAD:'República Checa'}, {COD:'república de macedonia', NACIONALIDAD:'República de Macedonia'}, {COD:'república del congo', NACIONALIDAD:'República del Congo'}, {COD:'república democrática del congo', NACIONALIDAD:'República Democrática del Congo'}, {COD:'república dominicana', NACIONALIDAD:'República Dominicana'}, 
-{COD:'república sudafricana', NACIONALIDAD:'República Sudafricana'}, {COD:'ruanda', NACIONALIDAD:'Ruanda'}, {COD:'rumanía', NACIONALIDAD:'Rumanía'}, {COD:'rusia', NACIONALIDAD:'Rusia'}, {COD:'samoa', NACIONALIDAD:'Samoa'}, {COD:'san cristóbal y nieves', NACIONALIDAD:'San Cristóbal y Nieves'}, {COD:'san marino', NACIONALIDAD:'San Marino'}, {COD:'san vicente y las granadinas', NACIONALIDAD:'San Vicente y las Granadinas'}, {COD:'santa lucía', NACIONALIDAD:'Santa Lucía'}, {COD:'santo tomé y príncipe', 
-NACIONALIDAD:'Santo Tomé y Príncipe'}, {COD:'senegal', NACIONALIDAD:'Senegal'}, {COD:'serbia', NACIONALIDAD:'Serbia'}, {COD:'seychelles', NACIONALIDAD:'Seychelles'}, {COD:'sierra leona', NACIONALIDAD:'Sierra Leona'}, {COD:'singapur', NACIONALIDAD:'Singapur'}, {COD:'siria', NACIONALIDAD:'Siria'}, {COD:'somalia', NACIONALIDAD:'Somalia'}, {COD:'sri lanka', NACIONALIDAD:'Sri Lanka'}, {COD:'suazilandia', NACIONALIDAD:'Suazilandia'}, {COD:'sudán', NACIONALIDAD:'Sudán'}, {COD:'sudán del sur', NACIONALIDAD:'Sudán del Sur'}, 
-{COD:'suecia', NACIONALIDAD:'Suecia'}, {COD:'suiza', NACIONALIDAD:'Suiza'}, {COD:'surinam', NACIONALIDAD:'Surinam'}, {COD:'tailandia', NACIONALIDAD:'Tailandia'}, {COD:'tanzania', NACIONALIDAD:'Tanzania'}, {COD:'tayikistán', NACIONALIDAD:'Tayikistán'}, {COD:'timor oriental', NACIONALIDAD:'Timor Oriental'}, {COD:'togo', NACIONALIDAD:'Togo'}, {COD:'tonga', NACIONALIDAD:'Tonga'}, {COD:'trinidad y tobago', NACIONALIDAD:'Trinidad y Tobago'}, {COD:'túnez', NACIONALIDAD:'Túnez'}, {COD:'turkmenistán', NACIONALIDAD:'Turkmenistán'}, 
-{COD:'turquía', NACIONALIDAD:'Turquía'}, {COD:'tuvalu', NACIONALIDAD:'Tuvalu'}, {COD:'ucrania', NACIONALIDAD:'Ucrania'}, {COD:'uganda', NACIONALIDAD:'Uganda'}, {COD:'uzbekistán', NACIONALIDAD:'Uzbekistán'}, {COD:'vanuatu', NACIONALIDAD:'Vanuatu'}, {COD:'vietnam', NACIONALIDAD:'Vietnam'}, {COD:'yemen', NACIONALIDAD:'Yemen'}, {COD:'yibuti', NACIONALIDAD:'Yibuti'}, {COD:'zambia', NACIONALIDAD:'Zambia'}, {COD:'zimbabue', NACIONALIDAD:'Zimbabue'}]}, stSexo:{fields:['COD', 'SEXO'], data:[{COD:'femenino', 
-SEXO:'Femenino'}, {COD:'masculino', SEXO:'Masculino'}]}}});
+}], pageSize:25}, stLoteo:{idProperty:'LOTEO_ID', fields:[{name:'LOTEO_ID', type:'int'}, {name:'LOTEO_NOMBRE', type:'string'}, {name:'LOTEO_DESCRIPCION', type:'string'}], proxy:{type:'jsoncall', url:GLOBAL_HOST + '/do/vyl/bsh/loteoNombres.bsh', params:{prm_token:localStorage.getItem('token')}}, autoLoad:true}, stModalidadPago:{fields:['COD', 'MODALIDAD'], data:[{COD:'vale_vista', MODALIDAD:'Vale Vista'}]}, stModalidadVenta:{fields:['COD', 'MODALIDAD'], data:[{COD:'directa', MODALIDAD:'Venta al Contado'}, 
+{COD:'financiamiento', MODALIDAD:'Venta con Financiamiento'}]}, stNacionalidad:{fields:['COD', 'NACIONALIDAD', 'COD_F', 'COD_M'], data:[{COD:'chile', NACIONALIDAD:'Chilena', COD_F:'chilena', COD_M:'chileno'}, {COD:'argentina', NACIONALIDAD:'Argentina', COD_F:'argentina', COD_M:'argentino'}, {COD:'bolivia', NACIONALIDAD:'Boliviana', COD_F:'boliviana', COD_M:'boliviano'}, {COD:'brasil', NACIONALIDAD:'Brasileña', COD_F:'brasileña', COD_M:'brasileño'}, {COD:'colombia', NACIONALIDAD:'Colombiana', COD_F:'colombiana', 
+COD_M:'colombiano'}, {COD:'ecuador', NACIONALIDAD:'Ecuatoriana', COD_F:'ecuatoriana', COD_M:'ecuatoriano'}, {COD:'paraguay', NACIONALIDAD:'Paraguaya', COD_F:'paraguaya', COD_M:'paraguayo'}, {COD:'peru', NACIONALIDAD:'Peruana', COD_F:'peruana', COD_M:'peruano'}, {COD:'uruguay', NACIONALIDAD:'Uruguaya', COD_F:'uruguaya', COD_M:'uruguayo'}, {COD:'venezuela', NACIONALIDAD:'Venezolana', COD_F:'venezolana', COD_M:'venezolano'}, {COD:'-', NACIONALIDAD:'_______________'}, {COD:'afganistán', NACIONALIDAD:'Afganistán'}, 
+{COD:'albania', NACIONALIDAD:'Albania'}, {COD:'alemania', NACIONALIDAD:'Alemania'}, {COD:'andorra', NACIONALIDAD:'Andorra'}, {COD:'angola', NACIONALIDAD:'Angola'}, {COD:'antigua y barbuda', NACIONALIDAD:'Antigua y Barbuda'}, {COD:'arabia saudita', NACIONALIDAD:'Arabia Saudita'}, {COD:'argelia', NACIONALIDAD:'Argelia'}, {COD:'armenia', NACIONALIDAD:'Armenia'}, {COD:'australia', NACIONALIDAD:'Australia'}, {COD:'austria', NACIONALIDAD:'Austria'}, {COD:'azerbaiyán', NACIONALIDAD:'Azerbaiyán'}, {COD:'bahamas', 
+NACIONALIDAD:'Bahamas'}, {COD:'bangladés', NACIONALIDAD:'Bangladés'}, {COD:'barbados', NACIONALIDAD:'Barbados'}, {COD:'baréin', NACIONALIDAD:'Baréin'}, {COD:'bélgica', NACIONALIDAD:'Bélgica'}, {COD:'belice', NACIONALIDAD:'Belice'}, {COD:'benín', NACIONALIDAD:'Benín'}, {COD:'bielorrusia', NACIONALIDAD:'Bielorrusia'}, {COD:'birmania', NACIONALIDAD:'Birmania'}, {COD:'bosnia y herzegovina', NACIONALIDAD:'Bosnia y Herzegovina'}, {COD:'botsuana', NACIONALIDAD:'Botsuana'}, {COD:'brunéi', NACIONALIDAD:'Brunéi'}, 
+{COD:'bulgaria', NACIONALIDAD:'Bulgaria'}, {COD:'burkina faso', NACIONALIDAD:'Burkina Faso'}, {COD:'burundi', NACIONALIDAD:'Burundi'}, {COD:'bután', NACIONALIDAD:'Bután'}, {COD:'cabo verde', NACIONALIDAD:'Cabo Verde'}, {COD:'camboya', NACIONALIDAD:'Camboya'}, {COD:'camerún', NACIONALIDAD:'Camerún'}, {COD:'canadá', NACIONALIDAD:'Canadá'}, {COD:'catar', NACIONALIDAD:'Catar'}, {COD:'chad', NACIONALIDAD:'Chad'}, {COD:'china', NACIONALIDAD:'China'}, {COD:'chipre', NACIONALIDAD:'Chipre'}, {COD:'ciudad del vaticano', 
+NACIONALIDAD:'Ciudad del Vaticano'}, {COD:'comoras', NACIONALIDAD:'Comoras'}, {COD:'corea del norte', NACIONALIDAD:'Corea del Norte'}, {COD:'corea del sur', NACIONALIDAD:'Corea del Sur'}, {COD:'costa de marfil', NACIONALIDAD:'Costa de Marfil'}, {COD:'costa rica', NACIONALIDAD:'Costa Rica'}, {COD:'croacia', NACIONALIDAD:'Croacia'}, {COD:'cuba', NACIONALIDAD:'Cuba'}, {COD:'dinamarca', NACIONALIDAD:'Dinamarca'}, {COD:'dominica', NACIONALIDAD:'Dominica'}, {COD:'egipto', NACIONALIDAD:'Egipto'}, {COD:'el salvador', 
+NACIONALIDAD:'El Salvador'}, {COD:'eau', NACIONALIDAD:'Emiratos Árabes Unidos'}, {COD:'eritrea', NACIONALIDAD:'Eritrea'}, {COD:'eslovaquia', NACIONALIDAD:'Eslovaquia'}, {COD:'eslovenia', NACIONALIDAD:'Eslovenia'}, {COD:'españa', NACIONALIDAD:'España'}, {COD:'estados unidos', NACIONALIDAD:'Estados Unidos'}, {COD:'estonia', NACIONALIDAD:'Estonia'}, {COD:'etiopía', NACIONALIDAD:'Etiopía'}, {COD:'filipinas', NACIONALIDAD:'Filipinas'}, {COD:'finlandia', NACIONALIDAD:'Finlandia'}, {COD:'fiyi', NACIONALIDAD:'Fiyi'}, 
+{COD:'francia', NACIONALIDAD:'Francia'}, {COD:'gabón', NACIONALIDAD:'Gabón'}, {COD:'gambia', NACIONALIDAD:'Gambia'}, {COD:'georgia', NACIONALIDAD:'Georgia'}, {COD:'ghana', NACIONALIDAD:'Ghana'}, {COD:'granada', NACIONALIDAD:'Granada'}, {COD:'grecia', NACIONALIDAD:'Grecia'}, {COD:'guatemala', NACIONALIDAD:'Guatemala'}, {COD:'guyana', NACIONALIDAD:'Guyana'}, {COD:'guinea', NACIONALIDAD:'Guinea'}, {COD:'guinea ecuatorial', NACIONALIDAD:'Guinea ecuatorial'}, {COD:'guinea-bisáu', NACIONALIDAD:'Guinea-Bisáu'}, 
+{COD:'haití', NACIONALIDAD:'Haití'}, {COD:'honduras', NACIONALIDAD:'Honduras'}, {COD:'hungría', NACIONALIDAD:'Hungría'}, {COD:'india', NACIONALIDAD:'India'}, {COD:'indonesia', NACIONALIDAD:'Indonesia'}, {COD:'irak', NACIONALIDAD:'Irak'}, {COD:'irán', NACIONALIDAD:'Irán'}, {COD:'irlanda', NACIONALIDAD:'Irlanda'}, {COD:'islandia', NACIONALIDAD:'Islandia'}, {COD:'islas marshall', NACIONALIDAD:'Islas Marshall'}, {COD:'islas salomón', NACIONALIDAD:'Islas Salomón'}, {COD:'israel', NACIONALIDAD:'Israel'}, 
+{COD:'italia', NACIONALIDAD:'Italia'}, {COD:'jamaica', NACIONALIDAD:'Jamaica'}, {COD:'japón', NACIONALIDAD:'Japón'}, {COD:'jordania', NACIONALIDAD:'Jordania'}, {COD:'kazajistán', NACIONALIDAD:'Kazajistán'}, {COD:'kenia', NACIONALIDAD:'Kenia'}, {COD:'kirguistán', NACIONALIDAD:'Kirguistán'}, {COD:'kiribati', NACIONALIDAD:'Kiribati'}, {COD:'kuwait', NACIONALIDAD:'Kuwait'}, {COD:'laos', NACIONALIDAD:'Laos'}, {COD:'lesoto', NACIONALIDAD:'Lesoto'}, {COD:'letonia', NACIONALIDAD:'Letonia'}, {COD:'líbano', 
+NACIONALIDAD:'Líbano'}, {COD:'liberia', NACIONALIDAD:'Liberia'}, {COD:'libia', NACIONALIDAD:'Libia'}, {COD:'liechtenstein', NACIONALIDAD:'Liechtenstein'}, {COD:'lituania', NACIONALIDAD:'Lituania'}, {COD:'luxemburgo', NACIONALIDAD:'Luxemburgo'}, {COD:'madagascar', NACIONALIDAD:'Madagascar'}, {COD:'malasia', NACIONALIDAD:'Malasia'}, {COD:'malaui', NACIONALIDAD:'Malaui'}, {COD:'maldivas', NACIONALIDAD:'Maldivas'}, {COD:'malí', NACIONALIDAD:'Malí'}, {COD:'malta', NACIONALIDAD:'Malta'}, {COD:'marruecos', 
+NACIONALIDAD:'Marruecos'}, {COD:'mauricio', NACIONALIDAD:'Mauricio'}, {COD:'mauritania', NACIONALIDAD:'Mauritania'}, {COD:'méxico', NACIONALIDAD:'México'}, {COD:'micronesia', NACIONALIDAD:'Micronesia'}, {COD:'moldavia', NACIONALIDAD:'Moldavia'}, {COD:'mónaco', NACIONALIDAD:'Mónaco'}, {COD:'mongolia', NACIONALIDAD:'Mongolia'}, {COD:'montenegro', NACIONALIDAD:'Montenegro'}, {COD:'mozambique', NACIONALIDAD:'Mozambique'}, {COD:'namibia', NACIONALIDAD:'Namibia'}, {COD:'nauru', NACIONALIDAD:'Nauru'}, {COD:'nepal', 
+NACIONALIDAD:'Nepal'}, {COD:'nicaragua', NACIONALIDAD:'Nicaragua'}, {COD:'níger', NACIONALIDAD:'Níger'}, {COD:'nigeria', NACIONALIDAD:'Nigeria'}, {COD:'noruega', NACIONALIDAD:'Noruega'}, {COD:'nueva zelanda', NACIONALIDAD:'Nueva Zelanda'}, {COD:'omán', NACIONALIDAD:'Omán'}, {COD:'países bajos', NACIONALIDAD:'Países Bajos'}, {COD:'pakistán', NACIONALIDAD:'Pakistán'}, {COD:'palaos', NACIONALIDAD:'Palaos'}, {COD:'panamá', NACIONALIDAD:'Panamá'}, {COD:'papúa nueva guinea', NACIONALIDAD:'Papúa Nueva Guinea'}, 
+{COD:'polonia', NACIONALIDAD:'Polonia'}, {COD:'portugal', NACIONALIDAD:'Portugal'}, {COD:'reino unido', NACIONALIDAD:'Reino Unido'}, {COD:'república centroafricana', NACIONALIDAD:'República Centroafricana'}, {COD:'república checa', NACIONALIDAD:'República Checa'}, {COD:'república de macedonia', NACIONALIDAD:'República de Macedonia'}, {COD:'república del congo', NACIONALIDAD:'República del Congo'}, {COD:'república democrática del congo', NACIONALIDAD:'República Democrática del Congo'}, {COD:'república dominicana', 
+NACIONALIDAD:'República Dominicana'}, {COD:'república sudafricana', NACIONALIDAD:'República Sudafricana'}, {COD:'ruanda', NACIONALIDAD:'Ruanda'}, {COD:'rumanía', NACIONALIDAD:'Rumanía'}, {COD:'rusia', NACIONALIDAD:'Rusia'}, {COD:'samoa', NACIONALIDAD:'Samoa'}, {COD:'san cristóbal y nieves', NACIONALIDAD:'San Cristóbal y Nieves'}, {COD:'san marino', NACIONALIDAD:'San Marino'}, {COD:'san vicente y las granadinas', NACIONALIDAD:'San Vicente y las Granadinas'}, {COD:'santa lucía', NACIONALIDAD:'Santa Lucía'}, 
+{COD:'santo tomé y príncipe', NACIONALIDAD:'Santo Tomé y Príncipe'}, {COD:'senegal', NACIONALIDAD:'Senegal'}, {COD:'serbia', NACIONALIDAD:'Serbia'}, {COD:'seychelles', NACIONALIDAD:'Seychelles'}, {COD:'sierra leona', NACIONALIDAD:'Sierra Leona'}, {COD:'singapur', NACIONALIDAD:'Singapur'}, {COD:'siria', NACIONALIDAD:'Siria'}, {COD:'somalia', NACIONALIDAD:'Somalia'}, {COD:'sri lanka', NACIONALIDAD:'Sri Lanka'}, {COD:'suazilandia', NACIONALIDAD:'Suazilandia'}, {COD:'sudán', NACIONALIDAD:'Sudán'}, {COD:'sudán del sur', 
+NACIONALIDAD:'Sudán del Sur'}, {COD:'suecia', NACIONALIDAD:'Suecia'}, {COD:'suiza', NACIONALIDAD:'Suiza'}, {COD:'surinam', NACIONALIDAD:'Surinam'}, {COD:'tailandia', NACIONALIDAD:'Tailandia'}, {COD:'tanzania', NACIONALIDAD:'Tanzania'}, {COD:'tayikistán', NACIONALIDAD:'Tayikistán'}, {COD:'timor oriental', NACIONALIDAD:'Timor Oriental'}, {COD:'togo', NACIONALIDAD:'Togo'}, {COD:'tonga', NACIONALIDAD:'Tonga'}, {COD:'trinidad y tobago', NACIONALIDAD:'Trinidad y Tobago'}, {COD:'túnez', NACIONALIDAD:'Túnez'}, 
+{COD:'turkmenistán', NACIONALIDAD:'Turkmenistán'}, {COD:'turquía', NACIONALIDAD:'Turquía'}, {COD:'tuvalu', NACIONALIDAD:'Tuvalu'}, {COD:'ucrania', NACIONALIDAD:'Ucrania'}, {COD:'uganda', NACIONALIDAD:'Uganda'}, {COD:'uzbekistán', NACIONALIDAD:'Uzbekistán'}, {COD:'vanuatu', NACIONALIDAD:'Vanuatu'}, {COD:'vietnam', NACIONALIDAD:'Vietnam'}, {COD:'yemen', NACIONALIDAD:'Yemen'}, {COD:'yibuti', NACIONALIDAD:'Yibuti'}, {COD:'zambia', NACIONALIDAD:'Zambia'}, {COD:'zimbabue', NACIONALIDAD:'Zimbabue'}]}, stSexo:{fields:['COD', 
+'SEXO'], data:[{COD:'femenino', SEXO:'Femenino'}, {COD:'masculino', SEXO:'Masculino'}]}}});
 Ext.define('vyl.view.window.MotivoRechazo', {extend:Ext.window.Window, xtype:'wndmotivorechazo', requires:[], controller:'motivorechazo', layout:{type:'vbox', align:'stretch'}, ingresaMotivo:true, height:400, width:400, scrollable:true, bodyPadding:0, constrain:true, modal:true, closable:false, listeners:{afterrender:'onAfterRender'}, initComponent:function() {
   Ext.apply(this, {items:[{xtype:'textarea', reference:'txaRechazo', labelAlign:'top', labelWidth:90, margin:'0 5 5 5', grow:true, name:'rechazo', fieldLabel:'Ingrese motivo del rechazo', allowBlank:false}], dockedItems:[{xtype:'toolbar', dock:'bottom', fixed:true, margin:'0 0 5 0', items:['-\x3e', {xtype:'button', reference:'btnCancelar', text:'Cancelar', handler:'onCancelar', iconCls:'x-fa fa-ban'}, {xtype:'button', reference:'btnAceptar', text:'Aceptar', handler:'onAceptar', hidden:true}, {xtype:'button', 
   reference:'btnFinalizar', text:'Finalizar', handler:'onGrabar', iconCls:'x-fa fa-arrow-circle-right'}]}]});
@@ -93787,7 +94995,7 @@ Ext.define('vyl.ux.window.MotivoRechazoController', {extend:Ext.app.ViewControll
   }
 }});
 Ext.application({extend:'vyl.Application', requires:['vyl.*'], controllers:['vyl.controller.Token'], mainView:'vyl.view.main.Main', launch:function() {
-  console.log('App.launch()');
+  console.log('App.launch()', localStorage);
   var app = this, cUsuario = localStorage.getItem('usuario') ? Ext.decode(localStorage.getItem('usuario')).cUsuario : null, token = localStorage.getItem('token'), mainView = app.getMainView(), tokenCtrl = app.getController('Token');
   if (cUsuario != null && token != null) {
     tokenCtrl.validaToken(cUsuario, token, null);

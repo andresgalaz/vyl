@@ -1,4 +1,4 @@
-// $call.include('vyl/bsh/db/leasingClase.bsh')
+// call.include('vyl/bsh/db/leasingClase.bsh')
 // Actualiza una cuota del leasing:
 traza.add("new Leasing");
 new vyl.db.Leasing(request, connectionHelper, traza).insUpd();

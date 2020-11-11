@@ -1,4 +1,4 @@
-// $call.include('vyl/bsh/db/empresaClase.bsh')
-// $call.include('vyl/bsh/db/compradorClase.bsh')
-// $call.include('vyl/bsh/db/ventaClase.bsh')
+// call.include('vyl/bsh/db/empresaClase.bsh')
+// call.include('vyl/bsh/db/compradorClase.bsh')
+// call.include('vyl/bsh/db/ventaClase.bsh')
 new vyl.db.Venta(request, connectionHelper, traza).lista();

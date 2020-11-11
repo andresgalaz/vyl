@@ -1,6 +1,6 @@
-// $call.include('vyl/bsh/db/empresaClase.bsh')
-// $call.include('vyl/bsh/db/compradorClase.bsh')
-// $call.include('vyl/bsh/db/leasingClase.bsh')
-// $call.include('vyl/bsh/db/ventaClase.bsh')
+// call.include('vyl/bsh/db/empresaClase.bsh')
+// call.include('vyl/bsh/db/compradorClase.bsh')
+// call.include('vyl/bsh/db/leasingClase.bsh')
+// call.include('vyl/bsh/db/ventaClase.bsh')
 traza.add("Crea objeto Venta");
 new vyl.db.Venta(connectionHelper, connectionHelperAlt, wkfData, traza).insUpd();
