@@ -1,0 +1,2 @@
+vyl.db.VentaArchivos va = new vyl.db.VentaArchivos(connectionHelper, connectionHelperAlt, wkfData, traza);
+va.inserta("Contrato Arriendo","vyl/bsh/print/contratoArriendo.bsh.bsh");

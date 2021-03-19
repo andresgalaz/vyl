@@ -62,7 +62,7 @@
 			</textField>
 			<image>
 				<reportElement x="0" y="0" width="200" height="40" uuid="79738080-c6e8-4f8d-bf18-76edf9b0493d"/>
-				<imageExpression><![CDATA["https://lakus.compustrom.com/d/vyl/resources/images/logo96.png"]]></imageExpression>
+				<imageExpression><![CDATA["https://app.parcelasenchiloe.cl/wapp/vyl/resources/images/logo96.png"]]></imageExpression>
 			</image>
 		</band>
 	</title>

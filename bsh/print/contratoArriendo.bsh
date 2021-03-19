@@ -1,0 +1,2 @@
+traza.add("new ContratoArriendo 1.0");
+new vyl.report.ContratoArriendo(request, response, connectionHelper, traza).genera();
